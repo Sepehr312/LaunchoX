@@ -9,8 +9,9 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "شروع | لانچ‌اوکس",
-  description: "صفحهٔ آغازین فروشگاه آنلاین لانچ‌اوکس",
+  title: "نمونهٔ رابط کاربری | لانچ‌اوکس",
+  description:
+    "نمونهٔ نوشتار فارسی، رنگ‌ها و اجزای پایهٔ رابط کاربری لانچ‌اوکس",
 };
 
 export default function RootLayout({

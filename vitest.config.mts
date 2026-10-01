@@ -1,9 +1,11 @@
 import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  },
   test: {
-    // Step 2 introduces the first unit tests; remove this option at that point.
-    passWithNoTests: true,
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
   },
 });

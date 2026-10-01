@@ -1,41 +1,96 @@
-﻿import Image from "next/image";
+﻿import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
 
 export default function Home() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 dark:bg-black">
-      <main className="flex w-full max-w-3xl flex-1 flex-col items-start justify-center gap-12 bg-white px-4 py-20 text-start sm:px-16 dark:bg-black">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="نشان نکست‌جی‌اس"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col gap-6">
-          <h1 className="text-3xl leading-relaxed font-semibold">
-            لانچ‌اوکس آمادهٔ شروع است
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            برای شروع، فایل <code dir="ltr">src/app/page.tsx</code> را ویرایش
-            کنید. این صفحهٔ آغازین پروژه است.
-          </p>
+    <main className="mx-auto w-full max-w-4xl space-y-8 px-4 py-10 text-start sm:py-16">
+      <header className="space-y-4">
+        <Badge>لانچ‌اوکس · مرحلهٔ {toPersianDigits(2)}</Badge>
+        <h1 className="text-3xl leading-relaxed font-bold sm:text-4xl">
+          ساده، خوانا و فارسی
+        </h1>
+        <p className="max-w-2xl leading-8 text-muted">
+          نمونه‌ای از رنگ‌ها، نوشتار و اجزای پایهٔ رابط کاربری؛ با چیدمان
+          راست‌به‌چپ و قلم وزیرمتن. رنگ‌ها با حالت روشن یا تاریک دستگاه هماهنگ
+          می‌شوند.
+        </p>
+      </header>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Card aria-labelledby="format-heading" className="space-y-6">
+          <h2 id="format-heading" className="text-xl font-semibold">
+            قیمت، تاریخ و اعداد
+          </h2>
+          <dl className="space-y-5">
+            <div className="space-y-1">
+              <dt className="text-sm text-muted">قیمت نمونه</dt>
+              <dd className="text-2xl font-bold text-primary">
+                {formatPrice(1250000)}
+              </dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-sm text-muted">تاریخ شمسی</dt>
+              <dd>
+                <time dateTime="2024-03-20T12:00:00Z">
+                  {formatDate("2024-03-20T12:00:00Z")}
+                </time>
+              </dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-sm text-muted">ارقام فارسی</dt>
+              <dd>{toPersianDigits("0123456789")}</dd>
+            </div>
+          </dl>
+        </Card>
+
+        <Card aria-labelledby="components-heading" className="space-y-6">
+          <h2 id="components-heading" className="text-xl font-semibold">
+            ورودی و دکمه‌ها
+          </h2>
+          <form className="space-y-5">
+            <div className="space-y-2">
+              <label
+                htmlFor="sample-name"
+                className="block text-sm font-medium"
+              >
+                نام نمونه
+              </label>
+              <Input
+                id="sample-name"
+                defaultValue="لانچ‌اوکس"
+                aria-describedby="sample-help"
+                autoComplete="off"
+              />
+              <p id="sample-help" className="text-sm leading-6 text-muted">
+                متن را تغییر دهید؛ دکمهٔ بازنشانی مقدار اولیه را برمی‌گرداند.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button type="reset">بازنشانی نمونه</Button>
+              <Button variant="secondary" disabled>
+                دکمهٔ غیرفعال
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+
+      <Card aria-labelledby="status-heading" className="space-y-4">
+        <h2 id="status-heading" className="text-xl font-semibold">
+          رنگ‌های وضعیت
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          <Badge>رنگ اصلی</Badge>
+          <Badge tone="success">موفق</Badge>
+          <Badge tone="danger">خطا</Badge>
         </div>
-        <div className="flex w-full flex-col gap-4 sm:flex-row">
-          <a
-            className="rounded-full bg-foreground px-6 py-3 text-center text-background"
-            href="https://nextjs.org/learn"
-          >
-            آموزش نکست‌جی‌اس
-          </a>
-          <a
-            className="rounded-full border border-zinc-300 px-6 py-3 text-center dark:border-zinc-700"
-            href="https://nextjs.org/docs"
-          >
-            مستندات
-          </a>
-        </div>
-      </main>
-    </div>
+        <p className="text-sm leading-7 text-muted">
+          این نشان‌ها فقط نمونهٔ نمایش رنگ‌های رابط کاربری هستند.
+        </p>
+      </Card>
+    </main>
   );
 }
