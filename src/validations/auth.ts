@@ -29,3 +29,32 @@ export const registerSchema = z
   });
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const callbackUrlSchema = z
+  .string()
+  .max(2048)
+  .refine((value) => {
+    if (
+      !value.startsWith("/") ||
+      value.startsWith("//") ||
+      /[\\\s\u0000-\u001f]/u.test(value)
+    )
+      return false;
+    try {
+      const url = new URL(value, "https://launchox.local");
+      const decoded = decodeURIComponent(value);
+      return (
+        url.origin === "https://launchox.local" &&
+        !decoded.startsWith("//") &&
+        !/[\\\u0000-\u001f]/u.test(decoded) &&
+        !/^\/(?:login|register|api\/auth)(?:[/?#]|$)/.test(url.pathname)
+      );
+    } catch {
+      return false;
+    }
+  });
+
+export function safeCallbackUrl(value: unknown): string {
+  const parsed = callbackUrlSchema.safeParse(value);
+  return parsed.success ? parsed.data : "/";
+}
