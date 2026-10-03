@@ -132,6 +132,8 @@ describe("product and query input", () => {
     { images: [] },
     { images: Array(9).fill("https://example.com/a.png") },
     { images: ["javascript:alert(1)"] },
+    { images: ["//evil.example/image.png"] },
+    { images: ["/images/../private.png"] },
     { category: "invalid" },
     { category: { $ne: null } },
     { attributes: [{ key: " ", value: "a" }] },
@@ -147,6 +149,12 @@ describe("product and query input", () => {
         price: 0,
         stock: 0,
         images: Array(8).fill("https://example.com/a.png"),
+      }).success,
+    ).toBe(true);
+    expect(
+      productSchema.safeParse({
+        ...productInput,
+        images: ["/images/products/refrigerator.png"],
       }).success,
     ).toBe(true);
   });

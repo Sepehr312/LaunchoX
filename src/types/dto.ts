@@ -46,6 +46,17 @@ export interface ProductDTO extends EntityDTO {
   isFeatured: boolean;
   soldCount: number;
 }
+export interface ProductCategoryDTO {
+  id: string;
+  name: string;
+  slug: string;
+}
+export interface StoreProductDTO extends Omit<ProductDTO, "category"> {
+  category: ProductCategoryDTO;
+}
+export interface CategoryTreeDTO extends CategoryDTO {
+  children: CategoryTreeDTO[];
+}
 export interface CartItemDTO extends TimestampsDTO {
   product: string;
   quantity: number;

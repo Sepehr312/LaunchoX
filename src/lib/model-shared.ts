@@ -78,6 +78,13 @@ export function isHttpUrl(value: string): boolean {
     return false;
   }
 }
+export function isAssetUrl(value: string): boolean {
+  if (isHttpUrl(value)) return true;
+  return (
+    /^\/(?!\/)[A-Za-z0-9/_\-.]+$/.test(value) &&
+    !value.split("/").includes("..")
+  );
+}
 export function blankToUndefined(value: unknown): unknown {
   if (value === null) return undefined;
   return typeof value === "string" ? value.trim() || undefined : value;

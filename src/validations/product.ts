@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  assetUrlSchema,
   booleanSchema,
   integerSchema,
   moneySchema,
@@ -8,7 +9,6 @@ import {
   paginationSchema,
   requiredString,
   slugSchema,
-  urlSchema,
 } from "@/validations/common";
 
 export const productSchema = z
@@ -23,7 +23,7 @@ export const productSchema = z
     stock: integerSchema(),
     sku: optionalField(requiredString),
     images: z
-      .array(urlSchema)
+      .array(assetUrlSchema)
       .min(1, "حداقل یک تصویر الزامی است")
       .max(8, "حداکثر ۸ تصویر مجاز است"),
     category: objectIdSchema,

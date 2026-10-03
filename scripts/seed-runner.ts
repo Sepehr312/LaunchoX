@@ -114,28 +114,37 @@ export async function seedDatabase(
   for (const [order, group] of seedCategories.entries()) {
     const category = await Category.findOneAndUpdate(
       { slug: group.slug },
-      { $set: { name: group.name, order, isActive: true } },
+      {
+        $set: {
+          name: group.name,
+          description: group.description,
+          image: group.image,
+          order,
+          isActive: true,
+        },
+      },
       { upsert: true, returnDocument: "after", runValidators: true },
     ).orFail();
-    for (const [position, title] of group.titles.entries()) {
+    for (const [position, product] of group.products.entries()) {
       const slug = `${group.slug}-${position + 1}`;
       const data = {
-        title,
+        title: product.title,
         slug,
-        description: `${title} گزینه‌ای کاربردی برای ${group.use} است. این محصول با کیفیت مناسب برای استفادهٔ روزمره عرضه می‌شود.`,
-        price: group.prices[position],
+        description: `${product.title} با طراحی دقیق و سرمایش پایدار برای استفادهٔ روزمره ساخته شده است. مشخصات فنی این مدل امکان مقایسه و انتخاب مطمئن‌تر را فراهم می‌کند.`,
+        price: product.price,
         stock: index < 2 ? 0 : 10 + index,
-        images: [`https://picsum.photos/seed/${slug}/800/800`],
+        sku: `LX-COLD-${String(index + 1).padStart(3, "0")}`,
+        images: [group.image],
         category: category._id,
         attributes: [
-          { key: "جنس", value: group.material },
-          { key: "کاربرد", value: group.use },
+          { key: "برند", value: product.brand },
+          { key: "ظرفیت", value: product.capacity },
+          { key: "رده انرژی", value: product.energy },
+          { key: "فناوری", value: product.technology },
         ],
         isActive: true,
         isFeatured: index < 6,
-        ...(index % 4 === 0
-          ? { compareAtPrice: group.prices[position] + 100000 }
-          : {}),
+        ...(index % 4 === 0 ? { compareAtPrice: product.price + 1500000 } : {}),
       };
       // Document validation checks compareAtPrice against price, unlike update validators.
       await new Product(data).validate();

@@ -16,6 +16,15 @@ export const urlSchema = z.url({
   protocol: /^https?$/,
   error: "نشانی اینترنتی معتبر نیست",
 });
+export const assetUrlSchema = z.union([
+  urlSchema,
+  z
+    .string()
+    .regex(
+      /^\/(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[A-Za-z0-9/_\-.]+$/,
+      "نشانی تصویر معتبر نیست",
+    ),
+]);
 export const mobileSchema = z
   .string()
   .transform((value) => normalizeDigits(value.trim()))

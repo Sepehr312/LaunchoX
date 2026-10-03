@@ -2,7 +2,7 @@ import "server-only";
 import { Schema, model, models, type Model, type Types } from "mongoose";
 import {
   integerField,
-  isHttpUrl,
+  isAssetUrl,
   modelOptions,
   optionalText,
   requiredText,
@@ -64,7 +64,7 @@ const productSchema = new Schema<IProduct>(
       required: [true, "تصویر الزامی است"],
       validate: {
         validator: (value: string[]) =>
-          value.length >= 1 && value.length <= 8 && value.every(isHttpUrl),
+          value.length >= 1 && value.length <= 8 && value.every(isAssetUrl),
         message: "بین ۱ تا ۸ نشانی تصویر معتبر وارد کنید",
       },
     },

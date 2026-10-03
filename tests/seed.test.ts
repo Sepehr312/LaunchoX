@@ -82,9 +82,8 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
     expect(product.description.split(".").filter(Boolean)).toHaveLength(2);
     expect(product.attributes.length).toBeGreaterThanOrEqual(2);
     expect(product.attributes.length).toBeLessThanOrEqual(4);
-    expect(product.images).toEqual([
-      `https://picsum.photos/seed/${product.slug}/800/800`,
-    ]);
+    expect(product.images).toHaveLength(1);
+    expect(product.images[0]).toMatch(/^\/images\/products\/[a-z-]+\.png$/);
   }
   for (const category of await Category.find().lean()) {
     const count = products.filter((product) =>

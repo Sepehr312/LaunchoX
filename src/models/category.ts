@@ -2,7 +2,7 @@ import "server-only";
 import { Schema, model, models, type Model, type Types } from "mongoose";
 import {
   integerField,
-  isHttpUrl,
+  isAssetUrl,
   modelOptions,
   optionalText,
   requiredText,
@@ -31,7 +31,7 @@ const categorySchema = new Schema<ICategory>(
     description: optionalText,
     image: {
       ...optionalText,
-      validate: { validator: isHttpUrl, message: "نشانی تصویر معتبر نیست" },
+      validate: { validator: isAssetUrl, message: "نشانی تصویر معتبر نیست" },
     },
     order: { ...integerField, default: 0 },
     isActive: {

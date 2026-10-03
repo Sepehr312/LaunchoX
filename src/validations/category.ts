@@ -1,12 +1,12 @@
 import { z } from "zod";
 import {
+  assetUrlSchema,
   booleanSchema,
   integerSchema,
   objectIdSchema,
   optionalField,
   requiredString,
   slugSchema,
-  urlSchema,
 } from "@/validations/common";
 
 export const categorySchema = z.object({
@@ -14,7 +14,7 @@ export const categorySchema = z.object({
   slug: optionalField(slugSchema),
   parent: optionalField(objectIdSchema),
   description: optionalField(requiredString),
-  image: optionalField(urlSchema),
+  image: optionalField(assetUrlSchema),
   order: integerSchema().default(0),
   isActive: booleanSchema.default(true),
 });

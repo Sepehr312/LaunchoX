@@ -41,4 +41,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.step5-backup.archive
+.*-backup.archive

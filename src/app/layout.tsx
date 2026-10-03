@@ -9,9 +9,9 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "نمونهٔ رابط کاربری | لانچ‌اوکس",
+  title: "فروشگاه تخصصی یخچال | لانچ‌اوکس",
   description:
-    "نمونهٔ نوشتار فارسی، رنگ‌ها و اجزای پایهٔ رابط کاربری لانچ‌اوکس",
+    "فروشگاه تخصصی یخچال و تجهیزات سرمایشی با انتخاب دقیق و مشخصات شفاف",
 };
 
 export default function RootLayout({
@@ -23,7 +23,9 @@ export default function RootLayout({
       dir="rtl"
       className={`${vazirmatn.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col overflow-x-hidden">
+        {children}
+      </body>
     </html>
   );
 }
