@@ -23,3 +23,17 @@ export const orderQuerySchema = paginationSchema.extend({
 export type OrderInput = z.infer<typeof orderSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 export type OrderQueryInput = z.infer<typeof orderQuerySchema>;
+
+export const authoritySchema = z.string().uuid("شناسهٔ پرداخت معتبر نیست");
+export const paymentReferenceSchema = z
+  .string()
+  .trim()
+  .min(1, "شناسه الزامی است")
+  .max(200, "شناسه بیش از حد طولانی است");
+export const paymentCallbackSchema = z.object({
+  authority: authoritySchema,
+  status: z.enum(["OK", "NOK"], { error: "وضعیت پرداخت معتبر نیست" }),
+});
+export const orderNumberInput = z.object({
+  orderNumber: z.string().regex(/^LX-\d{6,}$/, "شمارهٔ سفارش معتبر نیست"),
+});

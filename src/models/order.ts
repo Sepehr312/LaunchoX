@@ -2,7 +2,7 @@ import "server-only";
 import { Schema, model, models, type Model, type Types } from "mongoose";
 import {
   integerField,
-  isHttpUrl,
+  isAssetUrl,
   modelOptions,
   optionalText,
   requiredText,
@@ -63,7 +63,7 @@ const itemSchema = new Schema<IOrderItem>(
     slug: { ...requiredText, match: [slugPattern, "نامک معتبر نیست"] },
     image: {
       ...requiredText,
-      validate: { validator: isHttpUrl, message: "نشانی تصویر معتبر نیست" },
+      validate: { validator: isAssetUrl, message: "نشانی تصویر معتبر نیست" },
     },
     price: { ...integerField, required: [true, "قیمت الزامی است"] },
     quantity: {

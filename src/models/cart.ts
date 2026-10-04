@@ -15,6 +15,7 @@ export interface ICart extends StoredDocument {
   user?: Types.ObjectId;
   guestId?: string;
   items: ICartItem[];
+  checkoutToken?: string;
 }
 const itemSchema = new Schema<ICartItem>(
   {
@@ -34,6 +35,7 @@ const itemSchema = new Schema<ICartItem>(
 );
 const cartSchema = new Schema<ICart>(
   {
+    checkoutToken: String,
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",

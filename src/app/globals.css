@@ -1,5 +1,65 @@
 @import "tailwindcss";
 
+.checkout-panel {
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--ice) 35%, var(--surface)),
+    var(--surface)
+  );
+  box-shadow: var(--shadow);
+}
+.checkout-address {
+  display: flex;
+  align-items: start;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.checkout-address:has(input:checked) {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--ice) 70%, var(--surface));
+}
+.checkout-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--primary);
+  border-radius: 0.8rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.checkout-link-secondary {
+  background: var(--surface);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.checkout-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+.checkout-result-symbol {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  margin-block: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--ice);
+  font-size: 2rem;
+}
+
 :root {
   color-scheme: light;
   --background: #eef7fb;
