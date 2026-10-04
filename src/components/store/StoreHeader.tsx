@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import styles from "./StoreHeader.module.css";
 import type { CategoryDTO } from "@/types/dto";
 import {
   MenuIcon,
@@ -7,16 +11,24 @@ import {
   UserIcon,
 } from "@/components/store/Icons";
 
-const mainLinks = [
+const mainLinks: { href?: string; label: string }[] = [
   { href: "/", label: "صفحه اصلی" },
-  { href: "/products", label: "همه محصولات" },
-  { href: "/search", label: "جستجو" },
+  { href: "/products", label: "محصولات" },
+  { label: "برندها" },
+  { label: "مقایسه" },
+  { label: "مجله خرید" },
+  { label: "خدمات پس از فروش" },
+  { label: "درباره ما" },
 ];
 
-export function StoreHeader({ categories }: { categories: CategoryDTO[] }) {
+export const StoreHeader: (props: {
+  categories: CategoryDTO[];
+}) => React.ReactNode = () => {
+  const pathname = usePathname();
+
   return (
-    <header className="store-header">
-      <div className="store-shell flex h-18 items-center gap-3 lg:h-21">
+    <header className={`store-header ${styles.header}`}>
+      <div className={`store-shell ${styles.bar}`}>
         <Link href="/" className="brand-mark shrink-0" aria-label="لانچ‌اوکس">
           <SnowflakeIcon className="size-9" />
           <span>
@@ -25,40 +37,45 @@ export function StoreHeader({ categories }: { categories: CategoryDTO[] }) {
           </span>
         </Link>
 
-        <nav
-          className="hidden flex-1 items-center justify-center gap-7 lg:flex"
-          aria-label="ناوبری اصلی"
-        >
-          {mainLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="header-link">
-              {link.label}
-            </Link>
-          ))}
-          {categories.slice(0, 3).map((category) => (
-            <Link
-              key={category.id}
-              href={`/categories/${category.slug}`}
-              className="header-link"
-            >
-              {category.name}
-            </Link>
-          ))}
+        <nav className={styles.navigation} aria-label="ناوبری اصلی">
+          {mainLinks.map((link) =>
+            link.href ? (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="header-link"
+                aria-current={pathname === link.href ? "page" : undefined}
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <span
+                key={link.label}
+                className="header-link"
+                aria-disabled="true"
+              >
+                {link.label}
+              </span>
+            ),
+          )}
         </nav>
 
-        <form action="/search" className="header-search hidden xl:flex">
-          <SearchIcon className="size-5 shrink-0" />
-          <input
-            type="search"
-            name="q"
-            aria-label="جستجو در محصولات"
-            placeholder="مدل، برند یا ظرفیت..."
-          />
-        </form>
+        <div className={styles.actions}>
+          <form action="/search" className={`header-search ${styles.search}`}>
+            <SearchIcon className="size-5 shrink-0" />
+            <input
+              type="search"
+              name="q"
+              aria-label="جستجو در محصولات"
+              placeholder="مدل، برند یا ظرفیت..."
+            />
+          </form>
 
-        <Link href="/login" className="header-action hidden sm:inline-flex">
-          <UserIcon className="size-5" />
-          <span>ورود / حساب</span>
-        </Link>
+          <Link href="/login" className={`header-action ${styles.account}`}>
+            <UserIcon className="size-5" />
+            <span>ورود / ثبت‌نام</span>
+          </Link>
+        </div>
 
         <details className="mobile-menu lg:hidden">
           <summary aria-label="باز کردن منوی موبایل">
@@ -86,16 +103,25 @@ export function StoreHeader({ categories }: { categories: CategoryDTO[] }) {
               />
             </form>
             <nav className="grid gap-2" aria-label="ناوبری موبایل">
-              {mainLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  {link.label}
-                </Link>
-              ))}
-              {categories.map((category) => (
-                <Link key={category.id} href={`/categories/${category.slug}`}>
-                  {category.name}
-                </Link>
-              ))}
+              {mainLinks.map((link) =>
+                link.href ? (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    aria-current={pathname === link.href ? "page" : undefined}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <span
+                    key={link.label}
+                    className={styles.mobilePlaceholder}
+                    aria-disabled="true"
+                  >
+                    {link.label}
+                  </span>
+                ),
+              )}
               <Link href="/login">ورود / حساب کاربری</Link>
             </nav>
           </div>
@@ -103,4 +129,4 @@ export function StoreHeader({ categories }: { categories: CategoryDTO[] }) {
       </div>
     </header>
   );
-}
+};
