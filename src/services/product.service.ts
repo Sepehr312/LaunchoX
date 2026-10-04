@@ -163,11 +163,19 @@ export async function updateProduct(
     (await createUniqueSlug(input.title, (candidate) =>
       Product.exists({ slug: candidate, _id: { $ne: id } }).then(Boolean),
     ));
+  const validationDocument = new Product({ ...input, slug });
+  await validationDocument.validate();
   try {
     const product = await Product.findByIdAndUpdate(
       id,
-      { ...input, slug },
-      { returnDocument: "after", runValidators: true },
+      {
+        $set: { ...input, slug },
+        $unset: {
+          ...(input.sku === undefined ? { sku: 1 } : {}),
+          ...(input.compareAtPrice === undefined ? { compareAtPrice: 1 } : {}),
+        },
+      },
+      { returnDocument: "after" },
     )
       .lean()
       .orFail(() => new AppError("محصول پیدا نشد", "NOT_FOUND"));
@@ -212,4 +220,28 @@ export async function listProductsAdmin(
     total,
     totalPages: Math.ceil(total / input.limit),
   };
+}
+
+export async function getProductAdmin(
+  id: string,
+): Promise<StoreProductDTO | null> {
+  await connectDB();
+  const record = await Product.findById(id).lean();
+  return record ? ((await withCategories([record]))[0] ?? null) : null;
+}
+export async function getProductCategoryOptions() {
+  await connectDB();
+  const records = await Category.find().sort({ order: 1, name: 1 }).lean();
+  return records.map((record) => {
+    const dto = toDTO(record);
+    return { id: dto.id, name: dto.name };
+  });
+}
+export async function setProductActive(
+  id: string,
+  isActive: boolean,
+): Promise<void> {
+  await connectDB();
+  const result = await Product.updateOne({ _id: id }, { $set: { isActive } });
+  if (!result.matchedCount) throw new AppError("محصول پیدا نشد", "NOT_FOUND");
 }

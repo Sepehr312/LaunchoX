@@ -17,6 +17,56 @@ import {
 } from "@/services/order.service";
 import { addAddress, getCheckoutAddresses } from "@/services/user.service";
 import { addressInput } from "./fixtures";
+import { orderStatuses } from "@/types/domain";
+
+it("enforces every SPEC transition for paid and unpaid orders without mutating rejected orders", async () => {
+  const allowed = {
+    pending: ["processing", "cancelled"],
+    processing: ["shipped", "cancelled"],
+    shipped: ["delivered"],
+    delivered: [],
+    cancelled: [],
+  };
+  for (const payment of ["paid", "unpaid"] as const) {
+    for (const from of orderStatuses) {
+      for (const to of orderStatuses) {
+        await refillCart(1);
+        await Product.updateMany({}, { stock: 100 });
+        const order = await createOrderFromCart(fixture.user, checkoutInput());
+        await Order.updateOne(
+          { _id: order.id },
+          { status: from, "payment.status": payment },
+        );
+        const permitted =
+          (allowed[from] as string[]).includes(to) &&
+          (to !== "processing" || payment === "paid");
+        const stock = (await Product.findById(fixture.first).lean())?.stock;
+        if (permitted) {
+          const updated = await updateOrderStatus(
+            { id: order.id, status: to },
+            fixture.other,
+          );
+          expect(updated.status).toBe(to);
+          expect(updated.statusHistory).toHaveLength(2);
+          expect(updated.statusHistory[1].changedBy).toBe(fixture.other);
+          expect((await Product.findById(fixture.first).lean())?.stock).toBe(
+            stock! + (to === "cancelled" ? 1 : 0),
+          );
+        } else {
+          await expect(
+            updateOrderStatus({ id: order.id, status: to }, fixture.other),
+          ).rejects.toMatchObject({ code: "CONFLICT" });
+          const unchanged = await getOrderForUser(fixture.user, order.id);
+          expect(unchanged.status).toBe(from);
+          expect(unchanged.statusHistory).toHaveLength(1);
+          expect((await Product.findById(fixture.first).lean())?.stock).toBe(
+            stock,
+          );
+        }
+      }
+    }
+  }
+}, 30000);
 
 it("reserves stock, snapshots current prices/address, empties cart and generates sequential DTOs", async () => {
   await Product.updateOne({ _id: fixture.first }, { price: 200000 });

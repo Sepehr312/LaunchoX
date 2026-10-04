@@ -20,7 +20,6 @@ async function ensureParent(parent?: string, currentId?: string) {
     throw new AppError("دسته‌بندی نمی‌تواند والد خودش باشد", "VALIDATION");
   const parentCategory = await Category.findOne({
     _id: parent,
-    isActive: true,
   })
     .lean()
     .orFail(() => new AppError("دسته‌بندی والد پیدا نشد", "NOT_FOUND"));
@@ -29,6 +28,26 @@ async function ensureParent(parent?: string, currentId?: string) {
       "دسته‌بندی فقط می‌تواند یک سطح زیرمجموعه داشته باشد",
       "VALIDATION",
     );
+  if (currentId && (await Category.exists({ parent: currentId })))
+    throw new AppError(
+      "دسته‌بندی دارای زیردسته نمی‌تواند والد داشته باشد",
+      "VALIDATION",
+    );
+}
+
+export async function listCategoriesAdmin(): Promise<CategoryDTO[]> {
+  await connectDB();
+  return (await Category.find().sort({ order: 1, name: 1 }).lean()).map(
+    asCategoryDTO,
+  );
+}
+
+export async function getCategoryAdmin(
+  id: string,
+): Promise<CategoryDTO | null> {
+  await connectDB();
+  const record = await Category.findById(id).lean();
+  return record ? asCategoryDTO(record) : null;
 }
 
 export async function listCategories(): Promise<CategoryDTO[]> {
@@ -103,7 +122,14 @@ export async function updateCategory(
   try {
     const category = await Category.findByIdAndUpdate(
       id,
-      { ...input, slug },
+      {
+        $set: { ...input, slug },
+        $unset: Object.fromEntries(
+          (["parent", "description", "image"] as const)
+            .filter((field) => input[field] === undefined)
+            .map((field) => [field, 1]),
+        ),
+      },
       { returnDocument: "after", runValidators: true },
     )
       .lean()

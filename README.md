@@ -70,6 +70,16 @@ npm run dev
 
 ## Decisions
 
+- Section 11.5 lists active and inactive users with only name, email, role and activity fields. Roles are read-only; the authenticated admin identity is checked again in the user service to reject self-deactivation, including alternate ObjectId casing.
+
+- Admin orders use the existing paginated order service; customer and status-history actor names are read with a minimal name/email/mobile projection, with a Persian fallback for deleted users.
+
+- Admin category lists include inactive entries. Parents must be root categories, and categories with children cannot become children. Clearing optional fields removes stored values. Deletion rejects linked products or children, including inactive entries.
+
+- Admin product editing keeps sold count, database IDs and timestamps read-only; optional SKU and previous price can be cleared. Image ordering uses explicit move buttons and deletion uses browser confirmation. Existing categories (including inactive ones) are selectable without adding category management.
+
+- The admin dashboard links to product, category, order and user management. Today and the current Persian month use Asia/Tehran boundaries; revenue sums successful payments by paidAt in order.service.ts. Low stock includes inactive and zero-stock products. Recent customer names use the order shipping snapshot.
+
 - Signed-in visitors to login/register are redirected to /account; the store header links to the account for authenticated visitors and to login for guests.
 
 - Stage 10: order ownership is checked in the proxy before streaming to preserve an actual HTTP 404; the detail page and cancellation service independently enforce the authenticated owner. The proxy serves the existing public error page from the configured NEXT_PUBLIC_SITE_URL with an explicit 404 to keep the HTTP status independent of React streaming. Address default selection is atomic; deleting the default leaves no default until the customer selects one. Checkout additions retain their existing default behavior.

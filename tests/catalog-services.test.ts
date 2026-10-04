@@ -23,6 +23,9 @@ import {
   getCategoryBySlug,
   getCategoryTree,
   listCategories,
+  listCategoriesAdmin,
+  getCategoryAdmin,
+  updateCategory,
 } from "@/services/category.service";
 import {
   createProduct,
@@ -33,6 +36,8 @@ import {
   listProducts,
   listProductsAdmin,
   updateProduct,
+  getProductAdmin,
+  setProductActive,
 } from "@/services/product.service";
 
 let server: Awaited<ReturnType<typeof startTestMongo>>;
@@ -155,6 +160,73 @@ describe("public catalog queries", () => {
 });
 
 describe("catalog management services", () => {
+  it("lists inactive categories, clears optional fields and enforces parent depth", async () => {
+    const root = await createCategory({
+      name: "ریشه",
+      order: 0,
+      isActive: false,
+    });
+    const child = await createCategory({
+      name: "فرزند",
+      parent: root.id,
+      description: "توضیح",
+      image: "/test.png",
+      order: 0,
+      isActive: true,
+    });
+    expect((await listCategoriesAdmin()).length).toBe(2);
+    expect(await getCategoryAdmin(root.id)).toMatchObject({ isActive: false });
+    await expect(
+      updateCategory(root.id, {
+        name: root.name,
+        parent: child.id,
+        order: 0,
+        isActive: false,
+      }),
+    ).rejects.toThrow();
+    const other = await createCategory({
+      name: "ریشه دیگر",
+      order: 0,
+      isActive: true,
+    });
+    await expect(
+      updateCategory(root.id, {
+        name: root.name,
+        parent: other.id,
+        order: 0,
+        isActive: false,
+      }),
+    ).rejects.toThrow();
+    await expect(
+      updateCategory(child.id, {
+        name: child.name,
+        parent: child.id,
+        order: 0,
+        isActive: true,
+      }),
+    ).rejects.toThrow();
+    const updated = await updateCategory(child.id, {
+      name: child.name,
+      slug: child.slug,
+      order: 2,
+      isActive: false,
+    });
+    expect(updated.parent).toBeUndefined();
+    expect(updated.description).toBeUndefined();
+    expect(updated.image).toBeUndefined();
+    await deleteCategory(child.id);
+    expect(await getCategoryAdmin(child.id)).toBeNull();
+  });
+
+  it("rejects deleting categories linked to active or inactive products", async () => {
+    const { refrigerators, freezers } = await createFixtureCatalog();
+    for (const category of [refrigerators, freezers]) {
+      await expect(deleteCategory(category.id)).rejects.toMatchObject({
+        code: "CONFLICT",
+      });
+      expect(await getCategoryAdmin(category.id)).not.toBeNull();
+    }
+  });
   it("creates category trees and prevents deleting non-empty categories", async () => {
     const parent = await createCategory({
       name: "خانگی",
@@ -216,4 +288,39 @@ describe("catalog management services", () => {
       expect.objectContaining({ code: "NOT_FOUND" }),
     );
   });
+});
+
+it("clears optional fields, preserves sales and hides deactivated products", async () => {
+  const { products } = await createFixtureCatalog();
+  const id = products[0].id;
+  const product = await getProductAdmin(id);
+  if (!product) throw new Error("Missing fixture");
+  const input = {
+    title: product.title,
+    slug: product.slug,
+    description: product.description,
+    price: product.price,
+    stock: product.stock,
+    images: [...product.images, "/test.jpg"],
+    category: product.category.id,
+    attributes: [{ key: "capacity", value: "large" }],
+    isActive: true,
+    isFeatured: false,
+  };
+  await updateProduct(id, {
+    ...input,
+    compareAtPrice: input.price + 1000,
+    sku: "TEST-OPTIONAL",
+  });
+  const updated = await updateProduct(id, input);
+  expect(updated.compareAtPrice).toBeUndefined();
+  expect(updated.sku).toBeUndefined();
+  expect(updated.soldCount).toBe(product.soldCount);
+  expect(updated.images).toEqual(input.images);
+  await setProductActive(id, false);
+  expect(await getProductBySlug(product.slug)).toBeNull();
+  expect(await getProductAdmin(id)).toMatchObject({ isActive: false });
+  await expect(
+    updateProduct(id, { ...input, compareAtPrice: input.price - 1 }),
+  ).rejects.toThrow();
 });

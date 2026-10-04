@@ -191,6 +191,20 @@ export async function getOrderAdmin(id: string) {
   return readOrder({ _id: objectIdSchema.parse(id) });
 }
 
+export async function getOrderCustomersAdmin(ids: string[]) {
+  const validIds = ids.map((id) => objectIdSchema.parse(id));
+  await connectDB();
+  const customers = await User.find({ _id: { $in: validIds } })
+    .select("name email mobile")
+    .lean();
+  return customers.map((customer) => ({
+    id: String(customer._id),
+    name: customer.name,
+    email: customer.email,
+    mobile: customer.mobile,
+  }));
+}
+
 const transitions: Record<OrderStatus, OrderStatus[]> = {
   pending: ["processing", "cancelled"],
   processing: ["shipped", "cancelled"],
@@ -366,6 +380,20 @@ export async function attachOrderPayment(
 export function calculateShipping(subtotal: number) {
   const env = getEnv();
   return subtotal >= env.FREE_SHIPPING_THRESHOLD ? 0 : env.SHIPPING_FLAT_FEE;
+}
+
+export async function getDashboardRevenue(from: Date, through: Date) {
+  await connectDB();
+  const result = await Order.aggregate<{ total: number }>([
+    {
+      $match: {
+        "payment.status": "paid",
+        "payment.paidAt": { $gte: from, $lte: through },
+      },
+    },
+    { $group: { _id: null, total: { $sum: "$total" } } },
+  ]);
+  return result[0]?.total ?? 0;
 }
 
 export function calculateCartTotals(
