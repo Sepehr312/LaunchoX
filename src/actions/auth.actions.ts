@@ -5,6 +5,7 @@ import { unstable_rethrow } from "next/navigation";
 import {
   signIn,
   signOut,
+  getCurrentUser as checkCurrentUser,
   requireUser as checkUser,
   requireAdmin as checkAdmin,
   consumeCurrentAuthAttempt,
@@ -104,4 +105,8 @@ export async function requireUser() {
 }
 export async function requireAdmin() {
   return await checkAdmin();
+}
+
+export async function getCurrentUser() {
+  return checkCurrentUser();
 }

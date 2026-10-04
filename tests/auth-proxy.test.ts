@@ -59,7 +59,7 @@ it.each(["/login", "/register"])(
   "redirects authenticated visitors from %s",
   async (path) => {
     const response = await proxy(request(path, true), event);
-    expect(response?.headers.get("location")).toBe("http://localhost:3000/");
+    expect(response?.headers.get("location")).toBe("http://localhost:3000/account");
   },
 );
 it("passes authenticated requests and overwrites spoofed current-path headers", async () => {

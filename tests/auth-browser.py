@@ -101,14 +101,15 @@ with sync_playwright() as playwright:
         check_mobile(page)
         for auth_page in ["/login", "/register"]:
             page.goto(BASE + auth_page)
-            expect(page).to_have_url(BASE + "/")
+            expect(page).to_have_url(BASE + "/account")
+            expect(page.locator('header a[aria-label="حساب کاربری"]')).to_have_attribute("href", "/account")
         if role == "customer":
             response = page.goto(BASE + "/admin")
             assert response.status == 404, f"Expected actual 404, got {response.status}"
             expect(page.get_by_role("heading", name="صفحه پیدا نشد")).to_be_visible()
             assert "پنل مدیریت" not in page.locator("body").inner_text()
         page.goto(BASE + target)
-        page.get_by_role("button", name="خروج", exact=True).click()
+        page.get_by_role("button", name=re.compile(r"^خروج(?: از حساب)?$")).click()
         expect(page).to_have_url(BASE + "/", timeout=30000)
         assert not session(ctx)
         page.goto(BASE + "/account")
@@ -148,7 +149,7 @@ with sync_playwright() as playwright:
     page.get_by_role("button", name="ثبت‌نام", exact=True).click()
     expect(page).to_have_url(BASE + "/account", timeout=30000)
     assert session(registered)["user"]["role"] == "customer"
-    page.get_by_role("button", name="خروج", exact=True).click()
+    page.get_by_role("button", name=re.compile(r"^خروج(?: از حساب)?$")).click()
     expect(page).to_have_url(BASE + "/")
     form_login(page, email, "Customer123!")
     expect(page).to_have_url(BASE + "/account", timeout=30000)

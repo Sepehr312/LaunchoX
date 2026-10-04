@@ -70,6 +70,8 @@ npm run dev
 
 ## Decisions
 
+- Signed-in visitors to login/register are redirected to /account; the store header links to the account for authenticated visitors and to login for guests.
+
 - Stage 10: order ownership is checked in the proxy before streaming to preserve an actual HTTP 404; the detail page and cancellation service independently enforce the authenticated owner. The proxy serves the existing public error page from the configured NEXT_PUBLIC_SITE_URL with an explicit 404 to keep the HTTP status independent of React streaming. Address default selection is atomic; deleting the default leaves no default until the customer selects one. Checkout additions retain their existing default behavior.
 - Stage 10 browser acceptance: run `python tests/account-browser.py` with `LAUNCHO_ACCOUNT_TEST_DB` ending in `/launchox_stage10_browser` and `LAUNCHO_ACCOUNT_TEST_URL` pointing to a production server for that isolated seeded database. This test resets its fixture users/orders; never use the application database.
 

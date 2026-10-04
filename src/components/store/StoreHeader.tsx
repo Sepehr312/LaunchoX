@@ -26,7 +26,8 @@ const mainLinks: { href?: string; label: string }[] = [
 export const StoreHeader: (props: {
   categories: CategoryDTO[];
   cartCount: number;
-}) => React.ReactNode = ({ cartCount }) => {
+  authenticated?: boolean;
+}) => React.ReactNode = ({ cartCount, authenticated = false }) => {
   const pathname = usePathname();
 
   return (
@@ -82,9 +83,13 @@ export const StoreHeader: (props: {
             />
           </form>
 
-          <Link href="/login" className={`header-action ${styles.account}`}>
+          <Link
+            href={authenticated ? "/account" : "/login"}
+            className={`header-action ${styles.account}`}
+            aria-label={authenticated ? "حساب کاربری" : "ورود / ثبت‌نام"}
+          >
             <UserIcon className="size-5" />
-            <span>ورود / ثبت‌نام</span>
+            <span>{authenticated ? "حساب کاربری" : "ورود / ثبت‌نام"}</span>
           </Link>
         </div>
 
@@ -133,7 +138,9 @@ export const StoreHeader: (props: {
                   </span>
                 ),
               )}
-              <Link href="/login">ورود / حساب کاربری</Link>
+              <Link href={authenticated ? "/account" : "/login"}>
+                {authenticated ? "حساب کاربری" : "ورود / ثبت‌نام"}
+              </Link>
             </nav>
           </div>
         </details>
