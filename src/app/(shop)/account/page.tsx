@@ -1,20 +1,73 @@
+import { toPersianDigits } from "@/lib/format";
 import type { Metadata } from "next";
 import { requireUser, logoutAction } from "@/actions/auth.actions";
-import { Card } from "@/components/ui/Card";
+import { getProfile } from "@/services/user.service";
+import { AccountForm } from "@/components/account/AccountForm";
+import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-
-export const metadata: Metadata = { title: "حساب کاربری | لانچ‌اوکس" };
+export const metadata: Metadata = { title: "پروفایل و امنیت | لانچ‌اوکس" };
 export default async function AccountPage() {
-  const user = await requireUser();
+  const session = await requireUser();
+  const user = await getProfile(session.id);
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-8">
-      <Card>
-        <h1 className="text-xl font-bold">حساب کاربری</h1>
-        <p className="my-4">{user.name}</p>
-        <form action={logoutAction}>
-          <Button type="submit">خروج</Button>
-        </form>
-      </Card>
-    </main>
+    <div className="grid items-start gap-6 lg:grid-cols-2">
+      <section className="checkout-panel">
+        <h2 className="mb-6 text-xl font-bold">اطلاعات شخصی</h2>
+        <p className="mb-5 text-sm break-all text-muted">{user.email}</p>
+        <AccountForm operation="profile">
+          <label className="grid gap-2">
+            نام
+            <Input
+              name="name"
+              defaultValue={user.name}
+              required
+              minLength={2}
+              maxLength={60}
+              autoComplete="name"
+            />
+          </label>
+          <label className="grid gap-2">
+            موبایل
+            <Input
+              name="mobile"
+              defaultValue={
+                user.mobile ? toPersianDigits(user.mobile) : undefined
+              }
+              inputMode="tel"
+              autoComplete="tel"
+            />
+          </label>
+        </AccountForm>
+      </section>
+      <section className="checkout-panel">
+        <h2 className="mb-6 text-xl font-bold">تغییر رمز عبور</h2>
+        <AccountForm operation="password">
+          {[
+            ["currentPassword", "رمز عبور فعلی"],
+            ["password", "رمز عبور جدید"],
+            ["confirmPassword", "تکرار رمز عبور جدید"],
+          ].map(([name, label]) => (
+            <label key={name} className="grid gap-2">
+              {label}
+              <Input
+                type="password"
+                name={name}
+                required
+                autoComplete={
+                  name === "currentPassword"
+                    ? "current-password"
+                    : "new-password"
+                }
+              />
+            </label>
+          ))}
+        </AccountForm>
+      </section>
+      <form action={logoutAction}>
+        <Button variant="secondary" type="submit">
+          خروج از حساب
+        </Button>
+      </form>
+    </div>
   );
 }

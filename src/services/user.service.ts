@@ -1,4 +1,6 @@
 import "server-only";
+import { compare, hash } from "bcryptjs";
+import { profileSchema, changePasswordSchema } from "@/validations/account";
 import { Types } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
@@ -44,4 +46,115 @@ export async function addAddress(
       "CONFLICT",
     );
   return updated.addresses.map((address) => toDTO(address));
+}
+
+export async function getProfile(userId: string) {
+  await connectDB();
+  const user = await User.findOne({
+    _id: objectIdSchema.parse(userId),
+    isActive: true,
+  }).lean();
+  if (!user) throw new AppError("کاربر پیدا نشد", "NOT_FOUND");
+  return toDTO(user);
+}
+export async function updateProfile(userId: string, input: unknown) {
+  const data = profileSchema.parse(input);
+  await connectDB();
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: objectIdSchema.parse(userId), isActive: true },
+      {
+        $set: {
+          name: data.name,
+          ...(data.mobile ? { mobile: data.mobile } : {}),
+        },
+        ...(!data.mobile ? { $unset: { mobile: 1 } } : {}),
+      },
+      { returnDocument: "after", runValidators: true },
+    ).lean();
+    if (!user) throw new AppError("کاربر پیدا نشد", "NOT_FOUND");
+    return toDTO(user);
+  } catch (error: unknown) {
+    if (error instanceof Error && "code" in error && error.code === 11000)
+      throw new AppError("این شمارهٔ موبایل قبلاً ثبت شده است", "CONFLICT");
+    throw error;
+  }
+}
+export async function changePassword(userId: string, input: unknown) {
+  const data = changePasswordSchema.parse(input);
+  await connectDB();
+  const user = await User.findOne({
+    _id: objectIdSchema.parse(userId),
+    isActive: true,
+  })
+    .select("+passwordHash")
+    .lean();
+  if (!user || !(await compare(data.currentPassword, user.passwordHash)))
+    throw new AppError("رمز عبور فعلی صحیح نیست", "VALIDATION");
+  const result = await User.updateOne(
+    { _id: user._id, isActive: true, passwordHash: user.passwordHash },
+    { $set: { passwordHash: await hash(data.password, 12) } },
+  );
+  if (!result.modifiedCount)
+    throw new AppError("رمز تغییر کرده است؛ دوباره تلاش کنید", "CONFLICT");
+}
+export async function manageAddress(
+  userId: string,
+  operation: "edit" | "delete" | "default",
+  id: string,
+  input: unknown = {},
+) {
+  const owner = objectIdSchema.parse(userId);
+  const addressId = objectIdSchema.parse(id);
+  await connectDB();
+  const filter = { _id: owner, isActive: true, "addresses._id": addressId };
+  let updated;
+  if (operation === "delete") {
+    updated = await User.findOneAndUpdate(
+      filter,
+      { $pull: { addresses: { _id: addressId } } },
+      { returnDocument: "after" },
+    ).lean();
+  } else if (operation === "default") {
+    // One atomic pipeline prevents concurrent requests from creating two defaults.
+    updated = await User.findOneAndUpdate(
+      filter,
+      [
+        {
+          $set: {
+            addresses: {
+              $map: {
+                input: "$addresses",
+                as: "address",
+                in: {
+                  $mergeObjects: [
+                    "$$address",
+                    {
+                      isDefault: {
+                        $eq: ["$$address._id", new Types.ObjectId(addressId)],
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      ],
+      { returnDocument: "after", updatePipeline: true },
+    ).lean();
+  } else {
+    const { isDefault: _isDefault, ...data } = addressSchema.parse(input);
+    void _isDefault;
+    const fields = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [`addresses.$.${key}`, value]),
+    );
+    updated = await User.findOneAndUpdate(
+      filter,
+      { $set: fields },
+      { returnDocument: "after", runValidators: true },
+    ).lean();
+  }
+  if (!updated) throw new AppError("آدرس پیدا نشد", "NOT_FOUND");
+  return toDTO(updated).addresses;
 }

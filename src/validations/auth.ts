@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { emailSchema, requiredString } from "@/validations/common";
 
-const passwordSchema = z
+export const passwordSchema = z
   .string()
   .min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد")
   .regex(/\p{L}/u, "رمز عبور باید دست‌کم یک حرف داشته باشد")

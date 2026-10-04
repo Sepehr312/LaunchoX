@@ -70,8 +70,11 @@ npm run dev
 
 ## Decisions
 
+- Stage 10: order ownership is checked in the proxy before streaming to preserve an actual HTTP 404; the detail page and cancellation service independently enforce the authenticated owner. The proxy serves the existing public error page from the configured NEXT_PUBLIC_SITE_URL with an explicit 404 to keep the HTTP status independent of React streaming. Address default selection is atomic; deleting the default leaves no default until the customer selects one. Checkout additions retain their existing default behavior.
+- Stage 10 browser acceptance: run `python tests/account-browser.py` with `LAUNCHO_ACCOUNT_TEST_DB` ending in `/launchox_stage10_browser` and `LAUNCHO_ACCOUNT_TEST_URL` pointing to a production server for that isolated seeded database. This test resets its fixture users/orders; never use the application database.
+
 - مرحلهٔ نهم: ثبت سفارش روی MongoDB مستقل نیز کار می‌کند؛ رزرو اقلام اتمیک و شکست‌ها با بازگرداندن موجودی جبران می‌شوند. قفل سبد مانع checkout تکراری است و ویرایش هم‌زمان سبد باعث rollback می‌شود. callback با مالک سفارش محدود و تغییر پرداخت با شرط وضعیت قبلی انجام می‌شود تا callback تکراری موجودی و soldCount را دوباره تغییر ندهد.
-- افزودن و انتخاب آدرس فقط داخل checkout اضافه شده؛ صفحات حساب مرحلهٔ دهم ساخته نشده‌اند. آدرس جدید پیش‌فرض موجود را تغییر نمی‌دهد. خطای stub درگاه واقعی برای رعایت AGENTS.md فارسی است؛ fake در production پیش از رزرو سفارش رد می‌شود.
+- در مرحلهٔ نهم افزودن و انتخاب آدرس داخل checkout اضافه شد؛ مرحلهٔ دهم مدیریت کامل آدرس را در حساب کاربری اضافه می‌کند. آدرس جدید پیش‌فرض موجود را تغییر نمی‌دهد. خطای stub درگاه واقعی برای رعایت AGENTS.md فارسی است؛ fake در production پیش از رزرو سفارش رد می‌شود.
 - تست مرورگری مرحلهٔ نهم: روی دیتابیس موقت seedشده اجرا شود؛ `LAUNCHO_CHECKOUT_TEST_DB` باید URI دیتابیس مستقل با نام `launchox_stage9_browser` باشد و `LAUNCHO_CHECKOUT_TEST_URL` آدرس سرور توسعهٔ همان دیتابیس است. دستور `python tests/checkout-browser.py` مسیر خرید، انصراف، مالکیت، callback تکراری و RTL/تم/عرض‌ها را بررسی می‌کند.
 
 - مرحلهٔ هشتم: جمع مبالغ و ارسال سبد فقط در بخش محاسبات `order.service.ts` انجام می‌شود؛ هیچ منطق ثبت سفارش یا پرداخت اضافه نشده است. شمارنده مجموع تعداد واحدهای قابل‌خرید است. خواندن سبد اقلام نامعتبر را کنار می‌گذارد و کاهش موجودی را با هشدار نمایش می‌دهد، بدون بازنویسی هم‌زمان دادهٔ سبد. هدر برای خواندن کوکی و شمارنده پویا است. کنترل تعداد با انتخاب‌گر محدود به موجودی و ۱۰ انجام می‌شود؛ افزودن تعداد اضافی در سرور نیز محدود می‌شود.

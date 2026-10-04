@@ -1,5 +1,9 @@
-import { beforeEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ next: vi.fn() }));
+import { beforeEach, afterEach, expect, it, vi } from "vitest";
+const mocks = vi.hoisted(() => ({ next: vi.fn(), order: vi.fn() }));
+vi.mock("@/services/order.service", () => ({ getOrderForUser: mocks.order }));
+vi.mock("@/lib/env", () => ({
+  getEnv: () => ({ NEXT_PUBLIC_SITE_URL: "http://localhost:3020" }),
+}));
 vi.mock("@/lib/auth.config", () => ({
   getAuthConfig: () => ({ providers: [] }),
 }));
@@ -9,11 +13,14 @@ vi.mock("next-auth", () => ({
   }),
 }));
 vi.mock("next/server", () => ({
-  NextResponse: {
-    redirect: (url: URL) => Response.redirect(url),
-    next: mocks.next,
+  NextResponse: class extends Response {
+    static redirect(url: URL) {
+      return Response.redirect(url);
+    }
+    static next = mocks.next;
   },
 }));
+import { AppError } from "@/lib/errors";
 import proxy from "@/proxy";
 
 function request(path: string, authenticated = false) {
@@ -26,8 +33,13 @@ function request(path: string, authenticated = false) {
 const event = {} as Parameters<typeof proxy>[1];
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(new Response("صفحه پیدا نشد")),
+  );
   mocks.next.mockReturnValue(new Response(null));
 });
+afterEach(() => vi.unstubAllGlobals());
 it("exports a callable proxy even when Auth.js resolves its wrapper asynchronously", async () => {
   expect(typeof proxy).toBe("function");
   const response = await proxy(request("/account?tab=orders"), event);
@@ -55,4 +67,37 @@ it("passes authenticated requests and overwrites spoofed current-path headers", 
   expect(
     mocks.next.mock.calls[0][0].request.headers.get("x-launchox-path"),
   ).toBe("/account?tab=orders");
+});
+
+it("returns HTTP 404 for foreign orders before streaming", async () => {
+  mocks.order.mockRejectedValueOnce(
+    new AppError("سفارش پیدا نشد", "NOT_FOUND"),
+  );
+  const response = await proxy(
+    request("/account/orders/507f1f77bcf86cd799439011", true),
+    event,
+  );
+  expect(response?.status).toBe(404);
+  expect(mocks.order).toHaveBeenCalledWith("user", "507f1f77bcf86cd799439011");
+});
+it("rejects malformed order IDs without a database lookup", async () => {
+  expect(
+    (await proxy(request("/account/orders/invalid", true), event))?.status,
+  ).toBe(404);
+  expect(mocks.order).not.toHaveBeenCalled();
+});
+it("passes owned orders and propagates database errors", async () => {
+  mocks.order.mockResolvedValueOnce({ id: "owned" });
+  expect(
+    (
+      await proxy(
+        request("/account/orders/507f1f77bcf86cd799439011", true),
+        event,
+      )
+    )?.status,
+  ).toBe(200);
+  mocks.order.mockRejectedValueOnce(new Error("Database unavailable"));
+  await expect(
+    proxy(request("/account/orders/507f1f77bcf86cd799439011", true), event),
+  ).rejects.toThrow("Database unavailable");
 });
