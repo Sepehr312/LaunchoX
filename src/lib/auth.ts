@@ -1,12 +1,14 @@
 import "server-only";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { getAuthConfig } from "@/lib/auth.config";
 import { consumeAuthAttempt, getClientIp } from "@/lib/rate-limit";
 import { authenticateUser } from "@/services/auth.service";
 import { loginSchema, safeCallbackUrl } from "@/validations/auth";
+import { guestIdSchema } from "@/validations/cart";
+import { mergeGuestCart } from "@/services/cart.service";
 
 class TooManyAttempts extends CredentialsSignin {
   code = "rate_limit";
@@ -22,7 +24,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
         if (!consumeAuthAttempt("login", getClientIp(request.headers)))
           throw new TooManyAttempts();
         const parsed = loginSchema.safeParse(credentials);
-        return parsed.success ? authenticateUser(parsed.data) : null;
+        const user = parsed.success
+          ? await authenticateUser(parsed.data)
+          : null;
+        if (user) {
+          const store = await cookies();
+          const guest = guestIdSchema.safeParse(store.get("cart_id")?.value);
+          if (guest.success) await mergeGuestCart(user.id, guest.data);
+          if (store.has("cart_id")) store.delete("cart_id");
+        }
+        return user;
       },
     }),
   ],

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/store/ProductGallery";
+import { CartForm } from "@/components/store/CartForm";
 import { ProductGrid } from "@/components/store/ProductGrid";
 import { SectionHeading } from "@/components/store/SectionHeading";
 import { ChevronIcon, EnergyIcon, ShieldIcon } from "@/components/store/Icons";
@@ -83,6 +84,7 @@ export default async function ProductPage({
               </span>
               {product.sku && <span>شناسه: {product.sku}</span>}
             </div>
+            <CartForm product={product.id} stock={product.stock} />
             <div className="product-assurance">
               <div>
                 <ShieldIcon className="size-6" />

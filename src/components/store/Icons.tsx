@@ -2,6 +2,16 @@ import type { ComponentProps } from "react";
 
 type IconProps = ComponentProps<"svg">;
 
+export function CartIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 3h2l3 12h10l3-9H6" />
+      <circle cx="9" cy="20" r="1" />
+      <circle cx="18" cy="20" r="1" />
+    </Icon>
+  );
+}
+
 function Icon({ children, ...props }: IconProps) {
   return (
     <svg

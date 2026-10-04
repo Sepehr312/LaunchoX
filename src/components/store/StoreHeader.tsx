@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./StoreHeader.module.css";
 import type { CategoryDTO } from "@/types/dto";
+import { toPersianDigits } from "@/lib/format";
+import { CartIcon } from "@/components/store/Icons";
 import {
   MenuIcon,
   SearchIcon,
@@ -23,7 +25,8 @@ const mainLinks: { href?: string; label: string }[] = [
 
 export const StoreHeader: (props: {
   categories: CategoryDTO[];
-}) => React.ReactNode = () => {
+  cartCount: number;
+}) => React.ReactNode = ({ cartCount }) => {
   const pathname = usePathname();
 
   return (
@@ -61,6 +64,14 @@ export const StoreHeader: (props: {
         </nav>
 
         <div className={styles.actions}>
+          <Link
+            href="/cart"
+            className="header-action"
+            aria-label={`سبد خرید، ${toPersianDigits(cartCount)} قلم`}
+          >
+            <CartIcon className="size-5" />
+            <span data-cart-count>{toPersianDigits(cartCount)}</span>
+          </Link>
           <form action="/search" className={`header-search ${styles.search}`}>
             <SearchIcon className="size-5 shrink-0" />
             <input

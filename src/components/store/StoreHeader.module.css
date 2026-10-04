@@ -167,4 +167,7 @@
   .account {
     gap: 0.25rem;
   }
+  .account span {
+    display: none;
+  }
 }
