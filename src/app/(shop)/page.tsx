@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { StoreHero } from "@/components/store/StoreHero";
 import { ProductGrid } from "@/components/store/ProductGrid";
+import { BestSellingProducts } from "@/components/store/BestSellingProducts";
 import { SectionHeading } from "@/components/store/SectionHeading";
 import { ChevronIcon } from "@/components/store/Icons";
-import { getFeaturedProducts, listProducts } from "@/services/product.service";
+import { listProducts } from "@/services/product.service";
 
 export const revalidate = 300;
 export const metadata: Metadata = {
@@ -14,29 +15,15 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [featured, newest] = await Promise.all([
-    getFeaturedProducts(4),
+  const [bestselling, newest] = await Promise.all([
+    listProducts({ page: 1, limit: 4, sort: "bestselling" }),
     listProducts({ page: 1, limit: 8, sort: "newest" }),
   ]);
   return (
     <main>
       <StoreHero />
 
-      <section className="store-section pt-0">
-        <div className="store-shell">
-          <SectionHeading
-            eyebrow="منتخب کارشناسان"
-            title="محصولات ویژه"
-            description="مدل‌هایی با توازن دقیق طراحی، ظرفیت و مصرف انرژی"
-            href="/products?sort=bestselling"
-          />
-          <ProductGrid
-            products={featured}
-            emptyTitle="هنوز محصول ویژه‌ای وجود ندارد"
-            emptyMessage="هنوز محصول ویژه‌ای برای نمایش آماده نشده است."
-          />
-        </div>
-      </section>
+      <BestSellingProducts products={bestselling.items} />
 
       <section className="showroom-story">
         <div className="store-shell grid items-center gap-8 lg:grid-cols-2">
@@ -79,7 +66,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="frostic-buying-guide" className="store-section scroll-mt-24 pt-0">
+      <section
+        id="frostic-buying-guide"
+        className="store-section scroll-mt-24 pt-0"
+      >
         <div className="store-shell">
           <SectionHeading eyebrow="پیش از انتخاب" title="پرسش‌های پرتکرار" />
           <div className="faq-grid">

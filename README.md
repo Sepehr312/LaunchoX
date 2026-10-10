@@ -129,6 +129,10 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The header theme preference applies to the document root on every route, including page backgrounds, text, forms, and footer. An early script restores it before paint; system appearance remains the default until a manual choice is saved.
+
+- Storefront product grids reuse the approved Arctic preview card layout with real product attributes, links, stock, discounts, and cart actions; the homepage glass panel shows four active products ordered by soldCount. Product likes are stored in this browser, shared across cards and tabs, without an account favorites page or backend.
+
 - The homepage reuses the approved Arctic category carousel below the Benefits Bar, with the same eight visual shortcuts and shared header theme as `/test`; catalog data and category management remain unchanged.
 
 - Preview category rows size cards to show a whole number of items at rest and snap to complete cards after scrolling; glass edge buttons advance by one visible group. Touch, trackpad, and mouse wheel remain supported, and vertical wheel input scrolls the page again at the row boundaries.
