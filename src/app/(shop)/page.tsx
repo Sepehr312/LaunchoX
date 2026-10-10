@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { FeatureStrip } from "@/components/store/FeatureStrip";
-import { HeroCarousel } from "@/components/store/HeroCarousel";
+import { StoreHero } from "@/components/store/StoreHero";
 import { ProductGrid } from "@/components/store/ProductGrid";
 import { SectionHeading } from "@/components/store/SectionHeading";
 import { ChevronIcon, SnowflakeIcon } from "@/components/store/Icons";
@@ -23,7 +23,7 @@ export default async function HomePage() {
   ]);
   return (
     <main>
-      <HeroCarousel />
+      <StoreHero />
       <div className="store-shell relative z-20 -mt-5 sm:-mt-8">
         <FeatureStrip />
       </div>
@@ -120,7 +120,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="store-section pt-0">
+      <section id="frostic-buying-guide" className="store-section scroll-mt-24 pt-0">
         <div className="store-shell">
           <SectionHeading eyebrow="پیش از انتخاب" title="پرسش‌های پرتکرار" />
           <div className="faq-grid">

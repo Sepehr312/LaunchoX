@@ -129,7 +129,9 @@ npm run seed -- --reset
 
 ## Decisions
 
-- All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle remains scoped to the header.
+- The homepage reuses the approved three-slide Frostic preview with mobile playback and swipe; its theme follows the shared header toggle, and its buying-guide link targets the existing homepage FAQ.
+
+- All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle controls the header and homepage hero.
 
 - راهنمای مشترک طراحی صفحات فروشگاه یخچال خانگی در [docs/UI-GUIDE.md](docs/UI-GUIDE.md) ثبت شده است؛ پس‌زمینه‌های روز/شب تأییدشده و عکس منتخب یخچال در `docs/assets/` نگه‌داری می‌شوند. ذخیرهٔ این مراجع به معنی پیاده‌سازی در سایت نیست.
 
