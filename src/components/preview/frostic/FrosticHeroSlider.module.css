@@ -280,6 +280,10 @@ button.number {
   .navigationLabel {
     display: none;
   }
+  .hero:has(+ [data-arctic-benefits]) .navigation {
+    /* Clear the overlapping Benefits Bar with an 8px gap. */
+    inset-block-end: 48px;
+  }
   .numbers {
     direction: ltr;
     gap: 0;

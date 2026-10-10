@@ -2,7 +2,6 @@ import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { FeatureStrip } from "@/components/store/FeatureStrip";
 import { StoreHero } from "@/components/store/StoreHero";
 import { ProductGrid } from "@/components/store/ProductGrid";
 import { SectionHeading } from "@/components/store/SectionHeading";
@@ -24,9 +23,6 @@ export default async function HomePage() {
   return (
     <main>
       <StoreHero />
-      <div className="store-shell relative z-20 -mt-5 sm:-mt-8">
-        <FeatureStrip />
-      </div>
 
       <section className="store-section">
         <div className="store-shell">
