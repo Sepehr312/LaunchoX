@@ -129,6 +129,10 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The homepage reuses the approved Arctic category carousel below the Benefits Bar, with the same eight visual shortcuts and shared header theme as `/test`; catalog data and category management remain unchanged.
+
+- Preview category rows size cards to show a whole number of items at rest and snap to complete cards after scrolling; glass edge buttons advance by one visible group. Touch, trackpad, and mouse wheel remain supported, and vertical wheel input scrolls the page again at the row boundaries.
+
 - The homepage reuses the approved three-slide Frostic preview with mobile playback and swipe; its theme follows the shared header toggle, and its buying-guide link targets the existing homepage FAQ.
 
 - All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle controls the header and homepage hero.
