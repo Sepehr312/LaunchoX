@@ -1,9 +1,12 @@
+import { getEnv } from "@/lib/env";
 import { requireAdmin } from "@/lib/auth";
 import { listUsersAdmin } from "@/services/admin-user.service";
 import { UserActiveForm } from "@/components/admin/UserActiveForm";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "مدیریت کاربران | لانچ‌اوکس" };
+export const metadata = {
+  title: `مدیریت کاربران | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 
 export default async function Users() {
   const admin = await requireAdmin();

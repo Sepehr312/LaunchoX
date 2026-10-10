@@ -1,3 +1,11 @@
+import { PageLoading } from "@/components/ui/PageLoading";
+
 export default function Loading() {
-  return <p role="status">در حال دریافت اطلاعات محصول…</p>;
+  return (
+    <PageLoading
+      title="در حال دریافت اطلاعات برای ویرایش محصول…"
+      view="form"
+      admin
+    />
+  );
 }

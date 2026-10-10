@@ -7,7 +7,7 @@ with sync_playwright() as p:
         page = browser.new_page(extra_http_headers={'x-forwarded-for':'127.'+'.'.join(str(b) for b in uuid.uuid4().bytes[:3])}); page.goto(BASE+'/login?callbackUrl=/admin/categories')
         page.get_by_label('ایمیل', exact=True).fill(role+'@example.com'); page.get_by_label('رمز عبور', exact=True).fill('Browser123!')
         page.get_by_role('button', name='ورود', exact=True).click(); page.wait_for_url(BASE+'/admin/categories'); return page
-    customer = login('customer'); expect(customer.get_by_text('صفحه پیدا نشد', exact=False).first).to_be_visible()
+    customer = login('customer'); expect(customer.get_by_text('صفحه یا مورد موردنظر پیدا نشد', exact=False).first).to_be_visible()
     page = login('admin'); errors=[]; page.on('pageerror', lambda e: errors.append(str(e)))
     expect(page.get_by_text('دسته‌بندی‌ای ثبت نشده است.', exact=True)).to_be_visible()
     def create(name, parent=None):

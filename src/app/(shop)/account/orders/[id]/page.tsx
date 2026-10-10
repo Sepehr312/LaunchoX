@@ -1,3 +1,5 @@
+import { getEnv } from "@/lib/env";
+import { cache } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -8,14 +10,9 @@ import { AppError } from "@/lib/errors";
 import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
 import { orderLabels, paymentLabels } from "@/types/order-labels";
 import { AccountForm } from "@/components/account/AccountForm";
-export const metadata: Metadata = { title: "جزئیات سفارش | لانچ‌اوکس" };
-export default async function OrderPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+const loadOrder = cache(async (id: string) => {
   const user = await requireUser();
-  const parsed = objectIdSchema.safeParse((await params).id);
+  const parsed = objectIdSchema.safeParse(id);
   if (!parsed.success) notFound();
   const order = await getOrderForUser(user.id, parsed.data).catch(
     (error: unknown) => {
@@ -23,6 +20,26 @@ export default async function OrderPage({
       throw error;
     },
   );
+  return order;
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const order = await loadOrder((await params).id);
+  return {
+    title: `سفارش ${toPersianDigits(order.orderNumber)} | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+  };
+}
+
+export default async function OrderPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const order = await loadOrder((await params).id);
   const address = order.shippingAddress;
   return (
     <div className="grid gap-6">

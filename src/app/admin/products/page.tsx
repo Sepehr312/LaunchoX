@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import Link from "next/link";
 import Image from "next/image";
 import { requireAdmin } from "@/lib/auth";
@@ -7,7 +8,9 @@ import { Pagination } from "@/components/store/Pagination";
 import { ProductRowActions } from "@/components/admin/ProductRowActions";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "مدیریت محصولات | لانچ‌اوکس" };
+export const metadata = {
+  title: `مدیریت محصولات | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function ProductsAdmin({
   searchParams,
 }: {
@@ -48,7 +51,11 @@ export default async function ProductsAdmin({
       </form>
       <p>{toPersianDigits(result.total)} محصول</p>
       {!result.items.length ? (
-        <p>محصولی پیدا نشد.</p>
+        <p className="py-6 text-sm text-muted">
+          {parsed.data.q
+            ? "محصولی با این عبارت جستجو پیدا نشد؛ عبارت دیگری را امتحان کنید."
+            : "محصولی در این صفحه برای نمایش وجود ندارد. برای افزودن محصول، «محصول جدید» را انتخاب کنید."}
+        </p>
       ) : (
         <div className="min-w-0 overflow-x-auto">
           <table className="w-full text-start">

@@ -1,7 +1,5 @@
+import { PageLoading } from "@/components/ui/PageLoading";
+
 export default function Loading() {
-  return (
-    <p role="status" className="checkout-panel animate-pulse">
-      در حال دریافت اطلاعات…
-    </p>
-  );
+  return <PageLoading title="در حال دریافت جزئیات سفارش شما…" view="detail" />;
 }

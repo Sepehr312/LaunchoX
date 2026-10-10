@@ -1,7 +1,11 @@
+import { PageLoading } from "@/components/ui/PageLoading";
+
 export default function Loading() {
   return (
-    <p role="status" className="p-4">
-      در حال بارگذاری…
-    </p>
+    <PageLoading
+      title="در حال دریافت آمار و نمای کلی فروشگاه…"
+      view="dashboard"
+      admin
+    />
   );
 }

@@ -99,7 +99,12 @@ export function ProductForm({
           </select>
           {errors("category")}
         </label>
-        {!categories.length && <p>دسته‌بندی‌ای برای انتخاب وجود ندارد.</p>}
+        {!categories.length && (
+          <p>
+            دسته‌بندی‌ای برای انتخاب وجود ندارد؛ ابتدا از بخش مدیریت
+            دسته‌بندی‌ها یک دسته‌بندی ایجاد کنید.
+          </p>
+        )}
         <fieldset className="grid min-w-0 gap-3">
           <legend>نشانی تصاویر (اولین تصویر، تصویر اصلی است)</legend>
           {images.map((url, index) => (

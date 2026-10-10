@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -33,7 +34,7 @@ export async function generateMetadata({
   const product = await getProductBySlug((await params).slug);
   if (!product) notFound();
   return {
-    title: `${product.title} | لانچ‌اوکس`,
+    title: `${product.title} | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
     description: product.description,
   };
 }
@@ -109,6 +110,11 @@ export default async function ProductPage({
             <h2>مشخصات محصول</h2>
             <p>اطلاعات اصلی برای مقایسهٔ دقیق‌تر مدل‌ها.</p>
           </div>
+          {!product.attributes.length && (
+            <p className="text-sm text-muted">
+              مشخصات فنی این محصول هنوز ثبت نشده است.
+            </p>
+          )}
           <dl>
             {product.attributes.map((item) => (
               <div key={item.key}>
@@ -122,6 +128,7 @@ export default async function ProductPage({
           <SectionHeading eyebrow="انتخاب‌های مشابه" title="محصولات مرتبط" />
           <ProductGrid
             products={related}
+            emptyTitle="محصول مرتبطی برای نمایش وجود ندارد"
             emptyMessage="محصول مرتبط دیگری در این دسته موجود نیست."
           />
         </section>

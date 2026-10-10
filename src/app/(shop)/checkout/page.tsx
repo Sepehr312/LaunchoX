@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,7 +8,9 @@ import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { getCheckoutAddresses } from "@/services/user.service";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 
-export const metadata: Metadata = { title: "تسویه‌حساب | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `تسویه‌حساب | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 
 export default async function CheckoutPage() {
   const user = await requireUser();

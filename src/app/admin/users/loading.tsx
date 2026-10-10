@@ -1,3 +1,5 @@
+import { PageLoading } from "@/components/ui/PageLoading";
+
 export default function Loading() {
-  return <p role="status">در حال دریافت کاربران…</p>;
+  return <PageLoading title="در حال دریافت فهرست کاربران…" view="list" admin />;
 }

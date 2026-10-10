@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { CatalogPage } from "@/components/store/CatalogPage";
 import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
@@ -5,7 +6,9 @@ import { listCategories } from "@/services/category.service";
 import { listProducts } from "@/services/product.service";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "جستجو | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `جستجو | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 
 export default async function SearchPage({
   searchParams,
@@ -23,6 +26,8 @@ export default async function SearchPage({
   ]);
   return (
     <CatalogPage
+      emptyTitle="نتیجه‌ای برای جستجو پیدا نشد"
+      emptyMessage="عبارت جستجو یا فیلترها را تغییر دهید و دوباره جستجو کنید."
       eyebrow="جستجوی هوشمند"
       title={q ? `نتایج جستجو برای «${q}»` : "محصول موردنظرتان را پیدا کنید"}
       description="نام، برند یا ویژگی مورد نظر را جستجو و نتیجه را دقیق‌تر فیلتر کنید."

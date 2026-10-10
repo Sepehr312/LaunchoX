@@ -106,7 +106,7 @@ with sync_playwright() as playwright:
         if role == "customer":
             response = page.goto(BASE + "/admin")
             assert response.status == 404, f"Expected actual 404, got {response.status}"
-            expect(page.get_by_role("heading", name="صفحه پیدا نشد")).to_be_visible()
+            expect(page.get_by_role("heading", name="صفحه یا مورد موردنظر پیدا نشد")).to_be_visible()
             assert "پنل مدیریت" not in page.locator("body").inner_text()
         page.goto(BASE + target)
         page.get_by_role("button", name=re.compile(r"^خروج(?: از حساب)?$")).click()

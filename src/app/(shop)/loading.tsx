@@ -1,13 +1,5 @@
-export default function ShopLoading() {
-  return (
-    <main
-      className="store-shell flex min-h-[60vh] items-center justify-center py-16"
-      aria-live="polite"
-    >
-      <div className="loading-mark">
-        <span />
-        <p>در حال آماده‌سازی نمایشگاه...</p>
-      </div>
-    </main>
-  );
+import { PageLoading } from "@/components/ui/PageLoading";
+
+export default function Loading() {
+  return <PageLoading title="در حال آماده‌سازی نمایشگاه…" view="home" shell />;
 }

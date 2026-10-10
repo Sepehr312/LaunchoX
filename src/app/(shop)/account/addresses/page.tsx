@@ -1,10 +1,13 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { requireUser } from "@/actions/auth.actions";
 import { getCheckoutAddresses } from "@/services/user.service";
 import { AccountForm } from "@/components/account/AccountForm";
 import { AddressFields } from "@/components/account/AddressFields";
 import { toPersianDigits } from "@/lib/format";
-export const metadata: Metadata = { title: "آدرس‌های من | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `آدرس‌های من | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function AddressesPage() {
   const user = await requireUser();
   const addresses = await getCheckoutAddresses(user.id);

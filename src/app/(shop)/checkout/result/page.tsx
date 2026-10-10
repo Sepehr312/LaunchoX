@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,7 +9,7 @@ import { orderNumberInput } from "@/validations/order";
 import { formatPrice, formatDate, toPersianDigits } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "نتیجهٔ پرداخت | لانچ‌اوکس",
+  title: `نتیجهٔ پرداخت | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
   robots: { index: false, follow: false },
 };
 

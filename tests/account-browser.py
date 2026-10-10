@@ -35,6 +35,7 @@ with sync_playwright() as p:
         assert page.context.request.get(BASE+'/api/auth/session').json()['user']['email']==email
     def visuals(path):
         page.goto(BASE+path)
+        page.wait_for_load_state('networkidle')
         for width in [360,768,1440]:
             page.set_viewport_size({'width':width,'height':1000})
             for theme in ['light','dark']:

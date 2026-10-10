@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogPage } from "@/components/store/CatalogPage";
@@ -13,7 +14,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const category = await getCategoryBySlug((await params).slug);
-  return { title: `${category?.name ?? "دسته‌بندی"} | لانچ‌اوکس` };
+  if (!category) notFound();
+  return {
+    title: `${category.name} | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+    description: category.description,
+  };
 }
 
 export default async function CategoryPage({
@@ -37,6 +42,8 @@ export default async function CategoryPage({
   ]);
   return (
     <CatalogPage
+      emptyTitle="محصولی در این دسته برای نمایش وجود ندارد"
+      emptyMessage="این دسته محصولی مطابق انتخاب شما ندارد. فیلترها را تغییر دهید یا دسته‌های دیگر را ببینید."
       eyebrow="دسته‌بندی محصولات"
       title={category.name}
       description={

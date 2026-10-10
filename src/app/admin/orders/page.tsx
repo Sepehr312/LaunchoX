@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -10,7 +11,9 @@ import { orderLabels, paymentLabels } from "@/types/order-labels";
 import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
 import { Pagination } from "@/components/store/Pagination";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "مدیریت سفارش‌ها | لانچ‌اوکس" };
+export const metadata = {
+  title: `مدیریت سفارش‌ها | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function OrdersAdmin({
   searchParams,
 }: {
@@ -98,7 +101,11 @@ export default async function OrdersAdmin({
           </table>
         </div>
       ) : (
-        <p>سفارشی پیدا نشد.</p>
+        <p className="py-6 text-sm text-muted">
+          {parsed.data.status
+            ? "سفارشی با وضعیت انتخاب‌شده پیدا نشد؛ وضعیت دیگری را انتخاب کنید."
+            : "سفارشی در این صفحه برای نمایش وجود ندارد."}
+        </p>
       )}
       <Pagination
         page={result.page}

@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -5,7 +6,9 @@ import { getCurrentCart } from "@/actions/cart.actions";
 import { CartForm } from "@/components/store/CartForm";
 import { formatPrice } from "@/lib/format";
 
-export const metadata: Metadata = { title: "سبد خرید | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `سبد خرید | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 
 export default async function CartPage() {
   const cart = await getCurrentCart();

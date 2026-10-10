@@ -12,7 +12,7 @@ assert DB.endswith('/launchox_stage11_browser')
 expect.set_options(timeout=60000)
 
 def database(code):
-    script = "const mongoose=require('mongoose');const bcrypt=require('bcryptjs');(async()=>{await mongoose.connect("+json.dumps(DB)+");const db=mongoose.connection.db;"+code+";await mongoose.disconnect()})().catch(e=>{console.error(e);process.exitCode=1})"
+    script = "const mongoose=require('mongoose');const bcrypt=require('bcryptjs');(async()=>{await mongoose.connect("+json.dumps(DB)+");const db=mongoose.connection.db;try {"+code+";} finally {await mongoose.disconnect()}})().catch(e=>{console.error(e);process.exitCode=1})"
     return subprocess.run(['node', '-e', script], check=True, capture_output=True, text=True, encoding='utf-8', timeout=60).stdout
 
 database("""
@@ -30,14 +30,15 @@ with sync_playwright() as p:
         page.get_by_role('button',name='ورود',exact=True).click(); page.wait_for_url(BASE+'/admin'); return ctx,page
     customer, denied = login('customer')
     expect(denied.get_by_role('heading',name='داشبورد فروشگاه')).to_have_count(0)
-    expect(denied.get_by_text('صفحه پیدا نشد',exact=False).first).to_be_visible()
+    expect(denied.get_by_text('صفحه یا مورد موردنظر پیدا نشد',exact=False).first).to_be_visible()
     admin,page = login('admin'); errors=[]; page.on('pageerror',lambda e:errors.append(str(e)))
     expect(page.get_by_text('هنوز سفارشی ثبت نشده است.',exact=True)).to_be_visible()
     expect(page.get_by_text('هیچ محصولی با موجودی کمتر از پنج واحد وجود ندارد.',exact=True)).to_be_visible()
     database("""
 const user=await db.collection('users').findOne({role:'customer'});
 for(let i=0;i<12;i++) await db.collection('orders').insertOne({orderNumber:'LX-'+(300000+i),user:user._id,shippingAddress:{recipientName:'مشتری آزمایشی'},total:100000,status:'pending',payment:{status:'unpaid'},createdAt:new Date(Date.now()-i*1000),updatedAt:new Date()});
-await db.collection('products').insertMany([{title:'یخچال با موجودی کم',stock:4,isActive:true},{title:'یخچال ناموجود',stock:0,isActive:false},{title:'موجودی کافی',stock:5,isActive:true}]);
+const category=(await db.collection('categories').insertOne({name:'دسته داشبورد',slug:'dashboard-category',isActive:true,order:1})).insertedId;
+await db.collection('products').insertMany([{title:'یخچال با موجودی کم',stock:4,isActive:true},{title:'یخچال ناموجود',stock:0,isActive:false},{title:'موجودی کافی',stock:5,isActive:true}].map((product,index)=>({...product,slug:'dashboard-product-'+index,description:'Dashboard fixture',price:1000,images:['/images/products/compact.png'],category,attributes:[],isFeatured:false,soldCount:0,createdAt:new Date(),updatedAt:new Date()})));
 """)
     page.reload(); expect(page.locator('#latest-orders').locator('..').locator('article')).to_have_count(10)
     expect(page.locator('#low-stock').locator('..').locator('li')).to_have_count(2)

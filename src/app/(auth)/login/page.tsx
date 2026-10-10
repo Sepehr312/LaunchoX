@@ -1,9 +1,12 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { z } from "zod";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { safeCallbackUrl } from "@/validations/auth";
 
-export const metadata: Metadata = { title: "ورود | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `ورود | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function LoginPage({
   searchParams,
 }: {

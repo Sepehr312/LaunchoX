@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,7 +10,7 @@ import { authoritySchema } from "@/validations/order";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "درگاه آزمایشی | لانچ‌اوکس",
+  title: `درگاه آزمایشی | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
   robots: { index: false, follow: false },
 };
 

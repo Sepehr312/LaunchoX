@@ -1,5 +1,37 @@
 @import "tailwindcss";
 
+.page-state {
+  width: 100%;
+  min-width: 0;
+  padding: clamp(1rem, 4vw, 3rem);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.page-state-panel {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  border: 1px solid var(--border);
+  border-radius: 1.75rem;
+  background: linear-gradient(145deg, var(--ice), var(--surface) 65%);
+  box-shadow: var(--shadow);
+}
+.page-state-symbol {
+  display: grid;
+  place-items: center;
+  width: fit-content;
+  min-width: 5rem;
+  min-height: 5rem;
+  margin: 1.5rem auto;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: clamp(2rem, 8vw, 3rem);
+  font-weight: 900;
+}
+
 .admin-shell {
   display: grid;
   gap: 1.5rem;
@@ -204,6 +236,7 @@
 }
 html {
   scroll-behavior: smooth;
+  font-family: var(--font-vazirmatn), sans-serif;
 }
 body {
   background:
@@ -218,11 +251,11 @@ body {
       color-mix(in srgb, var(--background) 92%, white)
     );
   color: var(--foreground);
-  font-family: var(--font-vazirmatn), sans-serif;
 }
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 button,
@@ -379,6 +412,7 @@ a {
 
 .hero-carousel {
   position: relative;
+  margin-block-start: -68px;
   min-width: 0;
   overflow: hidden;
   isolation: isolate;
@@ -1213,6 +1247,9 @@ a {
   }
 }
 @media (min-width: 768px) {
+  .hero-carousel {
+    margin-block-start: -84px;
+  }
   .feature-strip {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
@@ -1395,4 +1432,31 @@ a {
 .admin-panel button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.loading-skeleton {
+  min-width: 0;
+  border-radius: 0.85rem;
+  background: var(--border);
+  animation: loading-pulse 1.8s ease-in-out infinite;
+}
+.loading-panel {
+  border: 1px solid var(--border);
+  border-radius: 1.35rem;
+  padding: 1.5rem;
+  background: var(--surface-raised);
+}
+.loading-admin .loading-panel {
+  border-radius: 1rem;
+  background: var(--surface);
+}
+@keyframes loading-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton {
+    animation: none;
+  }
 }

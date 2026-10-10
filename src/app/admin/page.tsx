@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/actions/auth.actions";
 import { Badge } from "@/components/ui/Badge";
@@ -7,7 +8,9 @@ import { orderLabels, paymentLabels } from "@/types/order-labels";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "پنل مدیریت | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `پنل مدیریت | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function AdminPage() {
   await requireAdmin();
   const data = await getDashboardStats();

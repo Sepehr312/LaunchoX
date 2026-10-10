@@ -1,3 +1,5 @@
+import { getEnv } from "@/lib/env";
+import { cache } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -13,19 +15,36 @@ import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
 import { orderLabels, paymentLabels } from "@/types/order-labels";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "جزئیات سفارش | لانچ‌اوکس" };
+const loadOrder = cache(async (id: string) => {
+  await requireAdmin();
+  const parsed = objectIdSchema.safeParse(id);
+  if (!parsed.success) notFound();
+  const order = await getOrderAdmin(parsed.data).catch((error: unknown) => {
+    if (error instanceof AppError && error.code === "NOT_FOUND") notFound();
+    throw error;
+  });
+  return order;
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  await requireAdmin();
+  const order = await loadOrder((await params).id);
+  return {
+    title: `مدیریت سفارش ${toPersianDigits(order.orderNumber)} | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+  };
+}
+
 export default async function OrderPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   await requireAdmin();
-  const parsed = objectIdSchema.safeParse((await params).id);
-  if (!parsed.success) notFound();
-  const order = await getOrderAdmin(parsed.data).catch((error: unknown) => {
-    if (error instanceof AppError && error.code === "NOT_FOUND") notFound();
-    throw error;
-  });
+  const order = await loadOrder((await params).id);
   const people = new Map(
     (
       await getOrderCustomersAdmin([

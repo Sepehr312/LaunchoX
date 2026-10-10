@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import {
@@ -7,7 +8,9 @@ import {
 import { objectIdSchema } from "@/validations/common";
 import { ProductForm } from "@/components/admin/ProductForm";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "ویرایش محصول | لانچ‌اوکس" };
+export const metadata = {
+  title: `ویرایش محصول | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function EditProduct({
   params,
 }: {

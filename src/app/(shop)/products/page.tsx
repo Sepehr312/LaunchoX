@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { CatalogPage } from "@/components/store/CatalogPage";
 import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
@@ -5,7 +6,9 @@ import { listCategories } from "@/services/category.service";
 import { listProducts } from "@/services/product.service";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "محصولات | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `محصولات | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 
 export default async function ProductsPage({
   searchParams,
@@ -22,6 +25,8 @@ export default async function ProductsPage({
   ]);
   return (
     <CatalogPage
+      emptyTitle="محصولی برای نمایش وجود ندارد"
+      emptyMessage="در حال حاضر محصولی مطابق انتخاب شما وجود ندارد. اگر فیلتری انتخاب کرده‌اید، آن را تغییر دهید."
       eyebrow="کاتالوگ تخصصی"
       title="یخچال و تجهیزات سرمایشی"
       description={

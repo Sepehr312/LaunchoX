@@ -30,6 +30,11 @@ export function StoreFooter({ categories }: { categories: CategoryDTO[] }) {
         <div>
           <h2 className="footer-title">دسته‌بندی‌ها</h2>
           <nav className="footer-links" aria-label="دسته‌بندی‌های فوتر">
+            {!categories.length && (
+              <p className="text-sm text-muted">
+                هنوز دسته‌بندی‌ای برای نمایش وجود ندارد.
+              </p>
+            )}
             {categories.slice(0, 5).map((category) => (
               <Link key={category.id} href={`/categories/${category.slug}`}>
                 {category.name}

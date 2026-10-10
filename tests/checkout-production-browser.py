@@ -28,7 +28,7 @@ with sync_playwright() as p:
     expect(page.locator("[data-cart-item]")).to_have_count(1)
     authority = str(uuid.uuid4())
     page.goto(f"{BASE}/checkout/fake-gateway?authority={authority}")
-    expect(page.get_by_role("heading", name="صفحه پیدا نشد")).to_be_visible()
+    expect(page.get_by_role("heading", name="صفحه یا مورد موردنظر پیدا نشد")).to_be_visible()
     expect(page.get_by_role("link", name="پرداخت موفق", exact=True)).to_have_count(0)
     assert context.request.get(f"{BASE}/api/payment/callback?authority={authority}&status=OK", max_redirects=0).status == 403
     page.goto(f"{BASE}/cart")

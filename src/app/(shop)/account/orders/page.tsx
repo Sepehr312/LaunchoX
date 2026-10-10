@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireUser } from "@/actions/auth.actions";
@@ -5,7 +6,9 @@ import { listOrdersForUser } from "@/services/order.service";
 import { orderQuerySchema } from "@/validations/order";
 import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
 import { orderLabels } from "@/types/order-labels";
-export const metadata: Metadata = { title: "سفارش‌های من | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `سفارش‌های من | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function OrdersPage({
   searchParams,
 }: {

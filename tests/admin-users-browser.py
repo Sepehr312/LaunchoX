@@ -14,7 +14,7 @@ with sync_playwright() as p:
         page.get_by_role('button',name='ورود',exact=True).click()
         page.wait_for_url(BASE+'/admin/users')
         return page
-    customer = login('customer'); expect(customer.get_by_text('صفحه پیدا نشد',exact=False).first).to_be_visible()
+    customer = login('customer'); expect(customer.get_by_text('صفحه یا مورد موردنظر پیدا نشد',exact=False).first).to_be_visible()
     page = login('admin'); errors = []; page.on('pageerror',lambda error:errors.append(str(error)))
     expect(page.locator('tbody tr')).to_have_count(3)
     self_row = page.locator('tbody tr').filter(has=page.get_by_text('admin@example.com',exact=True))
@@ -41,7 +41,7 @@ with sync_playwright() as p:
     second.get_by_role('button').click(); expect(second.get_by_text('غیرفعال',exact=True)).to_be_visible()
     second.get_by_role('button').click(); expect(second.get_by_text('فعال',exact=True)).to_be_visible()
     database("const users=await db.collection('users').find({}).toArray();if(users.some(u=>!u.isActive))throw Error('Enable persistence failed')")
-    again = login('customer'); expect(again.get_by_text('صفحه پیدا نشد',exact=False).first).to_be_visible()
+    again = login('customer'); expect(again.get_by_text('صفحه یا مورد موردنظر پیدا نشد',exact=False).first).to_be_visible()
     page.goto(BASE+'/admin/products'); expect(page.get_by_role('heading',name='مدیریت محصولات',exact=True)).to_be_visible()
     page.goto(BASE+'/admin/categories'); expect(page.get_by_role('heading',name='مدیریت دسته‌بندی‌ها',exact=True)).to_be_visible()
     page.goto(BASE+'/admin/orders'); expect(page.get_by_role('heading',name='مدیریت سفارش‌ها',exact=True)).to_be_visible()

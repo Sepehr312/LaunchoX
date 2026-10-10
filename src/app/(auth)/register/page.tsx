@@ -1,8 +1,11 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { safeCallbackUrl } from "@/validations/auth";
 
-export const metadata: Metadata = { title: "ثبت‌نام | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `ثبت‌نام | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function RegisterPage({
   searchParams,
 }: {

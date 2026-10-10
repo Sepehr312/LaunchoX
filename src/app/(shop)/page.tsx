@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +11,9 @@ import { listCategories } from "@/services/category.service";
 import { getFeaturedProducts, listProducts } from "@/services/product.service";
 
 export const revalidate = 300;
-export const metadata: Metadata = { title: "صفحه اصلی | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `صفحه اصلی | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 
 export default async function HomePage() {
   const [categories, featured, newest] = await Promise.all([
@@ -32,6 +35,12 @@ export default async function HomePage() {
             title="برای هر فضا، سرمایش مناسب"
             description="از خانه‌های کم‌جا تا آشپزخانه‌های حرفه‌ای"
           />
+          {!categories.length && (
+            <div className="empty-state">
+              <h2>دسته‌بندی‌ای برای نمایش وجود ندارد</h2>
+              <p>هنوز دسته‌بندی محصولات فروشگاه آماده نشده است.</p>
+            </div>
+          )}
           <div className="category-grid">
             {categories.map((category, index) => (
               <Link
@@ -64,6 +73,7 @@ export default async function HomePage() {
           />
           <ProductGrid
             products={featured}
+            emptyTitle="هنوز محصول ویژه‌ای وجود ندارد"
             emptyMessage="هنوز محصول ویژه‌ای برای نمایش آماده نشده است."
           />
         </div>
@@ -102,7 +112,11 @@ export default async function HomePage() {
             title="جدیدترین محصولات"
             href="/products"
           />
-          <ProductGrid products={newest.items} />
+          <ProductGrid
+            products={newest.items}
+            emptyTitle="هنوز محصولی به فروشگاه اضافه نشده است"
+            emptyMessage="محصولات جدید پس از اضافه شدن در این بخش نمایش داده می‌شوند."
+          />
         </div>
       </section>
 

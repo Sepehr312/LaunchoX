@@ -1,7 +1,7 @@
-export default function CheckoutLoading() {
+import { PageLoading } from "@/components/ui/PageLoading";
+
+export default function Loading() {
   return (
-    <main className="store-shell py-12" aria-busy="true">
-      <p role="status">در حال دریافت اطلاعات سفارش…</p>
-    </main>
+    <PageLoading title="در حال آماده‌سازی تسویه‌حساب…" view="form" shell />
   );
 }

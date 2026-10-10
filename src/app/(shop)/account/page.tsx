@@ -1,3 +1,4 @@
+import { getEnv } from "@/lib/env";
 import { toPersianDigits } from "@/lib/format";
 import type { Metadata } from "next";
 import { requireUser, logoutAction } from "@/actions/auth.actions";
@@ -5,7 +6,9 @@ import { getProfile } from "@/services/user.service";
 import { AccountForm } from "@/components/account/AccountForm";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-export const metadata: Metadata = { title: "پروفایل و امنیت | لانچ‌اوکس" };
+export const metadata: Metadata = {
+  title: `پروفایل و امنیت | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function AccountPage() {
   const session = await requireUser();
   const user = await getProfile(session.id);

@@ -111,13 +111,13 @@ with sync_playwright() as p:
     assert other.request.get(callback, max_redirects=0).status == 401
     other_page = other.new_page()
     other_page.goto(f"{BASE}/login")
-    other_page.get_by_label("ایمیل", exact=True).fill("admin@launchox.local")
-    other_page.get_by_label("رمز عبور", exact=True).fill("ChangeMe123!")
+    other_page.get_by_label("ایمیل", exact=True).fill("customer@launchox.local")
+    other_page.get_by_label("رمز عبور", exact=True).fill("Customer123!")
     other_page.get_by_role("button", name="ورود", exact=True).click()
     other_page.wait_for_url(f"{BASE}/")
     other_page.goto(result_url)
     expect(other_page.locator("[data-order-number]")).to_have_count(0)
-    expect(other_page.get_by_role("heading", name="صفحه پیدا نشد")).to_be_visible()
+    expect(other_page.get_by_role("heading", name="صفحه یا مورد موردنظر پیدا نشد")).to_be_visible()
     assert other.request.get(callback, max_redirects=0).status == 404
     assert context.request.get(f"{BASE}/api/payment/callback?authority=bad&status=OK").status == 400
     for product in rows:

@@ -1,7 +1,7 @@
+import { PageLoading } from "@/components/ui/PageLoading";
+
 export default function Loading() {
   return (
-    <p role="status" className="p-4">
-      در حال بارگذاری حساب کاربری…
-    </p>
+    <PageLoading title="در حال دریافت پروفایل و تنظیمات امنیت…" view="form" />
   );
 }

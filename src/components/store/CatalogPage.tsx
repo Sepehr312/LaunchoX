@@ -18,6 +18,8 @@ export function CatalogPage({
   searchParams,
   basePath,
   includeSearch = false,
+  emptyTitle,
+  emptyMessage,
 }: {
   eyebrow: string;
   title: string;
@@ -27,6 +29,8 @@ export function CatalogPage({
   searchParams: StoreSearchParams;
   basePath: string;
   includeSearch?: boolean;
+  emptyTitle?: string;
+  emptyMessage?: string;
 }) {
   return (
     <main className="catalog-page">
@@ -50,7 +54,11 @@ export function CatalogPage({
             <h2 id="results-heading">نتایج محصولات</h2>
             <span>{toPersianDigits(result.total)} کالا</span>
           </div>
-          <ProductGrid products={result.items} />
+          <ProductGrid
+            products={result.items}
+            emptyTitle={emptyTitle}
+            emptyMessage={emptyMessage}
+          />
           <Pagination
             page={result.page}
             totalPages={result.totalPages}

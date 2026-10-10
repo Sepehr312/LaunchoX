@@ -1,4 +1,5 @@
-﻿import type { Metadata } from "next";
+import { getEnv } from "@/lib/env";
+import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 
@@ -9,7 +10,7 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "فروشگاه تخصصی یخچال | لانچ‌اوکس",
+  title: `فروشگاه تخصصی یخچال | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
   description:
     "فروشگاه تخصصی یخچال و تجهیزات سرمایشی با انتخاب دقیق و مشخصات شفاف",
 };

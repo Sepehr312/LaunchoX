@@ -61,6 +61,7 @@ async def main() -> None:
         await page.emulate_media(color_scheme="light")
         response = await page.goto(BASE_URL, wait_until="domcontentloaded")
         await page.locator(".hero-carousel").wait_for()
+        await page.wait_for_load_state("networkidle")
         assert response and response.status == 200
         assert await page.locator("html").get_attribute("lang") == "fa"
         assert await page.locator("html").get_attribute("dir") == "rtl"
@@ -92,6 +93,7 @@ async def main() -> None:
             await page.emulate_media(color_scheme="light")
             await page.goto(BASE_URL, wait_until="domcontentloaded")
             await page.locator(".hero-carousel").wait_for()
+            await page.wait_for_load_state("networkidle")
             await assert_no_overflow(page, f"home-{width}")
             menu = page.locator(".mobile-menu")
             await menu.locator("summary").click()
@@ -117,6 +119,7 @@ async def main() -> None:
 
         await page.set_viewport_size({"width": 768, "height": 1000})
         await page.goto(f"{BASE_URL}/products", wait_until="domcontentloaded")
+        await page.wait_for_load_state("networkidle")
         await page.locator(".product-grid").wait_for()
         tablet_columns = await page.locator(".product-grid").evaluate(
             "element => getComputedStyle(element).gridTemplateColumns.split(' ').length"

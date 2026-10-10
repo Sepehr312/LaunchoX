@@ -1,10 +1,13 @@
+import { getEnv } from "@/lib/env";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { listCategoriesAdmin } from "@/services/category.service";
 import { CategoryRowActions } from "@/components/admin/CategoryRowActions";
 import { toPersianDigits } from "@/lib/format";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "مدیریت دسته‌بندی‌ها | لانچ‌اوکس" };
+export const metadata = {
+  title: `مدیریت دسته‌بندی‌ها | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
+};
 export default async function Categories() {
   await requireAdmin();
   const categories = await listCategoriesAdmin();

@@ -16,7 +16,7 @@ with sync_playwright() as p:
         page.goto(BASE+'/login?callbackUrl=/admin/orders')
         page.get_by_label('ایمیل',exact=True).fill(role+'@example.com'); page.get_by_label('رمز عبور',exact=True).fill('Browser123!')
         page.get_by_role('button',name='ورود',exact=True).click(); page.wait_for_url(BASE+'/admin/orders'); return page
-    denied=login('customer'); expect(denied.get_by_text('صفحه پیدا نشد',exact=False).first).to_be_visible()
+    denied=login('customer'); expect(denied.get_by_text('صفحه یا مورد موردنظر پیدا نشد',exact=False).first).to_be_visible()
     page=login('admin'); errors=[]; page.on('pageerror',lambda error:errors.append(str(error)))
     expect(page.locator('tbody tr')).to_have_count(5)
     for width in [360,768,1440]:
@@ -44,9 +44,9 @@ with sync_playwright() as p:
     page.locator('select[name=status]').select_option('cancelled')
     page.get_by_role('button',name='ثبت وضعیت',exact=True).click(); expect(page.get_by_text('این سفارش تغییر وضعیت دیگری ندارد.',exact=True)).to_be_visible()
     database("const p=await db.collection('products').findOne({title:'محصول تست'});if(p.stock!==5)throw Error('Stock not restored')")
-    page.goto(BASE+'/admin/orders?status=pending'); expect(page.get_by_text('سفارشی پیدا نشد.',exact=True)).to_be_visible()
+    page.goto(BASE+'/admin/orders?status=pending'); expect(page.get_by_text('سفارشی با وضعیت انتخاب‌شده پیدا نشد؛ وضعیت دیگری را انتخاب کنید.',exact=True)).to_be_visible()
     page.goto(BASE+'/admin/orders?status=invalid'); expect(page.locator('p[role=alert]')).to_be_visible()
-    page.goto(BASE+'/admin/orders/not-an-id'); expect(page.get_by_text('صفحه پیدا نشد',exact=False).first).to_be_visible()
+    page.goto(BASE+'/admin/orders/not-an-id'); expect(page.get_by_text('صفحه یا مورد موردنظر پیدا نشد',exact=False).first).to_be_visible()
     assert not errors,errors
     browser.close()
 print('PASS: admin guards, filtering, details, legal transitions, history actor, cancellation stock, terminal states, invalid inputs, empty state and mobile detail overflow.')
