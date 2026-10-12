@@ -54,6 +54,11 @@ export interface ProductCategoryDTO {
 export interface StoreProductDTO extends Omit<ProductDTO, "category"> {
   category: ProductCategoryDTO;
 }
+export interface ProductFilterOptionsDTO {
+  brands: string[];
+  energies: string[];
+  maxPrice: number;
+}
 export interface CategoryTreeDTO extends CategoryDTO {
   children: CategoryTreeDTO[];
 }

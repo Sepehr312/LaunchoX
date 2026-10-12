@@ -1,13 +1,18 @@
 import "server-only";
 
-import { Types } from "mongoose";
+import { Types, type PipelineStage } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { toDTO } from "@/lib/model-shared";
 import { createUniqueSlug } from "@/lib/slug";
 import { Category } from "@/models/category";
 import { Product } from "@/models/product";
-import type { PaginatedResult, ProductDTO, StoreProductDTO } from "@/types/dto";
+import type {
+  PaginatedResult,
+  ProductDTO,
+  StoreProductDTO,
+  ProductFilterOptionsDTO,
+} from "@/types/dto";
 import type { ProductInput, ProductQueryInput } from "@/validations/product";
 
 const sortOptions = {
@@ -46,6 +51,8 @@ type ProductStoreFilter = {
   $or?: Array<{ title: RegExp } | { description: RegExp }>;
   price?: { $gte?: number; $lte?: number };
   stock?: { $gt: number };
+  $and?: object[];
+  $expr?: object;
 };
 
 function storefrontFilter(input: ProductQueryInput): ProductStoreFilter {
@@ -61,7 +68,190 @@ function storefrontFilter(input: ProductQueryInput): ProductStoreFilter {
     if (input.maxPrice !== undefined) filter.price.$lte = input.maxPrice;
   }
   if (input.inStock) filter.stock = { $gt: 0 };
+  const attributes: object[] = [];
+  if (input.brands?.length)
+    attributes.push({
+      attributes: { $elemMatch: { key: "برند", value: { $in: input.brands } } },
+    });
+  if (input.energies?.length)
+    attributes.push({
+      attributes: {
+        $elemMatch: { key: "رده انرژی", value: { $in: input.energies } },
+      },
+    });
+  if (attributes.length) filter.$and = attributes;
+  if (input.discounted)
+    filter.$expr = {
+      $and: [
+        { $gt: ["$compareAtPrice", "$price"] },
+        { $gt: ["$compareAtPrice", 0] },
+      ],
+    };
   return filter;
+}
+
+function capacityExpression() {
+  const digitPairs = [..."۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩"].map((digit, index) => [
+    digit,
+    String(index % 10),
+  ]);
+  return {
+    $let: {
+      vars: {
+        attribute: {
+          $arrayElemAt: [
+            {
+              $filter: {
+                input: "$attributes",
+                as: "attribute",
+                cond: { $eq: ["$$attribute.key", "ظرفیت"] },
+              },
+            },
+            0,
+          ],
+        },
+      },
+      in: {
+        $let: {
+          vars: {
+            number: {
+              $regexFind: {
+                input: {
+                  $reduce: {
+                    input: [...digitPairs, ["٬", ""], [",", ""]],
+                    initialValue: { $ifNull: ["$$attribute.value", ""] },
+                    in: {
+                      $replaceAll: {
+                        input: "$$value",
+                        find: { $arrayElemAt: ["$$this", 0] },
+                        replacement: { $arrayElemAt: ["$$this", 1] },
+                      },
+                    },
+                  },
+                },
+                regex: "^\\s*[0-9]+(?:\\.[0-9]+)?",
+              },
+            },
+          },
+          in: {
+            $convert: {
+              input: "$$number.match",
+              to: "double",
+              onError: null,
+              onNull: null,
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
+async function queryProductRecords(
+  input: ProductQueryInput,
+  filter: ProductStoreFilter,
+) {
+  if (
+    input.sort !== "discount" &&
+    (!input.capacity || input.capacity === "all")
+  ) {
+    const [records, total] = await Promise.all([
+      Product.find(filter)
+        .sort({ ...sortOptions[input.sort], _id: 1 })
+        .skip((input.page - 1) * input.limit)
+        .limit(input.limit)
+        .lean(),
+      Product.countDocuments(filter),
+    ]);
+    return { records, total };
+  }
+  const pipeline: PipelineStage[] = [{ $match: filter }];
+  if (input.capacity && input.capacity !== "all") {
+    pipeline.push({ $set: { _catalogCapacity: capacityExpression() } });
+    const range =
+      input.capacity === "small"
+        ? { $gte: 0, $lt: 400 }
+        : input.capacity === "medium"
+          ? { $gte: 400, $lte: 600 }
+          : { $gt: 600 };
+    pipeline.push({ $match: { _catalogCapacity: range } });
+  }
+  if (input.sort === "discount") {
+    pipeline.push({
+      $set: {
+        _catalogDiscount: {
+          $cond: [
+            {
+              $and: [
+                { $gt: ["$compareAtPrice", "$price"] },
+                { $gt: ["$compareAtPrice", 0] },
+              ],
+            },
+            { $subtract: [1, { $divide: ["$price", "$compareAtPrice"] }] },
+            0,
+          ],
+        },
+      },
+    });
+  }
+  pipeline.push({
+    $facet: {
+      items: [
+        {
+          $sort:
+            input.sort === "discount"
+              ? { _catalogDiscount: -1, createdAt: -1, _id: 1 }
+              : { ...sortOptions[input.sort], _id: 1 },
+        },
+        { $skip: (input.page - 1) * input.limit },
+        { $limit: input.limit },
+        { $unset: ["_catalogCapacity", "_catalogDiscount"] },
+      ],
+      total: [{ $count: "count" }],
+    },
+  });
+  const [result] = await Product.aggregate<{
+    items: object[];
+    total: { count: number }[];
+  }>(pipeline);
+  return { records: result?.items ?? [], total: result?.total[0]?.count ?? 0 };
+}
+
+export async function getProductFilterOptions(): Promise<ProductFilterOptionsDTO> {
+  await connectDB();
+  const [result] = await Product.aggregate<{
+    attributes: { _id: string; values: string[] }[];
+    price: { max: number }[];
+  }>([
+    { $match: { isActive: true } },
+    {
+      $facet: {
+        attributes: [
+          { $unwind: "$attributes" },
+          { $match: { "attributes.key": { $in: ["برند", "رده انرژی"] } } },
+          {
+            $group: {
+              _id: "$attributes.key",
+              values: { $addToSet: "$attributes.value" },
+            },
+          },
+        ],
+        price: [{ $group: { _id: null, max: { $max: "$price" } } }],
+      },
+    },
+  ]);
+  const values = (key: string) =>
+    (
+      result?.attributes.find((attribute) => attribute._id === key)?.values ??
+      []
+    )
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, "fa"));
+  return {
+    brands: values("برند"),
+    energies: values("رده انرژی"),
+    maxPrice: result?.price[0]?.max ?? 0,
+  };
 }
 
 export async function listProducts(
@@ -69,14 +259,7 @@ export async function listProducts(
 ): Promise<PaginatedResult<StoreProductDTO>> {
   await connectDB();
   const filter = storefrontFilter(input);
-  const [records, total] = await Promise.all([
-    Product.find(filter)
-      .sort(sortOptions[input.sort])
-      .skip((input.page - 1) * input.limit)
-      .limit(input.limit)
-      .lean(),
-    Product.countDocuments(filter),
-  ]);
+  const { records, total } = await queryProductRecords(input, filter);
   return {
     items: await withCategories(records),
     page: input.page,
@@ -205,14 +388,7 @@ export async function listProductsAdmin(
   await connectDB();
   const filter = storefrontFilter(input);
   delete filter.isActive;
-  const [records, total] = await Promise.all([
-    Product.find(filter)
-      .sort(sortOptions[input.sort])
-      .skip((input.page - 1) * input.limit)
-      .limit(input.limit)
-      .lean(),
-    Product.countDocuments(filter),
-  ]);
+  const { records, total } = await queryProductRecords(input, filter);
   return {
     items: await withCategories(records),
     page: input.page,

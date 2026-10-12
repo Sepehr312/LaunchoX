@@ -49,9 +49,13 @@ export const productQuerySchema = paginationSchema
     minPrice: optionalField(moneySchema),
     maxPrice: optionalField(moneySchema),
     sort: z
-      .enum(["newest", "price_asc", "price_desc", "bestselling"])
+      .enum(["newest", "price_asc", "price_desc", "bestselling", "discount"])
       .default("newest"),
     inStock: booleanSchema.optional(),
+    brands: z.array(requiredString.max(100)).max(50).optional(),
+    energies: z.array(requiredString.max(30)).max(50).optional(),
+    capacity: z.enum(["all", "small", "medium", "large"]).optional(),
+    discounted: booleanSchema.optional(),
   })
   .refine(
     (value) =>

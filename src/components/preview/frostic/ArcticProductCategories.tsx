@@ -4,63 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { catalogCategories } from "@/lib/catalog-categories";
 import styles from "./ArcticProductCategories.module.css";
 
-interface ProductCategory {
-  id: string;
-  title: string;
-  image: string;
-  href?: string;
-}
-
-const categories: readonly ProductCategory[] = [
-  {
-    id: "twin",
-    title: "یخچال فریزر دوقلو",
-    image: "/images/preview/categories/twin.png",
-  },
-  {
-    id: "french-door",
-    title: "یخچال فرنچ دور",
-    image: "/images/preview/categories/french-door.png",
-    href: "/categories/clothing",
-  },
-  {
-    id: "top-freezer",
-    title: "یخچال بالا پایین",
-    image: "/images/preview/categories/top-freezer.png",
-    href: "/categories/home-kitchen",
-  },
-  {
-    id: "bottom-freezer",
-    title: "یخچال بالا پایین",
-    image: "/images/preview/categories/bottom-freezer.png",
-    href: "/categories/home-kitchen",
-  },
-  {
-    id: "side-by-side",
-    title: "یخچال ساید بای ساید",
-    image: "/images/preview/categories/side-by-side.png",
-    href: "/categories/digital",
-  },
-  {
-    id: "combi",
-    title: "کمبی",
-    image: "/images/preview/categories/combi.png",
-    href: "/categories/home-kitchen",
-  },
-  {
-    id: "mini",
-    title: "یخچال هتلی و مینی",
-    image: "/images/preview/categories/mini.png",
-    href: "/categories/books",
-  },
-  {
-    id: "commercial",
-    title: "یخچال فروشگاهی",
-    image: "/images/preview/categories/commercial.png",
-  },
-];
+const categories = catalogCategories.map((category) => ({
+  id: category.slug,
+  title: category.title,
+  image: `/images/preview/categories/${category.image}.png`,
+  href: `/categories/${category.slug}`,
+}));
 
 export function ArcticProductCategories() {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -221,20 +173,9 @@ export function ArcticProductCategories() {
 
                 return (
                   <li key={category.id} className={styles.item}>
-                    {category.href ? (
-                      <Link href={category.href} className={styles.card}>
-                        {content}
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.card}
-                        disabled
-                        title="مسیر این دسته‌بندی هنوز فعال نشده است"
-                      >
-                        {content}
-                      </button>
-                    )}
+                    <Link href={category.href} className={styles.card}>
+                      {content}
+                    </Link>
                   </li>
                 );
               })}

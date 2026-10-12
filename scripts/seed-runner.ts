@@ -8,6 +8,8 @@ import { Cart } from "@/models/cart";
 import { Order } from "@/models/order";
 import { Counter } from "@/models/counter";
 import { seedCategories } from "./seed-data";
+import { getCatalogProductImage } from "./catalog-images";
+import { syncCatalogCategories } from "./sync-catalog-categories";
 
 export function parseSeedOptions(args: string[], env: Env) {
   const flags = z.array(z.enum(["--reset", "--force"])).parse(args);
@@ -134,7 +136,9 @@ export async function seedDatabase(
         price: product.price,
         stock: index < 2 ? 0 : 10 + index,
         sku: `LX-COLD-${String(index + 1).padStart(3, "0")}`,
-        images: [group.image],
+        images: [
+          getCatalogProductImage(group.slug, product.title) ?? group.image,
+        ],
         category: category._id,
         attributes: [
           { key: "برند", value: product.brand },
@@ -156,6 +160,7 @@ export async function seedDatabase(
       index++;
     }
   }
+  await syncCatalogCategories();
   const [users, categories, products, carts, orders, counters] =
     await Promise.all([
       User.countDocuments(),
