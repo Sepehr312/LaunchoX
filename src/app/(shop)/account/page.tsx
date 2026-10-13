@@ -14,7 +14,7 @@ export default async function AccountPage() {
   const session = await requireUser();
   const user = await getProfile(session.id);
   return (
-    <div className="grid gap-6">
+    <div className={styles.profile}>
       <header>
         <p className="section-kicker">فضای شخصی شما</p>
         <h2 className="mt-2 text-2xl font-bold">پروفایل و امنیت</h2>
@@ -22,7 +22,7 @@ export default async function AccountPage() {
           اطلاعات شخصی و رمز عبور خود را مدیریت کنید.
         </p>
       </header>
-      <div className="grid items-start gap-6 xl:grid-cols-2">
+      <div className="grid items-start gap-5">
         <section className="checkout-panel">
           <span className={styles.icon}>
             <UserIcon />
@@ -59,35 +59,39 @@ export default async function AccountPage() {
             />
           </AccountForm>
         </section>
-        <section className="checkout-panel">
-          <span className={styles.icon}>
-            <ShieldIcon />
-          </span>
-          <h3 className="mt-5 mb-2 text-lg font-bold">تغییر رمز عبور</h3>
-          <p className="mb-6 text-sm leading-7 text-muted">
-            رمز جدید حداقل ۸ کاراکتر و شامل حرف و عدد باشد.
-          </p>
-          <AccountForm operation="password" label="ذخیرهٔ رمز جدید">
-            {[
-              ["currentPassword", "رمز عبور فعلی"],
-              ["password", "رمز عبور جدید"],
-              ["confirmPassword", "تکرار رمز عبور جدید"],
-            ].map(([name, label]) => (
-              <CustomerField
-                key={name}
-                name={name}
-                label={label}
-                type="password"
-                required
-                autoComplete={
-                  name === "currentPassword"
-                    ? "current-password"
-                    : "new-password"
-                }
-              />
-            ))}
-          </AccountForm>
-        </section>
+        <details className="checkout-panel">
+          <summary className="font-semibold">
+            <span className="flex items-center gap-3">
+              <ShieldIcon className="size-5 text-primary" />
+              تغییر رمز عبور
+            </span>
+          </summary>
+          <div className="mt-5 border-t border-border pt-5">
+            <p className="mb-6 text-sm leading-7 text-muted">
+              رمز جدید حداقل ۸ کاراکتر و شامل حرف و عدد باشد.
+            </p>
+            <AccountForm operation="password" label="ذخیرهٔ رمز جدید">
+              {[
+                ["currentPassword", "رمز عبور فعلی"],
+                ["password", "رمز عبور جدید"],
+                ["confirmPassword", "تکرار رمز عبور جدید"],
+              ].map(([name, label]) => (
+                <CustomerField
+                  key={name}
+                  name={name}
+                  label={label}
+                  type="password"
+                  required
+                  autoComplete={
+                    name === "currentPassword"
+                      ? "current-password"
+                      : "new-password"
+                  }
+                />
+              ))}
+            </AccountForm>
+          </div>
+        </details>
       </div>
     </div>
   );
