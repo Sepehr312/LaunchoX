@@ -207,8 +207,8 @@ describe("customer page composition", () => {
     const list = renderToStaticMarkup(
       await Orders({ searchParams: Promise.resolve({}) }),
     );
-    expect(list).toContain("زمان تحویل");
-    expect(list).toContain("هنوز اعلام نشده");
+    expect(list).toContain("زمان تقریبی تحویل");
+    expect(list).toContain("حدود ۱ هفته");
     const { default: Details } =
       await import("@/app/(shop)/account/orders/[id]/page");
     const details = renderToStaticMarkup(

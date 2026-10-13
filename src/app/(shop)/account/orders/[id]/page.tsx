@@ -63,7 +63,7 @@ export default async function OrderPage({
             ? "سفارش شما تحویل داده شده است."
             : order.status === "cancelled"
               ? "این سفارش لغو شده است."
-              : "زمان تقریبی تحویل هنوز اعلام نشده است؛ وضعیت ارسال در همین صفحه به‌روز می‌شود."}
+              : `زمان تقریبی تحویل: حدود ${toPersianDigits(1)} هفته. وضعیت ارسال در همین صفحه به‌روز می‌شود.`}
         </p>
       </section>
       <div className="grid items-start gap-6 lg:grid-cols-2">

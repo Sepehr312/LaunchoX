@@ -21,5 +21,5 @@ Native browser automation was unstable: window focus changed during actions, its
 ## Deliberate limitations
 
 - The remember option retains only the email for the browser session; authentication-session duration is unchanged.
-- Delivery estimates are unavailable in the current backend, so the UI reports that the estimate has not yet been announced.
+- Active orders display the owner-requested approximate delivery estimate of one week in both the list and details. This is a presentation estimate, not a live shipment date.
 - Payments continue to use the existing fake provider. No real gateway or OTP was added.

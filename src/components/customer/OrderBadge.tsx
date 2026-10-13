@@ -21,5 +21,11 @@ export function OrderBadge({
     : status === "pending"
       ? "در انتظار پرداخت"
       : orderLabels[status as OrderStatus];
-  return <span className={`${styles.badge} ${tone}`}>{label}</span>;
+  return (
+    <span
+      className={`${styles.badge} ${tone} ${status === "processing" ? styles.processing : ""}`}
+    >
+      {label}
+    </span>
+  );
 }

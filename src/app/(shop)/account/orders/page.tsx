@@ -47,12 +47,12 @@ export default async function OrdersPage({
             <span>{formatPrice(order.total)}</span>
             <OrderBadge status={order.status} />
             <span className="text-xs leading-6 text-muted">
-              زمان تحویل:{" "}
+              زمان تقریبی تحویل:{" "}
               {order.status === "delivered"
                 ? "تحویل داده شده"
                 : order.status === "cancelled"
                   ? "سفارش لغو شده"
-                  : "هنوز اعلام نشده"}
+                  : `حدود ${toPersianDigits(1)} هفته`}
             </span>
             <span className="text-sm font-semibold text-primary">
               مشاهدهٔ جزئیات سفارش ←

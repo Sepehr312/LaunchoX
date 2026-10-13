@@ -33,9 +33,12 @@ export default async function AddressesPage() {
           )}
           <div className="grid items-start gap-5">
             {addresses.map((address) => (
-              <section key={address.id} className="checkout-panel">
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-lg font-bold">{address.title}</h3>
+              <section
+                key={address.id}
+                className={`checkout-panel ${styles.savedAddress}`}
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-base font-bold">{address.title}</h3>
                   {address.isDefault && (
                     <span className={`${styles.badge} text-primary`}>
                       پیش‌فرض
@@ -43,16 +46,16 @@ export default async function AddressesPage() {
                   )}
                 </div>
                 <p className="text-sm font-semibold">{address.recipientName}</p>
-                <p className="mt-3 text-sm leading-8 text-muted">
+                <p className="mt-2 text-sm leading-6 text-muted">
                   {address.province}، {address.city}،{" "}
                   {toPersianDigits(address.addressLine)}
                 </p>
-                <p className="mt-3 text-xs leading-7 text-muted">
+                <p className="mt-2 text-xs leading-6 text-muted">
                   کد پستی: {toPersianDigits(address.postalCode)}
                   <br />
                   موبایل: {toPersianDigits(address.mobile)}
                 </p>
-                <details className="mt-5 border-t border-border pt-3">
+                <details className="mt-3 border-t border-border pt-2">
                   <summary className="text-sm font-semibold text-primary">
                     ویرایش آدرس
                   </summary>
@@ -62,7 +65,7 @@ export default async function AddressesPage() {
                     </AccountForm>
                   </div>
                 </details>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {!address.isDefault && (
                     <AccountForm
                       operation="default"

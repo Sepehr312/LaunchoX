@@ -316,3 +316,32 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
+
+.scope .savedAddress {
+  padding: 1rem 1.25rem;
+  border-radius: 1.125rem;
+}
+.savedAddress > p {
+  font-size: 0.8125rem;
+}
+.savedAddress > p:nth-of-type(3) {
+  font-size: 0.75rem;
+}
+
+.processing {
+  animation: preparation-pulse 2s ease-in-out infinite;
+}
+@keyframes preparation-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .processing {
+    animation: none;
+  }
+}
