@@ -22,7 +22,7 @@ export default async function ShopLayout({
         authenticated={Boolean(user)}
       />
       <div className="flex flex-1 flex-col">{children}</div>
-      <StoreFooter categories={categories} />
+      <StoreFooter />
     </>
   );
 }

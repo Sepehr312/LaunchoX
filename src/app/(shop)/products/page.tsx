@@ -1,9 +1,12 @@
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
-import { CatalogPage } from "@/components/store/CatalogPage";
+import { ProductsCatalog } from "@/components/store/ProductsCatalog";
 import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
 import { listCategories } from "@/services/category.service";
-import { listProducts } from "@/services/product.service";
+import {
+  listProducts,
+  getProductFilterOptions,
+} from "@/services/product.service";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -17,27 +20,23 @@ export default async function ProductsPage({
 }) {
   const values = await searchParams;
   const parsed = parseProductQuery(values);
-  const [categories, result] = await Promise.all([
+  const query = parsed.success
+    ? parsed.data
+    : { page: 1, limit: 9, sort: "newest" as const };
+  query.limit = values.limit ? query.limit : 9;
+  query.page = 1;
+  const [categories, result, options] = await Promise.all([
     listCategories(),
-    listProducts(
-      parsed.success ? parsed.data : { page: 1, limit: 12, sort: "newest" },
-    ),
+    listProducts(query),
+    getProductFilterOptions(),
   ]);
   return (
-    <CatalogPage
-      emptyTitle="محصولی برای نمایش وجود ندارد"
-      emptyMessage="در حال حاضر محصولی مطابق انتخاب شما وجود ندارد. اگر فیلتری انتخاب کرده‌اید، آن را تغییر دهید."
-      eyebrow="کاتالوگ تخصصی"
-      title="یخچال و تجهیزات سرمایشی"
-      description={
-        parsed.success
-          ? "فیلتر و مقایسهٔ مدل‌ها بر اساس نیاز واقعی شما"
-          : (parsed.error.issues[0]?.message ?? "فیلترهای واردشده معتبر نیست")
-      }
+    <ProductsCatalog
       result={result}
       categories={categories}
-      searchParams={values}
-      basePath="/products"
+      options={options}
+      query={query}
+      error={parsed.success ? undefined : parsed.error.issues[0]?.message}
     />
   );
 }

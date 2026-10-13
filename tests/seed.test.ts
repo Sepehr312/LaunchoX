@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import mongoose from "mongoose";
 import { compare } from "bcryptjs";
 import { startTestMongo } from "./mongo-server";
@@ -61,7 +63,7 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
   const first = await seedDatabase(options);
   expect(first).toEqual({
     users: 2,
-    categories: 5,
+    categories: 8,
     products: 24,
     carts: 0,
     orders: 0,
@@ -95,13 +97,28 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
     expect(product.attributes.length).toBeGreaterThanOrEqual(2);
     expect(product.attributes.length).toBeLessThanOrEqual(4);
     expect(product.images).toHaveLength(1);
-    expect(product.images[0]).toMatch(/^\/images\/products\/[a-z-]+\.png$/);
+    expect(product.images[0]).toMatch(
+      /^\/images\/preview\/categories\/[a-z-]+\.png$/,
+    );
+    expect(existsSync(join(process.cwd(), "public", product.images[0]))).toBe(
+      true,
+    );
   }
   for (const category of await Category.find().lean()) {
     const count = products.filter((product) =>
       product.category.equals(category._id),
     ).length;
-    expect(count).toBeGreaterThanOrEqual(4);
+    expect(count).toBe(
+      category.slug === "twin"
+        ? 0
+        : category.slug === "home-kitchen"
+          ? 1
+          : ["top-freezer", "bottom-freezer"].includes(category.slug)
+            ? 2
+            : category.slug === "sports-travel"
+              ? 4
+              : 5,
+    );
     expect(count).toBeLessThanOrEqual(6);
   }
   const admin = await User.findOne({ role: "admin" })

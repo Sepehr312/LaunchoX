@@ -1,0 +1,414 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  margin-block-start: -68px;
+  background: var(--f-background);
+  touch-action: pan-y;
+}
+.slides {
+  display: grid;
+}
+.slide {
+  position: relative;
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+  padding-block-start: 390px;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 600ms ease,
+    visibility 600ms;
+}
+.slide[data-active="true"] {
+  opacity: 1;
+  visibility: visible;
+}
+.scene {
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: 410px;
+  z-index: -2;
+  overflow: hidden;
+}
+.scene img {
+  object-fit: cover;
+  object-position: 26% center;
+  transition: opacity 500ms ease;
+}
+.dayScene {
+  opacity: var(--f-day-opacity);
+}
+.nightScene {
+  opacity: var(--f-night-opacity);
+}
+.scene::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, var(--f-background), transparent 18%);
+  content: "";
+}
+.content {
+  position: relative;
+  inline-size: calc(100% - 40px);
+  margin-inline: auto;
+  padding-block: 12px 36px;
+  color: var(--f-ink);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-block-end: 14px;
+}
+.eyebrow span {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--f-accent);
+  box-shadow: 0 0 0 5px rgb(56 189 248 / 10%);
+}
+.content h1 {
+  max-inline-size: 600px;
+  font-size: clamp(30px, 7.7vw, 42px);
+  font-weight: 800;
+  line-height: 1.65;
+  letter-spacing: -1.3px;
+  text-wrap: balance;
+}
+.subtitle {
+  max-inline-size: 480px;
+  margin-block-start: 18px;
+  font-size: 14px;
+  line-height: 2.1;
+  font-weight: 500;
+  text-wrap: pretty;
+}
+.description {
+  margin-block-start: 10px;
+  font-size: 12px;
+  line-height: 2;
+  color: var(--f-muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block-start: 24px;
+}
+.actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-block-size: 48px;
+  padding: 10px 18px;
+  border: 1px solid light-dark(rgb(124 177 206 / 50%), rgb(125 211 252 / 30%));
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+.primary {
+  color: #092d46;
+  background: light-dark(#b4e6fa, #8cddff);
+  box-shadow: 0 6px 24px rgb(56 189 248 / 10%);
+}
+.secondary {
+  color: var(--f-ink);
+  background: light-dark(rgb(248 253 255 / 65%), rgb(7 27 46 / 65%));
+  backdrop-filter: blur(14px);
+}
+.actions a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px var(--f-shadow);
+}
+.hero:focus-visible,
+.hero :is(a, button):focus-visible {
+  outline: 2px solid var(--f-accent);
+  outline-offset: 4px;
+}
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-block-start: 28px;
+  color: light-dark(#1685b4, #68d9ff);
+}
+.navigationLabel {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.8;
+  white-space: nowrap;
+}
+.numbers {
+  display: flex;
+  gap: 6px;
+}
+.number {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--f-muted);
+}
+button.number {
+  cursor: pointer;
+}
+.number[aria-current="true"] {
+  color: light-dark(#1685b4, #68d9ff);
+}
+.number[aria-current="true"]::before {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 12px;
+  inline-size: 1px;
+  background: currentColor;
+  content: "";
+}
+.playback {
+  position: absolute;
+  inset-block-end: 12px;
+  inset-inline: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.playback button {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  border-radius: 12px;
+  background: var(--f-glass);
+  color: var(--f-ink);
+  cursor: pointer;
+  font-size: 12px;
+}
+@media (max-width: 767px) {
+  .hero {
+    inline-size: 100%;
+  }
+  .slide {
+    min-block-size: 520px;
+    padding-block-start: 0;
+    display: flex;
+    align-items: center;
+  }
+  .scene {
+    inset: 0;
+    block-size: 100%;
+  }
+  .scene img {
+    object-position: 43% center;
+  }
+  .scene::after {
+    background: linear-gradient(
+      to left,
+      light-dark(rgb(241 248 252 / 86%), rgb(6 20 33 / 80%)),
+      light-dark(rgb(241 248 252 / 55%), rgb(6 20 33 / 48%)) 48%,
+      transparent 78%
+    );
+    pointer-events: none;
+  }
+  .content {
+    position: static;
+    inline-size: 100%;
+    padding: 100px 0 60px;
+  }
+  .copy {
+    inline-size: 62%;
+    margin-inline-start: 5%;
+    text-align: start;
+    overflow-wrap: break-word;
+  }
+  .eyebrow {
+    gap: 8px;
+    margin-block-end: 8px;
+    font-size: 10px;
+    line-height: 1.7;
+  }
+  .eyebrow span {
+    flex-shrink: 0;
+    inline-size: 4px;
+    block-size: 4px;
+  }
+  .content h1 {
+    font-size: clamp(20px, 5.4vw, 24px);
+    line-height: 1.4;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    margin-block-start: 10px;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .description {
+    margin-block-start: 8px;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--f-ink);
+  }
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-block-start: 12px;
+  }
+  .actions a {
+    inline-size: min(100%, 180px);
+    min-block-size: 44px;
+    padding: 8px 12px;
+    gap: 10px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+  .navigation {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 18px;
+    justify-content: center;
+    margin: 0;
+    z-index: 2;
+  }
+  .navigationLabel {
+    display: none;
+  }
+  .hero:has(+ [data-arctic-benefits]) .navigation {
+    /* Clear the overlapping Benefits Bar with an 8px gap. */
+    inset-block-end: 48px;
+  }
+  .numbers {
+    direction: ltr;
+    gap: 0;
+  }
+  .number[aria-current="true"] {
+    font-weight: 800;
+  }
+  .number[aria-current="true"]::before {
+    inset-block: auto 4px;
+    inset-inline-start: calc(50% - 8px);
+    inline-size: 16px;
+    block-size: 2px;
+    border-radius: 2px;
+  }
+}
+@media (min-width: 375px) and (max-width: 429px) {
+  .slide {
+    min-block-size: 560px;
+  }
+}
+@media (min-width: 430px) and (max-width: 767px) {
+  .slide {
+    min-block-size: 580px;
+  }
+  .scene img {
+    object-position: 35% center;
+  }
+  .copy {
+    inline-size: min(58%, 360px);
+  }
+  .subtitle {
+    font-size: 13px;
+  }
+  .description {
+    font-size: 12px;
+  }
+}
+@media (min-width: 768px) {
+  .hero {
+    margin-block-start: -84px;
+  }
+  .slide {
+    min-block-size: clamp(560px, 78svh, 700px);
+    padding-block-start: 0;
+    display: flex;
+    align-items: center;
+  }
+  .scene {
+    inset-block: 0;
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+    inline-size: 70%;
+    block-size: auto;
+    mask-image: linear-gradient(to right, #000 72%, transparent);
+  }
+  .scene img {
+    object-position: 22% center;
+  }
+  .scene::after {
+    background: linear-gradient(
+      270deg,
+      light-dark(rgb(241 248 252 / 22%), rgb(6 20 33 / 18%)),
+      transparent 38%
+    );
+  }
+  .content {
+    inline-size: min(calc(100% - 80px), 1440px);
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr) 44%;
+    gap: 20px;
+    align-items: center;
+    padding-block: 112px 44px;
+  }
+  .copy {
+    grid-column: 2;
+    grid-row: 1;
+    min-inline-size: 0;
+  }
+  .content h1 {
+    font-size: clamp(30px, 3.25vw, 54px);
+  }
+  .subtitle {
+    font-size: clamp(14px, 1.15vw, 18px);
+  }
+  .description {
+    font-size: 13px;
+  }
+  .actions a {
+    padding-inline: 22px;
+    font-size: 13px;
+  }
+  .navigation {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    margin-block-start: 4px;
+  }
+  .numbers {
+    flex-direction: column;
+  }
+  .number[aria-current="true"]::before {
+    inset-block: 4px;
+  }
+  .playback {
+    inset-block-end: 16px;
+  }
+}
+@media (min-width: 1280px) {
+  .scene img {
+    object-position: left 42%;
+  }
+  .content {
+    grid-template-columns: 76px minmax(0, 1fr) 42%;
+    gap: 30px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero *,
+  .scene img {
+    transition: none;
+  }
+  .actions a:hover {
+    transform: none;
+  }
+}

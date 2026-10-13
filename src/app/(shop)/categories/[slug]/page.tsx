@@ -1,20 +1,31 @@
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CatalogPage } from "@/components/store/CatalogPage";
+import { ProductsCatalog } from "@/components/store/ProductsCatalog";
+import { slugSchema } from "@/validations/common";
 import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
 import { getCategoryBySlug, listCategories } from "@/services/category.service";
-import { listProducts } from "@/services/product.service";
+import {
+  getProductFilterOptions,
+  listProducts,
+} from "@/services/product.service";
 
 export const dynamic = "force-dynamic";
+
+async function resolveCategory(slug: string) {
+  const parsed = slugSchema.safeParse(slug);
+  if (!parsed.success) notFound();
+  const category = await getCategoryBySlug(parsed.data);
+  if (!category) notFound();
+  return category;
+}
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const category = await getCategoryBySlug((await params).slug);
-  if (!category) notFound();
+  const category = await resolveCategory((await params).slug);
   return {
     title: `${category.name} | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
     description: category.description,
@@ -29,31 +40,27 @@ export default async function CategoryPage({
   searchParams: Promise<StoreSearchParams>;
 }) {
   const [{ slug }, values] = await Promise.all([params, searchParams]);
-  const category = await getCategoryBySlug(slug);
-  if (!category) notFound();
+  const category = await resolveCategory(slug);
   const parsed = parseProductQuery(values, { category: category.id });
-  const [categories, result] = await Promise.all([
+  const query = parsed.success
+    ? parsed.data
+    : { page: 1, limit: 9, sort: "newest" as const, category: category.id };
+  query.limit = values.limit ? query.limit : 9;
+  query.page = 1;
+  const [categories, result, options] = await Promise.all([
     listCategories(),
-    listProducts(
-      parsed.success
-        ? parsed.data
-        : { page: 1, limit: 12, sort: "newest", category: category.id },
-    ),
+    listProducts(query),
+    getProductFilterOptions(),
   ]);
   return (
-    <CatalogPage
-      emptyTitle="محصولی در این دسته برای نمایش وجود ندارد"
-      emptyMessage="این دسته محصولی مطابق انتخاب شما ندارد. فیلترها را تغییر دهید یا دسته‌های دیگر را ببینید."
-      eyebrow="دسته‌بندی محصولات"
-      title={category.name}
-      description={
-        category.description ??
-        "مدل‌های این دسته را بر اساس قیمت و موجودی بررسی کنید."
-      }
+    <ProductsCatalog
+      key={category.id}
+      selectedCategory={category}
       result={result}
       categories={categories}
-      searchParams={values}
-      basePath={`/categories/${category.slug}`}
+      options={options}
+      query={query}
+      error={parsed.success ? undefined : parsed.error.issues[0]?.message}
     />
   );
 }

@@ -10,6 +10,10 @@ export function parseProductQuery(
     const value = searchParams[key];
     return typeof value === "string" && value !== "" ? value : undefined;
   };
+  const listValue = (key: string) => {
+    const value = searchParams[key];
+    return typeof value === "string" ? [value] : value;
+  };
   return productQuerySchema.safeParse({
     page: stringValue("page"),
     limit: stringValue("limit"),
@@ -19,5 +23,9 @@ export function parseProductQuery(
     maxPrice: stringValue("maxPrice"),
     sort: stringValue("sort"),
     inStock: stringValue("inStock"),
+    brands: listValue("brands"),
+    energies: listValue("energies"),
+    capacity: stringValue("capacity"),
+    discounted: stringValue("discounted"),
   });
 }
