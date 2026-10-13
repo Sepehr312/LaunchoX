@@ -1,0 +1,287 @@
+/* Keep the existing light palette local to customer routes, including in dark OS mode. */
+:global(html):has(.scope) {
+  color-scheme: light;
+  --background: #eef7fb;
+  --foreground: #071f3d;
+  --primary: #087ec1;
+  --primary-foreground: #ffffff;
+  --surface: #fafdff;
+  --surface-raised: rgba(255, 255, 255, 0.86);
+  --glass: rgba(245, 252, 255, 0.72);
+  --muted: #58718a;
+  --border: #c4dcea;
+  --border-strong: #98c8e3;
+  --danger: #d72f47;
+  --success: #087b68;
+  --navy: #062345;
+  --ice: #dff6ff;
+  --cyan: #45c5ef;
+  --shadow: 0 16px 48px rgba(11, 70, 111, 0.07);
+}
+:global(body):has(.scope) {
+  background: var(--background);
+}
+.scope {
+  min-width: 0;
+  color: var(--foreground);
+  color-scheme: light;
+}
+.scope input,
+.scope select,
+.scope textarea {
+  min-height: 3rem;
+  background: var(--surface);
+}
+.scope label {
+  font-size: 0.875rem;
+}
+.scope :global(.checkout-panel) {
+  background: var(--surface);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.scope h2,
+.scope h3 {
+  letter-spacing: -0.025em;
+}
+.scope details > summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+.scope details > summary::after {
+  content: "+";
+  color: var(--primary);
+  font-size: 1.3rem;
+}
+.scope details[open] > summary::after {
+  content: "−";
+}
+.auth {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 1rem;
+  background: radial-gradient(ellipse at top, var(--ice), transparent 65%);
+}
+.authCard {
+  width: 100%;
+  max-width: 30rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.75rem;
+  box-shadow: var(--shadow);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--primary);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+.brand svg {
+  width: 2rem;
+  height: 2rem;
+}
+.icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background: var(--ice);
+  color: var(--primary);
+}
+.icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.password {
+  position: relative;
+}
+.password input {
+  padding-inline-end: 3.25rem;
+}
+.eye {
+  position: absolute;
+  inset-inline-end: 0.3rem;
+  inset-block-start: 0.3rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  border-radius: 0.65rem;
+  cursor: pointer;
+}
+.eye svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.eye:focus-visible {
+  outline: 2px solid var(--primary);
+}
+.notice {
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.error {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 4%, var(--surface));
+}
+.success {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 4%, var(--surface));
+}
+.shell {
+  display: grid;
+  gap: 1.5rem;
+  padding-block: 2.5rem 4rem;
+}
+.sidebar {
+  min-width: 0;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: var(--surface);
+  align-self: start;
+}
+.navigation {
+  display: grid;
+  gap: 0.5rem;
+  margin-block-start: 1.5rem;
+}
+.navigation a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.85rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.navigation a[aria-current="page"] {
+  color: var(--primary);
+  background: var(--ice);
+  font-weight: 700;
+}
+.navigation svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.navigation a:hover {
+  background: var(--background);
+}
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 1.5rem;
+  background: var(--surface);
+  text-align: center;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  padding: 0.4rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  background: color-mix(in srgb, currentColor 8%, var(--surface));
+}
+.badge::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pending {
+  color: #a16207;
+}
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+}
+.stepper button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  color: var(--primary);
+  background: var(--surface);
+  font-size: 1.2rem;
+}
+.stepper button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.stepper output {
+  min-width: 2.5rem;
+  text-align: center;
+  font-weight: 700;
+}
+.timeline {
+  display: grid;
+  gap: 0;
+}
+.timeline li {
+  position: relative;
+  border-inline-start: 1px solid var(--border);
+  padding-inline-start: 1.5rem;
+  padding-block: 0 1.5rem;
+  margin-inline-start: 0.35rem;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -0.35rem;
+  inset-block-start: 0.25rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--primary);
+}
+.timeline li:last-child {
+  border-color: transparent;
+  padding-block-end: 0;
+}
+@media (min-width: 1024px) {
+  .shell {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .sidebar {
+    position: sticky;
+    inset-block-start: 7rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scope * {
+    transition: none;
+  }
+}
+/* The shared header stays light only while a customer route is mounted. */
+:global(body):has(.scope) :global(header[data-theme]) {
+  color-scheme: light;
+}
+:global(body):has(.scope) :global(button[aria-label="تغییر به تم روشن"]),
+:global(body):has(.scope) :global(button[aria-label="تغییر به تم تاریک"]) {
+  display: none;
+}

@@ -41,7 +41,7 @@ try:
         rows = products["items"][:2]
         assert len(rows) == 2
         page.goto(f"{BASE}/cart")
-        expect(page.get_by_text("سبد خرید شما خالی است.")).to_be_visible()
+        expect(page.get_by_role("heading", name="سبد خرید شما خالی است", exact=True)).to_be_visible()
         assert not any(c["name"] == "cart_id" for c in context.cookies())
         for product in rows:
             page.goto(f"{BASE}/products/{product['slug']}")
@@ -58,13 +58,14 @@ try:
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         for product in rows:
             article = page.locator("[data-cart-item]").filter(has_text=product["title"])
-            assert article.get_by_label("تعداد").locator("option").count() == min(product["stock"], 10)
+            expect(article.get_by_role("button", name="کاهش تعداد")).to_be_disabled()
+            expect(article.locator("output")).to_have_text("۱")
         page.goto(f"{BASE}/register?callbackUrl=/cart")
-        page.get_by_label("نام", exact=True).fill("کاربر آزمایشی سبد")
+        page.get_by_label("نام و نام خانوادگی", exact=True).fill("کاربر آزمایشی سبد")
         page.get_by_label("ایمیل", exact=True).fill(email)
         page.get_by_label("رمز عبور", exact=True).fill("Customer123!")
         page.get_by_label("تکرار رمز عبور", exact=True).fill("Customer123!")
-        page.get_by_role("button", name="ثبت‌نام", exact=True).click()
+        page.get_by_role("button", name="ساخت حساب کاربری", exact=True).click()
         page.wait_for_url(f"{BASE}/cart")
         expect(page.locator("[data-cart-item]")).to_have_count(2)
         assert not any(c["name"] == "cart_id" for c in context.cookies())
@@ -82,12 +83,12 @@ try:
         page.wait_for_url(f"{BASE}/cart")
         expect(page.locator("[data-cart-item]")).to_have_count(2)
         first = page.locator("[data-cart-item]").filter(has_text=rows[0]["title"])
-        expect(first.get_by_label("تعداد")).to_have_value(str(min(2, rows[0]["stock"])))
-        first.get_by_label("تعداد").select_option("1")
-        first.get_by_role("button", name="تغییر تعداد", exact=True).click()
+        expect(first.locator("output")).to_have_text(str(min(2, rows[0]["stock"])).translate(str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")))
+        if rows[0]["stock"] > 1:
+            first.get_by_role("button", name="کاهش تعداد", exact=True).click()
         expected_count = str(1 + min(2, rows[1]["stock"])).translate(str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹"))
         expect(page.locator("[data-cart-count]")).to_have_text(expected_count)
-        expect(first.get_by_label("تعداد")).to_have_value("1")
+        expect(first.locator("output")).to_have_text("۱")
         for width in [360, 1440]:
             page.set_viewport_size({"width": width, "height": 900})
             for theme in ["light", "dark"]:
@@ -95,10 +96,11 @@ try:
                 assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, theme)
                 assert page.locator("html").get_attribute("dir") == "rtl"
                 page.screenshot(path=str(Path(os.environ["TEMP"]) / f"launchox-cart-{width}-{theme}.png"), full_page=True)
+        page.on("dialog", lambda dialog: dialog.accept())
         first.get_by_role("button", name="حذف از سبد", exact=True).click()
         expect(page.locator("[data-cart-item]")).to_have_count(1)
         page.get_by_role("button", name="حذف از سبد", exact=True).click()
-        expect(page.get_by_text("سبد خرید شما خالی است.")).to_be_visible()
+        expect(page.get_by_role("heading", name="سبد خرید شما خالی است", exact=True)).to_be_visible()
         expect(page.locator("[data-cart-count]")).to_have_text("۰")
         assert not errors, errors
         browser.close()

@@ -1,30 +1,38 @@
-import Link from "next/link";
-import { requireUser } from "@/actions/auth.actions";
+import { requireUser, logoutAction } from "@/actions/auth.actions";
+import { CustomerNavigation } from "@/components/customer/CustomerNavigation";
+import { Button } from "@/components/ui/Button";
+import { UserIcon } from "@/components/store/Icons";
+import styles from "@/components/customer/customer.module.css";
 export default async function AccountLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireUser();
+  const user = await requireUser();
   return (
-    <main className="store-shell py-8 sm:py-12">
-      <p className="section-kicker">فضای شخصی شما</p>
-      <h1 className="mt-2 text-3xl font-bold sm:text-4xl">حساب کاربری</h1>
-      <nav aria-label="حساب کاربری" className="my-8 flex flex-wrap gap-3">
-        {[
-          ["/account", "پروفایل و امنیت"],
-          ["/account/addresses", "آدرس‌ها"],
-          ["/account/orders", "سفارش‌های من"],
-        ].map(([href, title]) => (
-          <Link
-            key={href}
-            href={href}
-            className="rounded-xl border border-border bg-surface px-5 py-3 text-sm hover:text-primary"
+    <main className={`store-shell ${styles.scope} ${styles.shell}`}>
+      <aside className={styles.sidebar}>
+        <span className={styles.icon}>
+          <UserIcon />
+        </span>
+        <h1 className="mt-5 text-xl font-bold">حساب کاربری</h1>
+        <p className="mt-2 text-sm break-words text-muted">
+          {user.name}، خوش آمدید
+        </p>
+        <CustomerNavigation />
+        <form
+          action={logoutAction}
+          className="mt-6 border-t border-border pt-5"
+        >
+          <Button
+            variant="secondary"
+            type="submit"
+            className="w-full text-danger"
           >
-            {title}
-          </Link>
-        ))}
-      </nav>
+            خروج از حساب
+          </Button>
+        </form>
+      </aside>
       <div className="min-w-0">{children}</div>
     </main>
   );

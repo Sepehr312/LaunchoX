@@ -7,16 +7,15 @@ import {
 } from "@/actions/checkout.actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import styles from "@/components/customer/customer.module.css";
+import { addressSchema } from "@/validations/address";
 import { toPersianDigits } from "@/lib/format";
 import type { AddressDTO } from "@/types/dto";
 import type { ActionResult } from "@/lib/errors";
 
 function FormErrors({ state }: { state: ActionResult<unknown> | undefined }) {
   return state && !state.ok ? (
-    <p
-      role="alert"
-      className="fixed end-4 bottom-4 z-50 max-w-[calc(100vw-2rem)] rounded-xl border border-danger bg-surface p-4 text-sm shadow-lg"
-    >
+    <p role="alert" className={`${styles.notice} ${styles.error}`}>
       {state.error}
     </p>
   ) : null;
@@ -34,6 +33,9 @@ const addressFields = [
 
 export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
   const [values, setValues] = useState<Record<string, string>>({});
+  const [clientErrors, setClientErrors] = useState<Record<string, string[]>>(
+    {},
+  );
   const [note, setNote] = useState("");
   const [state, action, pending] = useActionState(checkoutAction, undefined);
   const [addressState, addressAction, addressPending] = useActionState(
@@ -113,7 +115,7 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
         <div className="mt-6 border-t border-border pt-5">
           <p className="mb-4 text-xs leading-6 text-muted">
             موجودی هنگام ثبت سفارش رزرو می‌شود. پرداخت در این مرحله از طریق
-            درگاه آزمایشی انجام می‌شود.
+            درگاه آزمایشی انجام می‌شود و مبلغ واقعی پرداخت نخواهید کرد.
           </p>
           <Button
             type="submit"
@@ -134,6 +136,24 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
             افزودن آدرس جدید
           </summary>
           <form
+            noValidate
+            onSubmit={(event) => {
+              const parsed = addressSchema.safeParse(
+                Object.fromEntries(new FormData(event.currentTarget)),
+              );
+              if (!parsed.success) {
+                event.preventDefault();
+                const errors: Record<string, string[]> = {};
+                for (const issue of parsed.error.issues)
+                  (errors[String(issue.path[0])] ??= []).push(issue.message);
+                setClientErrors(errors);
+                event.currentTarget
+                  .querySelector<HTMLInputElement>(
+                    `[name="${String(parsed.error.issues[0]?.path[0])}"]`,
+                  )
+                  ?.focus();
+              } else setClientErrors({});
+            }}
             action={addressAction}
             className="mt-6 grid gap-4 sm:grid-cols-2"
           >
@@ -157,6 +177,17 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
                       [name]: event.target.value,
                     }))
                   }
+                  autoComplete={
+                    name === "postalCode"
+                      ? "postal-code"
+                      : name === "addressLine"
+                        ? "street-address"
+                        : name === "mobile"
+                          ? "tel"
+                          : name === "recipientName"
+                            ? "name"
+                            : "off"
+                  }
                   type={type}
                   required
                   disabled={addressPending}
@@ -166,6 +197,7 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
                       : undefined
                   }
                   aria-invalid={
+                    !!clientErrors[name]?.length ||
                     !!(
                       addressState &&
                       !addressState.ok &&
@@ -173,6 +205,21 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
                     )
                   }
                 />
+                {clientErrors[name]?.length ? (
+                  <span role="alert" className="text-xs text-danger">
+                    {clientErrors[name].join("؛ ")}
+                  </span>
+                ) : null}
+                {name === "postalCode" && (
+                  <span className="text-xs text-muted">
+                    کد پستی ۱۰ رقمی، بدون فاصله
+                  </span>
+                )}
+                {name === "addressLine" && (
+                  <span className="text-xs text-muted">
+                    خیابان، کوچه، پلاک، طبقه و واحد
+                  </span>
+                )}
                 {addressState &&
                   !addressState.ok &&
                   addressState.fieldErrors?.[name] && (

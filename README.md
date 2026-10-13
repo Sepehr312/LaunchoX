@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Customer routes use a scoped light-only presentation with the existing CSS light palette; shared theme, UI primitives, types, services, and actions remain unchanged. The remember option retains only the email for the browser session. Delivery estimates show an unavailable state until the backend provides a real estimate; pending statuses use yellow only as requested.
+
 - All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle remains scoped to the header.
 
 - راهنمای مشترک طراحی صفحات فروشگاه یخچال خانگی در [docs/UI-GUIDE.md](docs/UI-GUIDE.md) ثبت شده است؛ پس‌زمینه‌های روز/شب تأییدشده و عکس منتخب یخچال در `docs/assets/` نگه‌داری می‌شوند. ذخیرهٔ این مراجع به معنی پیاده‌سازی در سایت نیست.

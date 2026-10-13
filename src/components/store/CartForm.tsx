@@ -7,6 +7,7 @@ import {
   removeCartAction,
 } from "@/actions/cart.actions";
 import { Button } from "@/components/ui/Button";
+import styles from "@/components/customer/customer.module.css";
 import { toPersianDigits } from "@/lib/format";
 
 export function CartForm({
@@ -28,10 +29,52 @@ export function CartForm({
         : removeCartAction;
   const [state, formAction, pending] = useActionState(action, undefined);
   return (
-    <form action={formAction} className="my-4 grid min-w-0 gap-3">
+    <form
+      action={formAction}
+      aria-busy={pending}
+      onSubmit={(event) => {
+        if (
+          mode === "remove" &&
+          !window.confirm("آیا این محصول از سبد خرید حذف شود؟")
+        )
+          event.preventDefault();
+      }}
+      className="my-4 grid min-w-0 gap-3"
+    >
       <input type="hidden" name="product" value={product} />
       <div className="flex flex-wrap items-end gap-3">
-        {mode !== "remove" && (
+        {mode === "update" && (
+          <div className="grid gap-2 text-sm">
+            <span>تعداد</span>
+            <div className={styles.stepper}>
+              <button
+                type="submit"
+                name="quantity"
+                value={quantity - 1}
+                disabled={pending || quantity <= 1}
+                aria-label="کاهش تعداد"
+              >
+                −
+              </button>
+              <output aria-live="polite">{toPersianDigits(quantity)}</output>
+              <button
+                type="submit"
+                name="quantity"
+                value={quantity + 1}
+                disabled={pending || quantity >= Math.min(stock, 10)}
+                aria-label="افزایش تعداد"
+              >
+                +
+              </button>
+            </div>
+            {pending && (
+              <span role="status" className="text-xs text-muted">
+                در حال به‌روزرسانی…
+              </span>
+            )}
+          </div>
+        )}
+        {mode === "add" && (
           <label className="grid gap-2 text-sm">
             تعداد
             <select
@@ -52,26 +95,23 @@ export function CartForm({
             </select>
           </label>
         )}
-        <Button
-          type="submit"
-          variant={mode === "remove" ? "secondary" : "primary"}
-          disabled={pending || (mode !== "remove" && !stock)}
-        >
-          {pending
-            ? "در حال ثبت…"
-            : mode === "add"
-              ? "افزودن به سبد خرید"
-              : mode === "update"
-                ? "تغییر تعداد"
+        {mode !== "update" && (
+          <Button
+            type="submit"
+            variant={mode === "remove" ? "secondary" : "primary"}
+            disabled={pending || (mode !== "remove" && !stock)}
+          >
+            {pending
+              ? "در حال ثبت…"
+              : mode === "add"
+                ? "افزودن به سبد خرید"
                 : "حذف از سبد"}
-        </Button>
+          </Button>
+        )}
       </div>
       {state && !state.ok && (
         <>
-          <p
-            role="alert"
-            className="fixed end-4 bottom-4 z-50 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-4 text-sm shadow-lg"
-          >
+          <p role="alert" className={`${styles.notice} ${styles.error}`}>
             {state.error}
           </p>
           {Object.entries(state.fieldErrors ?? {}).map(([field, errors]) => (
@@ -82,7 +122,7 @@ export function CartForm({
         </>
       )}
       {state?.ok && (
-        <p role="status" className="text-sm text-primary">
+        <p role="status" className="text-sm text-success">
           {mode === "remove" ? "محصول حذف شد" : "سبد خرید به‌روز شد"}
         </p>
       )}

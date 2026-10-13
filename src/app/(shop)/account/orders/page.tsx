@@ -1,3 +1,5 @@
+import { CustomerEmpty } from "@/components/customer/CustomerEmpty";
+import { OrderBadge } from "@/components/customer/OrderBadge";
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -5,7 +7,6 @@ import { requireUser } from "@/actions/auth.actions";
 import { listOrdersForUser } from "@/services/order.service";
 import { orderQuerySchema } from "@/validations/order";
 import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
-import { orderLabels } from "@/types/order-labels";
 export const metadata: Metadata = {
   title: `سفارش‌های من | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
 };
@@ -23,21 +24,39 @@ export default async function OrdersPage({
     <section>
       <h2 className="mb-6 text-2xl font-bold">سفارش‌های من</h2>
       {!result.items.length && (
-        <p className="checkout-panel">سفارشی برای نمایش وجود ندارد.</p>
+        <CustomerEmpty
+          title="هنوز سفارشی ندارید"
+          description="پس از اولین خرید، وضعیت و جزئیات سفارش‌هایتان را اینجا خواهید دید."
+          href="/products"
+          label="مشاهدهٔ محصولات"
+        />
       )}
       <div className="grid gap-4">
         {result.items.map((order) => (
           <Link
             key={order.id}
             href={`/account/orders/${order.id}`}
-            className="checkout-panel grid gap-3 sm:grid-cols-4"
+            className="checkout-panel grid items-center gap-4 sm:grid-cols-2"
           >
             <span className="font-bold">
               {toPersianDigits(order.orderNumber)}
             </span>
-            <span>{formatDate(order.createdAt)}</span>
+            <span className="text-sm text-muted">
+              ثبت در {formatDate(order.createdAt)}
+            </span>
             <span>{formatPrice(order.total)}</span>
-            <span className="text-primary">{orderLabels[order.status]}</span>
+            <OrderBadge status={order.status} />
+            <span className="text-xs leading-6 text-muted">
+              زمان تحویل:{" "}
+              {order.status === "delivered"
+                ? "تحویل داده شده"
+                : order.status === "cancelled"
+                  ? "سفارش لغو شده"
+                  : "هنوز اعلام نشده"}
+            </span>
+            <span className="text-sm font-semibold text-primary">
+              مشاهدهٔ جزئیات سفارش ←
+            </span>
           </Link>
         ))}
       </div>

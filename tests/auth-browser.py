@@ -52,11 +52,11 @@ def session(context):
 
 
 def register(page, email, confirm="Customer123!"):
-    page.get_by_label("نام", exact=True).fill("کاربر آزمایشی")
+    page.get_by_label("نام و نام خانوادگی", exact=True).fill("کاربر آزمایشی")
     page.get_by_label("ایمیل", exact=True).fill(email)
     page.get_by_label("رمز عبور", exact=True).fill("Customer123!")
     page.get_by_label("تکرار رمز عبور", exact=True).fill(confirm)
-    page.get_by_role("button", name="ثبت‌نام", exact=True).click()
+    page.get_by_role("button", name="ساخت حساب کاربری", exact=True).click()
 
 
 with sync_playwright() as playwright:
@@ -78,10 +78,10 @@ with sync_playwright() as playwright:
         expect(page).to_have_url(re.compile(r"/login\?callbackUrl="))
         assert "callbackUrl=" in page.url
     check_mobile(page)
-    page.get_by_role("link", name="حساب ندارید؟ ثبت‌نام").click()
+    page.get_by_role("link", name="ثبت‌نام کنید").click()
     expect(page).to_have_url(re.compile(r"/register\?callbackUrl="))
     check_mobile(page)
-    page.get_by_role("link", name="حساب دارید؟ ورود").click()
+    page.get_by_role("link", name="وارد شوید").click()
     expect(page).to_have_url(re.compile(r"/login\?callbackUrl="))
 
     for ip, email, password, role, target in [
@@ -137,7 +137,7 @@ with sync_playwright() as playwright:
     page.goto(BASE + "/register?callbackUrl=/account")
     register(page, email, "Mismatch123!")
     expect(page.locator("#confirmPassword-error")).to_have_text("تکرار رمز عبور یکسان نیست", timeout=30000)
-    expect(page.get_by_label("نام", exact=True)).to_have_value("کاربر آزمایشی")
+    expect(page.get_by_label("نام و نام خانوادگی", exact=True)).to_have_value("کاربر آزمایشی")
     expect(page.get_by_label("ایمیل", exact=True)).to_have_value(email)
     expect(page.get_by_label("رمز عبور", exact=True)).to_have_value("Customer123!")
     page.get_by_label("تکرار رمز عبور", exact=True).fill("Customer123!")
@@ -146,7 +146,7 @@ with sync_playwright() as playwright:
       role.name = 'role'; role.value = 'admin'; role.type = 'hidden';
       document.querySelector('form').append(role);
     }""")
-    page.get_by_role("button", name="ثبت‌نام", exact=True).click()
+    page.get_by_role("button", name="ساخت حساب کاربری", exact=True).click()
     expect(page).to_have_url(BASE + "/account", timeout=30000)
     assert session(registered)["user"]["role"] == "customer"
     page.get_by_role("button", name=re.compile(r"^خروج(?: از حساب)?$")).click()
