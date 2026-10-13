@@ -129,6 +129,7 @@ npm run seed -- --reset
 
 ## Decisions
 
+
 - Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The eight homepage types share one definition; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
 
 
@@ -157,6 +158,15 @@ npm run seed -- --reset
 - The homepage reuses the approved three-slide Frostic preview with mobile playback and swipe; its theme follows the shared header toggle, and its buying-guide link targets the existing homepage FAQ.
 
 - All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle controls the header and homepage hero.
+
+- Catalog seed data includes 11 sample brands and links all 24 sample products through `Product.brand` while preserving legacy brand attributes. Repeated seeding preserves existing brand identities and settings; `seed -- --reset` also deletes and recreates brands.
+
+- For an existing local development catalog, `npx tsx --conditions=react-server --env-file=.env.local scripts/link-product-brands.ts` previews missing brand links from legacy attributes; add `--apply` to back up the catalog and brands, create missing brands, and fill only unassigned `Product.brand` references. Existing product fields and assigned brands are preserved.
+
+- Brand administration follows category full-form edits: omitted optional text fields are cleared, omitted slugs are generated from the name, and the management list includes inactive brands sorted by order and name. Linked products prevent deletion, while deactivation remains available without changing product visibility.
+
+- All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle remains scoped to the header.
+
 
 - راهنمای مشترک طراحی صفحات فروشگاه یخچال خانگی در [docs/UI-GUIDE.md](docs/UI-GUIDE.md) ثبت شده است؛ پس‌زمینه‌های روز/شب تأییدشده و عکس منتخب یخچال در `docs/assets/` نگه‌داری می‌شوند. ذخیرهٔ این مراجع به معنی پیاده‌سازی در سایت نیست.
 

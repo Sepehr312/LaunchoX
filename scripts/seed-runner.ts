@@ -1,4 +1,5 @@
 import { hash, compare } from "bcryptjs";
+import type { Types } from "mongoose";
 import { z } from "zod";
 import type { Env } from "@/lib/env";
 import { User } from "@/models/user";
@@ -7,6 +8,9 @@ import { Product } from "@/models/product";
 import { Cart } from "@/models/cart";
 import { Order } from "@/models/order";
 import { Counter } from "@/models/counter";
+import { Brand } from "@/models/brand";
+import { createBrandSchema } from "@/validations/brand";
+import { createUniqueSlug } from "@/lib/slug";
 import { seedCategories } from "./seed-data";
 import { getCatalogProductImage } from "./catalog-images";
 import { syncCatalogCategories } from "./sync-catalog-categories";
@@ -49,6 +53,7 @@ export async function seedDatabase(
     Cart.init(),
     Order.init(),
     Counter.init(),
+    Brand.init(),
   ]);
   if (options.reset) {
     await Promise.all([
@@ -57,6 +62,7 @@ export async function seedDatabase(
       Cart.deleteMany({}),
       Order.deleteMany({}),
       Counter.deleteMany({}),
+      Brand.deleteMany({}),
     ]);
   }
   const accounts = [
@@ -112,6 +118,33 @@ export async function seedDatabase(
       { upsert: true, runValidators: true },
     );
   }
+  const brandIds = new Map<string, Types.ObjectId>();
+  const brandNames = [
+    ...new Set(
+      seedCategories.flatMap((group) =>
+        group.products.map((product) => product.brand),
+      ),
+    ),
+  ];
+  for (const [order, name] of brandNames.entries()) {
+    const existing = await Brand.findOne({ name }).lean();
+    if (existing) {
+      brandIds.set(name, existing._id);
+      continue;
+    }
+    const slug = await createUniqueSlug(name, (candidate) =>
+      Brand.exists({ slug: candidate }).then(Boolean),
+    );
+    const input = createBrandSchema.parse({
+      name,
+      slug,
+      description: `برند نمونهٔ ${name} برای تست فروشگاه`,
+      order,
+      isFeatured: order < 3,
+    });
+    const brand = await Brand.create(input);
+    brandIds.set(name, brand._id);
+  }
   let index = 0;
   for (const [order, group] of seedCategories.entries()) {
     const category = await Category.findOneAndUpdate(
@@ -140,6 +173,7 @@ export async function seedDatabase(
           getCatalogProductImage(group.slug, product.title) ?? group.image,
         ],
         category: category._id,
+        brand: brandIds.get(product.brand),
         attributes: [
           { key: "برند", value: product.brand },
           { key: "ظرفیت", value: product.capacity },
@@ -161,7 +195,7 @@ export async function seedDatabase(
     }
   }
   await syncCatalogCategories();
-  const [users, categories, products, carts, orders, counters] =
+  const [users, categories, products, carts, orders, counters, brands] =
     await Promise.all([
       User.countDocuments(),
       Category.countDocuments(),
@@ -169,6 +203,7 @@ export async function seedDatabase(
       Cart.countDocuments(),
       Order.countDocuments(),
       Counter.countDocuments(),
+      Brand.countDocuments(),
     ]);
-  return { users, categories, products, carts, orders, counters };
+  return { users, categories, products, carts, orders, counters, brands };
 }

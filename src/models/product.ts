@@ -22,6 +22,7 @@ export interface IProduct extends StoredDocument {
   sku?: string;
   images: string[];
   category: Types.ObjectId;
+  brand?: Types.ObjectId;
   attributes: (ProductAttribute & Timestamps)[];
   isActive: boolean;
   isFeatured: boolean;
@@ -74,6 +75,7 @@ const productSchema = new Schema<IProduct>(
       required: [true, "دسته‌بندی الزامی است"],
       index: true,
     },
+    brand: { type: Schema.Types.ObjectId, ref: "Brand" },
     attributes: {
       type: [attributeSchema],
       default: [],

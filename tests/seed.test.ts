@@ -11,6 +11,7 @@ import { Product } from "@/models/product";
 import { Category } from "@/models/category";
 import { Cart } from "@/models/cart";
 import { Counter } from "@/models/counter";
+import { Brand } from "@/models/brand";
 import { seedDatabase, parseSeedOptions } from "../scripts/seed-runner";
 
 const env = envSchema.parse({
@@ -67,8 +68,19 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
     carts: 0,
     orders: 0,
     counters: 0,
+    brands: 11,
   });
   const products = await Product.find().lean();
+  const brands = await Brand.find().lean();
+  expect(brands.filter((brand) => brand.isFeatured)).toHaveLength(3);
+  expect(brands.every((brand) => brand.isActive)).toBe(true);
+  for (const product of products) {
+    const brand = brands.find((entry) => entry._id.equals(product.brand));
+    expect(brand).toBeDefined();
+    expect(brand?.name).toBe(
+      product.attributes.find((attribute) => attribute.key === "برند")?.value,
+    );
+  }
   expect(products.filter((product) => product.isFeatured)).toHaveLength(6);
   expect(
     products.filter((product) => product.stock === 0).length,
@@ -123,6 +135,9 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
   expect(customer.addresses[0].city).toBe("تهران");
   const second = await seedDatabase({ ...options, reset: false });
   expect(second).toEqual(first);
+  expect(
+    (await Brand.find().lean()).map((brand) => brand._id.toString()).sort(),
+  ).toEqual(brands.map((brand) => brand._id.toString()).sort());
   expect(
     (await Product.find().sort({ slug: 1 }).lean()).map((product) =>
       product._id.toString(),
