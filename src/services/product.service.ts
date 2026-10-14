@@ -7,6 +7,8 @@ import { toDTO } from "@/lib/model-shared";
 import { createUniqueSlug } from "@/lib/slug";
 import { Category } from "@/models/category";
 import { Product } from "@/models/product";
+import { Brand } from "@/models/brand";
+import { brandIdSchema } from "@/validations/brand";
 import type {
   PaginatedResult,
   ProductDTO,
@@ -310,18 +312,28 @@ async function ensureCategory(category: string) {
     throw new AppError("دسته‌بندی پیدا نشد", "NOT_FOUND");
 }
 
+async function ensureBrand(brand: string | null | undefined) {
+  if (brand && !(await Brand.exists({ _id: brandIdSchema.parse(brand) })))
+    throw new AppError("برند پیدا نشد", "NOT_FOUND");
+}
+
 export async function createProduct(
-  input: ProductInput,
+  input: ProductInput & { brand?: string | null },
 ): Promise<StoreProductDTO> {
   await connectDB();
   await ensureCategory(input.category);
+  await ensureBrand(input.brand);
   const slug =
     input.slug ??
     (await createUniqueSlug(input.title, (candidate) =>
       Product.exists({ slug: candidate }).then(Boolean),
     ));
   try {
-    const product = await Product.create({ ...input, slug });
+    const product = await Product.create({
+      ...input,
+      slug,
+      brand: input.brand || undefined,
+    });
     return (await withCategories([product.toObject()]))[0];
   } catch (error) {
     if (
@@ -337,10 +349,11 @@ export async function createProduct(
 
 export async function updateProduct(
   id: string,
-  input: ProductInput,
+  input: ProductInput & { brand?: string | null },
 ): Promise<StoreProductDTO> {
   await connectDB();
   await ensureCategory(input.category);
+  await ensureBrand(input.brand);
   const slug =
     input.slug ??
     (await createUniqueSlug(input.title, (candidate) =>
@@ -400,10 +413,13 @@ export async function listProductsAdmin(
 
 export async function getProductAdmin(
   id: string,
-): Promise<StoreProductDTO | null> {
+): Promise<(StoreProductDTO & { brand?: string }) | null> {
   await connectDB();
   const record = await Product.findById(id).lean();
-  return record ? ((await withCategories([record]))[0] ?? null) : null;
+  const product = record ? (await withCategories([record]))[0] : null;
+  return product && record
+    ? { ...product, brand: record.brand ? String(record.brand) : undefined }
+    : null;
 }
 export async function getProductCategoryOptions() {
   await connectDB();

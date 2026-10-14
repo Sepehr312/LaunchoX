@@ -27,7 +27,7 @@ export async function productAction(
     else if (operation === "active")
       await setProductActive(id, booleanSchema.parse(form.get("isActive")));
     else {
-      const input = productSchema.parse({
+      const fields = productSchema.parse({
         ...Object.fromEntries(form),
         images: form.getAll("images"),
         attributes: form.getAll("attributeKey").map((key, index) => ({
@@ -37,6 +37,15 @@ export async function productAction(
         isActive: form.has("isActive"),
         isFeatured: form.has("isFeatured"),
       });
+      const brandInput = form.has("brand")
+        ? z
+            .object({ brand: z.union([objectIdSchema, z.literal("")]) })
+            .parse({ brand: form.get("brand") })
+        : undefined;
+      const input = {
+        ...fields,
+        ...(brandInput ? { brand: brandInput.brand || null } : {}),
+      };
       const product =
         operation === "create"
           ? await createProduct(input)
