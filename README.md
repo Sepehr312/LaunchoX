@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Login and registration default to `/account` when no valid callback destination is supplied; explicitly requested safe destinations such as checkout remain intact.
+
 - Customer interaction cues use existing order statuses and validation rules. Clipboard copies the original order reference while displayed digits remain Persian. Address editing closes only after a successful existing action; selected-address and cart-saving cues do not change backend behavior.
 
 - Customer content uses a centered 1184px maximum width, 16px mobile gutters and 32px tablet/desktop gutters; profile forms are capped at 640px. Password changes expand beneath personal information. Saved addresses and the new-address form use adjacent RTL desktop columns and stack on mobile.

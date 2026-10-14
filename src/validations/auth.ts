@@ -56,5 +56,5 @@ export const callbackUrlSchema = z
 
 export function safeCallbackUrl(value: unknown): string {
   const parsed = callbackUrlSchema.safeParse(value);
-  return parsed.success ? parsed.data : "/";
+  return parsed.success ? parsed.data : "/account";
 }
