@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference while retaining the legacy brand attribute for catalog filters. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
+
 
 - Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The eight homepage types share one definition; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
 

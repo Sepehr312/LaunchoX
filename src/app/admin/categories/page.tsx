@@ -14,15 +14,26 @@ export default async function Categories() {
   const names = new Map(categories.map((item) => [item.id, item.name]));
   return (
     <section className="admin-panel">
+      <p className="admin-eyebrow">کاتالوگ فروشگاه</p>
       <h1>مدیریت دسته‌بندی‌ها</h1>
-      <Link href="/admin/categories/new">دسته‌بندی جدید</Link>
+      <p className="admin-hint">
+        دسته‌ها و ترتیب نمایش محصولات را مدیریت کنید.
+      </p>
+      <Link className="admin-primary" href="/admin/categories/new">
+        دسته‌بندی جدید
+      </Link>
       {categories.length ? (
-        <div className="max-w-full overflow-x-auto">
+        <div
+          className="admin-table-scroll"
+          role="region"
+          aria-label="جدول اطلاعات"
+          tabIndex={0}
+        >
           <table className="w-full text-start">
             <thead>
               <tr>
                 {["نام", "والد", "ترتیب", "وضعیت", "عملیات"].map((label) => (
-                  <th className="text-start" key={label}>
+                  <th scope="col" className="text-start" key={label}>
                     {label}
                   </th>
                 ))}
@@ -38,7 +49,17 @@ export default async function Categories() {
                       : "بدون والد"}
                   </td>
                   <td>{toPersianDigits(item.order)}</td>
-                  <td>{item.isActive ? "فعال" : "غیرفعال"}</td>
+                  <td>
+                    <span
+                      className={
+                        item.isActive
+                          ? "admin-badge admin-badge-success"
+                          : "admin-badge"
+                      }
+                    >
+                      {item.isActive ? "فعال" : "غیرفعال"}
+                    </span>
+                  </td>
                   <td>
                     <CategoryRowActions id={item.id} name={item.name} />
                   </td>

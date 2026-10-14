@@ -3,6 +3,8 @@ import { logoutAction } from "@/actions/auth.actions";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { Snowflake, ArrowUpLeft, ShieldCheck } from "lucide-react";
+import styles from "@/components/admin/Admin.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -13,27 +15,40 @@ export default async function AdminLayout({
 }) {
   await requireAdmin();
   return (
-    <div className="admin-shell">
-      <aside className="admin-sidebar">
-        <Link href="/" className="text-xl font-black">
-          لانچ‌اوکس
-          <span className="mt-2 block text-xs font-normal text-muted">
-            مرکز مدیریت فروشگاه
-          </span>
-        </Link>
-        <AdminNavigation />
-        <div className="flex flex-wrap items-center gap-4 lg:mt-auto">
-          <Link href="/" className="text-sm text-primary">
-            مشاهده فروشگاه
+    <div className={styles.scope}>
+      <div className="admin-shell">
+        <aside className="admin-sidebar">
+          <Link href="/admin" className="admin-logo">
+            <Snowflake size={32} aria-hidden="true" />
+            <span>
+              <b dir="ltr">
+                Launcho<span className="admin-logo-accent">X</span>
+              </b>
+              <small>مرکز مدیریت فروشگاه</small>
+            </span>
           </Link>
-          <form action={logoutAction}>
-            <Button type="submit">خروج</Button>
-          </form>
-        </div>
-      </aside>
-      <main id="admin-content" className="min-w-0">
-        {children}
-      </main>
+          <AdminNavigation>
+            <form action={logoutAction}>
+              <Button type="submit">خروج از حساب</Button>
+            </form>
+          </AdminNavigation>
+          <div className="admin-sidebar-footer">
+            <p>
+              <ShieldCheck size={18} aria-hidden="true" />
+              پنل مدیریت
+            </p>
+            <Link href="/" className="admin-store-link">
+              مشاهده فروشگاه <ArrowUpLeft size={18} aria-hidden="true" />
+            </Link>
+            <form action={logoutAction}>
+              <Button type="submit">خروج</Button>
+            </form>
+          </div>
+        </aside>
+        <main id="admin-content" className="min-w-0" tabIndex={-1}>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

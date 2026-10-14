@@ -1,0 +1,561 @@
+.scope {
+  /* Scope the approved shared palette until global tokens are coordinated. */
+  --color-background: #f2f8ff;
+  --color-foreground: #10245a;
+  --color-surface: #fff;
+  --color-muted: #526582;
+  --color-primary: #006acb;
+  --color-primary-foreground: #fff;
+  --color-border: #d8e8f8;
+  --color-danger: #bc2434;
+  --color-success: #17633f;
+  --surface: var(--color-surface);
+  --primary: var(--color-primary);
+  --muted: var(--color-muted);
+  --border: var(--color-border);
+  --border-strong: #758aa6;
+  --ice: #eaf5ff;
+  --foreground: var(--color-foreground);
+  --shadow: 0 4px 16px rgb(30 90 150 / 8%);
+  color-scheme: light;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  min-height: 100dvh;
+  font-size: 16px;
+  line-height: 1.8;
+}
+.scope :global(.admin-shell) {
+  max-width: 1440px;
+  gap: 24px;
+}
+.scope :global(.admin-panel),
+.scope :global(.checkout-panel) {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.scope :global(.admin-sidebar) {
+  border-radius: 20px;
+  background: var(--surface);
+  padding: 24px 16px;
+  gap: 32px;
+}
+.scope :global(.admin-logo) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--foreground);
+}
+.scope :global(.admin-logo) svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.scope :global(.admin-logo) b {
+  display: block;
+  font-size: 25px;
+  line-height: 1.4;
+}
+.scope :global(.admin-logo) small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.scope :global(.admin-logo-accent) {
+  color: var(--primary);
+}
+.scope :global(.admin-navigation) {
+  gap: 8px;
+}
+.scope :global(.admin-navigation a) {
+  justify-content: start;
+  gap: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  min-height: 48px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+.scope :global(.admin-navigation a:hover) {
+  background: var(--ice);
+  color: var(--primary);
+}
+.scope :global(.admin-navigation a[aria-current="page"]) {
+  background: #dceeff;
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+}
+.scope :global(.admin-sidebar-footer) {
+  display: grid;
+  gap: 20px;
+  margin-block-start: auto;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+  font-size: 14px;
+}
+.scope :global(.admin-sidebar-footer p),
+.scope :global(.admin-store-link) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scope :global(.admin-sidebar-footer p) {
+  color: var(--muted);
+}
+.scope :global(.admin-store-link) {
+  color: var(--primary);
+}
+.scope :global(.admin-page-header) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-block-end: 24px;
+}
+.scope h1 {
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 800;
+  line-height: 1.5;
+}
+.scope h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+.scope h3 {
+  font-weight: 700;
+}
+.scope :global(.admin-eyebrow) {
+  font-size: 13px;
+  color: var(--primary);
+  margin-block-end: 8px;
+}
+.scope :global(.admin-hint) {
+  font-size: 14px;
+  color: var(--muted);
+}
+.scope :global(.admin-required) {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.scope :global(.admin-form-body) {
+  display: grid;
+  min-width: 0;
+  gap: 24px;
+}
+.scope :global(.admin-form-section) {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.scope :global(.admin-form-section > header) {
+  padding: 16px 24px;
+  background: #f7fbff;
+  border-block-end: 1px solid var(--border);
+}
+.scope :global(.admin-form-section > header p) {
+  font-size: 14px;
+  color: var(--muted);
+  margin-block-start: 4px;
+}
+.scope :global(.admin-form-grid) {
+  display: grid;
+  gap: 24px;
+  padding: 24px;
+  min-width: 0;
+}
+.scope :global(.admin-field) {
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  gap: 8px;
+}
+.scope :global(.admin-field label) {
+  font-size: 14px;
+  font-weight: 600;
+  display: block;
+}
+.scope :global(.admin-span) {
+  grid-column: 1 / -1;
+}
+.scope :global(.field-input) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 14px;
+  margin-block-start: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  color: var(--foreground);
+  background: var(--surface);
+  font: inherit;
+}
+.scope :global(textarea.field-input) {
+  min-height: 120px;
+  resize: vertical;
+}
+.scope :global(.field-input[aria-invalid="true"]) {
+  border-color: var(--color-danger);
+}
+.scope :global(.admin-field-error) {
+  font-size: 14px;
+  color: var(--color-danger);
+}
+.scope :global(.admin-toggle) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+.scope :global(.admin-toggle input) {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+}
+.scope :global(.admin-toggle strong) {
+  font-weight: 600;
+  font-size: 14px;
+}
+.scope :global(.admin-toggle small) {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+.scope button,
+.scope :global(.admin-primary) {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 160ms;
+}
+.scope button {
+  color: var(--foreground);
+  background: var(--surface);
+}
+.scope button:hover {
+  background: var(--ice);
+}
+.scope :global(.admin-primary) {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.scope :global(.admin-primary:hover) {
+  background: #0057ab;
+}
+.scope :global(.admin-primary:active) {
+  background: #004b94;
+}
+.scope button:disabled {
+  opacity: 1;
+  background: #e8edf3;
+  color: #526582;
+  cursor: not-allowed;
+  border-color: var(--border);
+}
+.scope :global(.admin-actions),
+.scope :global(.admin-form-footer) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.scope :global(.admin-actions a) {
+  color: var(--primary);
+  padding: 10px 8px;
+  min-height: 44px;
+}
+.scope :global(.admin-form-footer) {
+  border-block-start: 1px solid var(--border);
+  padding-block-start: 24px;
+}
+.scope :global(.admin-form-footer a) {
+  color: var(--muted);
+  padding: 10px 0;
+}
+.scope :global(.admin-image-list) {
+  display: grid;
+  gap: 16px;
+}
+.scope :global(.admin-image-row) {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  border-block-end: 1px solid var(--border);
+  padding-block-end: 20px;
+}
+.scope :global(.admin-image-controls) {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.scope :global(.admin-image-preview) {
+  display: grid;
+  place-items: center;
+  background: #f7fbff;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  width: 140px;
+  max-width: 100%;
+  height: 140px;
+  overflow: hidden;
+}
+.scope :global(.admin-image-preview img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+.scope :global(.admin-image-preview span) {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--muted);
+  padding: 8px;
+}
+.scope :global(.admin-image-preview small) {
+  font-size: 12px;
+}
+.scope :global(.admin-attribute-row) {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+  margin-block-end: 16px;
+}
+.scope :global(.admin-success),
+.scope :global(.admin-error) {
+  padding: 16px;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.scope :global(.admin-success) {
+  color: #17633f;
+  background: #eaf7ef;
+}
+.scope :global(.admin-error) {
+  color: #bc2434;
+  background: #fff0f2;
+}
+.scope :global(.admin-success a),
+.scope :global(.admin-error a) {
+  text-decoration: underline;
+}
+.scope :global(.admin-danger) {
+  color: #bc2434;
+}
+.scope :global(.admin-filter) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #f7fbff;
+  margin-block: 24px;
+}
+.scope :global(.admin-filter label) {
+  min-width: 0;
+  flex: 1 1 180px;
+  font-size: 14px;
+}
+.scope :global(.admin-filter a) {
+  padding: 10px;
+  color: var(--primary);
+}
+.scope :global(.admin-table-scroll) {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-block-start: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.scope table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.scope th {
+  background: var(--ice);
+  color: var(--foreground);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.scope th,
+.scope td {
+  text-align: start;
+  padding: 16px;
+  border-block-end: 1px solid var(--border);
+  vertical-align: middle;
+}
+.scope td {
+  min-width: 100px;
+}
+.scope td a {
+  color: var(--primary);
+}
+.scope tr:hover td {
+  background: #f7fbff;
+}
+.scope :global(.admin-badge) {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: var(--muted);
+  background: var(--ice);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 2px;
+  white-space: nowrap;
+}
+.scope :global(.admin-badge-success) {
+  color: #17633f;
+  background: #eaf7ef;
+}
+.scope :global(.admin-badge-danger) {
+  color: #bc2434;
+  background: #fff0f2;
+}
+.scope :global(.admin-badge-warning) {
+  color: #885000;
+  background: #fff6dd;
+}
+.scope :global(.admin-empty) {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 48px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+.scope :global(.admin-empty a) {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.scope :global(.admin-stat-icon) {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: var(--ice);
+  color: var(--primary);
+  border-radius: 12px;
+  margin-block-end: 16px;
+}
+.scope :global(.admin-drawer) {
+  position: fixed;
+  margin: 0;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  width: min(320px, calc(100% - 32px));
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  border: 0;
+  background: white;
+  padding: 24px 16px;
+  color: var(--foreground);
+}
+.scope :global(.admin-drawer::backdrop) {
+  background: rgb(16 36 90 / 32%);
+}
+.scope :global(.admin-drawer-header) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-end: 32px;
+}
+.scope :global(.admin-drawer-header button) {
+  margin-inline-start: auto;
+}
+.scope :global(.admin-drawer .admin-store-link) {
+  margin-block-start: 32px;
+}
+.scope :global(.admin-menu-trigger) {
+  display: none;
+}
+.scope :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.scope :global(.admin-product-form) {
+  margin-block-start: 24px;
+}
+@media (min-width: 640px) {
+  .scope :global(.admin-form-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .scope :global(.admin-attribute-row) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  }
+  .scope :global(.admin-attribute-row button) {
+    margin-block-start: 34px;
+  }
+}
+@media (max-width: 1023px) {
+  .scope :global(.admin-sidebar) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    gap: 12px;
+  }
+  .scope :global(.admin-desktop-nav),
+  .scope :global(.admin-sidebar-footer) {
+    display: none;
+  }
+  .scope :global(.admin-menu-trigger) {
+    display: inline-flex;
+  }
+}
+@media (max-width: 639px) {
+  .scope :global(.admin-panel),
+  .scope :global(.checkout-panel) {
+    padding: 16px;
+  }
+  .scope :global(.admin-form-grid),
+  .scope :global(.admin-form-section > header) {
+    padding: 16px;
+  }
+  .scope :global(.admin-image-row) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .scope :global(.admin-logo) b {
+    font-size: 20px;
+  }
+  .scope :global(.admin-logo) svg {
+    width: 24px;
+  }
+  .scope :global(.admin-menu-trigger) {
+    font-size: 12px;
+    padding-inline: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scope * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

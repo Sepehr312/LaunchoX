@@ -1,9 +1,20 @@
 "use client";
+import { useAdminFormAction } from "@/components/admin/use-admin-form-action";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useState } from "react";
 import { categoryAction } from "@/actions/admin/category.actions";
 import { toPersianDigits } from "@/lib/format";
 import type { CategoryDTO } from "@/types/dto";
+import {
+  FormSection,
+  FormField,
+  FormSelect,
+  FormTextarea,
+  FormToggle,
+  FormFeedback,
+  ImagePreview,
+} from "@/components/admin/AdminForm";
+
 export function CategoryForm({
   category,
   categories,
@@ -11,98 +22,115 @@ export function CategoryForm({
   category?: CategoryDTO;
   categories: CategoryDTO[];
 }) {
-  const [state, action, pending] = useActionState(categoryAction, undefined);
+  const [state, action, pending] = useAdminFormAction(
+    categoryAction,
+    category?.id,
+  );
+  const [values, setValues] = useState({
+    name: category?.name ?? "",
+    slug: category?.slug ?? "",
+    image: category?.image ?? "",
+    order: toPersianDigits(category?.order ?? 0),
+    parent: category?.parent ?? "",
+    description: category?.description ?? "",
+    isActive: category?.isActive ?? true,
+  });
   const hasChildren =
     !!category && categories.some((item) => item.parent === category.id);
   const parents = categories.filter(
     (item) => !item.parent && item.id !== category?.id && !hasChildren,
   );
+  const errors = state && !state.ok ? state.fieldErrors : undefined;
+  const field = (
+    name: "name" | "slug" | "image" | "order" | "parent" | "description",
+  ) => ({
+    name,
+    value: values[name],
+    onChange: (
+      event: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >,
+    ) => setValues({ ...values, [name]: event.target.value }),
+    error: errors?.[name],
+  });
   return (
-    <form action={action} className="admin-product-form">
+    <form action={action} className="admin-product-form" aria-busy={pending}>
       <input
         type="hidden"
         name="operation"
-        value={category ? "edit" : "create"}
+        value={category || state?.ok ? "edit" : "create"}
       />
-      <input type="hidden" name="id" value={category?.id ?? ""} />
-      <fieldset disabled={pending} className="grid min-w-0 gap-5">
-        {(
-          [
-            ["name", "نام دسته‌بندی", category?.name],
-            ["slug", "نامک (خالی برای ساخت خودکار)", category?.slug],
-            ["image", "نشانی تصویر", category?.image],
-            ["order", "ترتیب نمایش", toPersianDigits(category?.order ?? 0)],
-          ] as const
-        ).map(([name, label, value]) => (
-          <label key={name}>
-            {label}
-            <input
-              className="field-input"
-              name={name}
-              defaultValue={value}
-              required={name === "name" || name === "order"}
-              inputMode={name === "order" ? "numeric" : undefined}
-            />
-          </label>
-        ))}
-        <label>
-          دستهٔ والد
-          <select
-            aria-label="دستهٔ والد"
-            className="field-input"
-            name="parent"
-            defaultValue={category?.parent ?? ""}
-          >
+      <input
+        type="hidden"
+        name="id"
+        value={category?.id ?? (state?.ok ? state.data.id : "")}
+      />
+      <FormFeedback state={state}>
+        <Link href={`/admin/categories/${state?.ok ? state.data.id : ""}/edit`}>
+          ویرایش دسته‌بندی
+        </Link>
+      </FormFeedback>
+      <fieldset disabled={pending} className="admin-form-body">
+        <FormSection
+          title="اطلاعات دسته‌بندی"
+          description="محصولات فروشگاه را در دسته‌های روشن و قابل‌فهم مرتب کنید."
+        >
+          <FormField label="نام دسته‌بندی" required {...field("name")} />
+          <FormField
+            label="نامک"
+            hint="خالی بگذارید تا از نام ساخته شود."
+            {...field("slug")}
+          />
+          <FormSelect label="دستهٔ والد" {...field("parent")}>
             <option value="">بدون والد</option>
             {parents.map((item) => (
-              <option key={item.id} value={item.id}>
+              <option value={item.id} key={item.id}>
                 {item.name}
-                {item.isActive ? "" : " (غیرفعال)"}
+                {!item.isActive && " (غیرفعال)"}
               </option>
             ))}
-          </select>
-        </label>
-        {hasChildren && (
-          <p>این دسته زیردسته دارد و نمی‌تواند والد داشته باشد.</p>
-        )}
-        <label>
-          توضیحات
-          <textarea
-            className="field-input"
-            name="description"
-            defaultValue={category?.description}
-            rows={4}
+          </FormSelect>
+          <FormField
+            label="ترتیب نمایش"
+            inputMode="numeric"
+            required
+            {...field("order")}
           />
-        </label>
-        <label>
-          <input
-            type="checkbox"
+          {hasChildren && (
+            <p className="admin-hint admin-span">
+              این دسته زیردسته دارد و نمی‌تواند والد داشته باشد.
+            </p>
+          )}
+          <FormTextarea label="توضیحات" {...field("description")} />
+        </FormSection>
+        <FormSection title="تصویر و نمایش">
+          <ImagePreview
+            src={values.image}
+            alt={values.name || "تصویر دسته‌بندی"}
+          />
+          <FormField
+            label="نشانی تصویر"
+            dir="ltr"
+            hint="نشانی اینترنتی یا مسیر تصویر موجود در سایت"
+            {...field("image")}
+          />
+          <FormToggle
+            label="دسته‌بندی فعال"
+            description="قابل نمایش در فروشگاه"
             name="isActive"
-            defaultChecked={category?.isActive ?? true}
-          />{" "}
-          دسته‌بندی فعال
-        </label>
-        <button type="submit">
-          {pending ? "در حال ذخیره…" : "ذخیره دسته‌بندی"}
-        </button>
-      </fieldset>
-      {state && !state.ok && (
-        <div role="alert" className="text-danger">
-          <p>{state.error}</p>
-          {Object.entries(state.fieldErrors ?? {}).map(([field, errors]) => (
-            <p key={field}>{errors.join("، ")}</p>
-          ))}
+            checked={values.isActive}
+            onChange={(e) =>
+              setValues({ ...values, isActive: e.target.checked })
+            }
+          />
+        </FormSection>
+        <div className="admin-form-footer">
+          <button className="admin-primary" type="submit">
+            {pending ? "در حال ذخیره…" : "ذخیره دسته‌بندی"}
+          </button>
+          <Link href="/admin/categories">بازگشت به دسته‌بندی‌ها</Link>
         </div>
-      )}
-      {state?.ok && (
-        <p role="status">
-          دسته‌بندی ذخیره شد.{" "}
-          <Link href={`/admin/categories/${state.data.id}/edit`}>
-            ویرایش دسته‌بندی
-          </Link>
-        </p>
-      )}
-      <Link href="/admin/categories">بازگشت به دسته‌بندی‌ها</Link>
+      </fieldset>
     </form>
   );
 }
