@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Customer pages retain the shared header day/night toggle; the existing header theme changes independently while customer content remains light.
+
 - Login and registration default to `/account` when no valid callback destination is supplied; explicitly requested safe destinations such as checkout remain intact.
 
 - Customer interaction cues use existing order statuses and validation rules. Clipboard copies the original order reference while displayed digits remain Persian. Address editing closes only after a successful existing action; selected-address and cart-saving cues do not change backend behavior.

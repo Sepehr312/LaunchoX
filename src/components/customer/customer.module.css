@@ -277,15 +277,6 @@
     transition: none;
   }
 }
-/* The shared header stays light only while a customer route is mounted. */
-:global(body):has(.scope) :global(header[data-theme]) {
-  color-scheme: light;
-}
-:global(body):has(.scope) :global(button[aria-label="تغییر به تم روشن"]),
-:global(body):has(.scope) :global(button[aria-label="تغییر به تم تاریک"]) {
-  display: none;
-}
-
 /* Center customer content with consistent mobile gutters and a bounded desktop width. */
 .scope:global(.store-shell),
 .scope :global(.store-shell) {
