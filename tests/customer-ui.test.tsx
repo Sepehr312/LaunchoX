@@ -1,3 +1,5 @@
+import { OrderProgress } from "@/components/customer/OrderProgress";
+import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -238,5 +240,38 @@ describe("customer page composition", () => {
       expect(html).toContain('href="/account/orders/012345678901234567890123"');
       expect(html).toContain("شمارهٔ سفارش");
     }
+  });
+});
+
+describe("customer interaction cues", () => {
+  it("marks only the actual order stage current and does not progress cancelled orders", () => {
+    const shipped = renderToStaticMarkup(<OrderProgress status="shipped" />);
+    expect(shipped.match(/aria-current="step"/g)).toHaveLength(1);
+    expect(shipped.match(/data-complete="true"/g)).toHaveLength(2);
+    expect(shipped).toMatch(/aria-current="step"[^]*?ارسال/);
+    const cancelled = renderToStaticMarkup(
+      <OrderProgress status="cancelled" />,
+    );
+    expect(cancelled).toContain("این سفارش لغو شده است");
+    expect(cancelled).not.toContain('aria-current="step"');
+  });
+  it("gives live password cues for matching, mismatching and oversized passwords", () => {
+    const valid = renderToStaticMarkup(
+      <PasswordGuidance password="Customer123!" confirmation="Customer123!" />,
+    );
+    expect(valid.match(/text-success/g)).toHaveLength(4);
+    const mismatch = renderToStaticMarkup(
+      <PasswordGuidance password="Customer123!" confirmation="different" />,
+    );
+    expect(mismatch.match(/text-success/g)).toHaveLength(3);
+    const long = "A1".repeat(40);
+    const oversized = renderToStaticMarkup(
+      <PasswordGuidance password={long} confirmation={long} />,
+    );
+    expect(oversized.match(/text-success/g)).toHaveLength(3);
+    const empty = renderToStaticMarkup(
+      <PasswordGuidance password="" confirmation="" />,
+    );
+    expect(empty).not.toContain("text-success");
   });
 });

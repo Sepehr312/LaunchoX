@@ -4,6 +4,7 @@ import { accountAction } from "@/actions/account.actions";
 import { profileSchema, changePasswordSchema } from "@/validations/account";
 import { addressSchema } from "@/validations/address";
 import { FieldErrorsContext } from "@/components/customer/CustomerField";
+import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { Button } from "@/components/ui/Button";
 import styles from "@/components/customer/customer.module.css";
 export function AccountForm({
@@ -12,22 +13,29 @@ export function AccountForm({
   children,
   label = "ذخیرهٔ تغییرات",
   confirm = false,
+  onSuccess,
 }: {
   operation: string;
   id?: string;
   children?: React.ReactNode;
   label?: string;
   confirm?: boolean;
+  onSuccess?: () => void;
 }) {
   const [state, action, pending] = useActionState(accountAction, undefined);
   const [clientErrors, setClientErrors] = useState<Record<string, string[]>>(
     {},
   );
+  const [passwords, setPasswords] = useState({
+    password: "",
+    confirmation: "",
+  });
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (state?.ok && (operation === "password" || operation === "add"))
       formRef.current?.reset();
-  }, [state, operation]);
+    if (state?.ok) onSuccess?.();
+  }, [state, operation, onSuccess]);
   const errors = Object.keys(clientErrors).length
     ? clientErrors
     : state && !state.ok
@@ -41,6 +49,20 @@ export function AccountForm({
         noValidate
         aria-busy={pending}
         className="grid min-w-0 gap-4"
+        onInput={(event) => {
+          if (operation !== "password") return;
+          const target = event.target;
+          if (
+            target instanceof HTMLInputElement &&
+            (target.name === "password" || target.name === "confirmPassword")
+          )
+            setPasswords((current) => ({
+              ...current,
+              [target.name === "password" ? "password" : "confirmation"]:
+                target.value,
+            }));
+        }}
+        onReset={() => setPasswords({ password: "", confirmation: "" })}
         onSubmit={(event) => {
           if (
             confirm &&
@@ -89,6 +111,12 @@ export function AccountForm({
           <legend className="sr-only">{label}</legend>
           {children}
         </fieldset>
+        {operation === "password" && (
+          <PasswordGuidance
+            password={passwords.password}
+            confirmation={passwords.confirmation}
+          />
+        )}
         <Button
           type="submit"
           disabled={pending}

@@ -71,8 +71,23 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
                   className="mt-1 accent-primary"
                 />
                 <span className="min-w-0">
-                  <span className="block font-semibold">
+                  <span className="flex flex-wrap items-center gap-2 font-semibold">
                     {address.title} · {address.recipientName}
+                    {effectiveSelected === address.id && (
+                      <span className="inline-flex items-center gap-1 text-xs text-primary">
+                        <svg
+                          className="size-4"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.7"
+                          aria-hidden="true"
+                        >
+                          <path d="m4 10 4 4 8-8" />
+                        </svg>
+                        انتخاب شده
+                      </span>
+                    )}
                   </span>
                   <span className="mt-2 block text-sm leading-7 text-muted">
                     {address.province}، {address.city}، {address.addressLine}

@@ -8,11 +8,13 @@ The existing application flow is retained. Customer presentation is light-only a
 
 - `npm run lint`: passed without warnings.
 - `npm run typecheck`: passed.
-- `npm run test`: 26 files, 290 tests passed. MongoDB tests used independently created databases through the local official MongoDB binary.
+- `npm run test`: 26 files, 292 tests passed. MongoDB tests used independently created databases through the local official MongoDB binary.
 - `npm run build -- --webpack`: passed. Default Turbopack build could not open its internal port in the execution environment; the initial network-restricted run also could not fetch Google Fonts.
 - HTTP checks: guest login, registration, empty cart, protected-account redirect, sample-customer login, profile, address list, order list, and empty checkout passed.
 - UI rendering tests: login/registration fields and error state; password privacy; payment/delivery status distinctions; cart quantity boundaries and submitted values; checkout address requirement and five-address capacity; empty-state actions; profile/security/address/order page composition; successful, failed, and pending payment result pages with links to the owned order.
 - Existing browser acceptance scripts were updated for the new field labels, collapsed address forms, password visibility buttons, and cart quantity controls. Their Python syntax checks passed.
+
+- Additional cues: order progression and cancellation rendering, live password confirmation and byte-limit guidance passed automated tests. Clipboard, successful-address-collapse, and transient cart-feedback behavior still require a stable interactive browser walkthrough.
 
 ## Manual verification remaining
 

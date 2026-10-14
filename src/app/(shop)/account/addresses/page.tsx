@@ -1,3 +1,4 @@
+import { AddressEditor } from "@/components/account/AddressEditor";
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { requireUser } from "@/actions/auth.actions";
@@ -55,16 +56,7 @@ export default async function AddressesPage() {
                   <br />
                   موبایل: {toPersianDigits(address.mobile)}
                 </p>
-                <details className="mt-3 border-t border-border pt-2">
-                  <summary className="text-sm font-semibold text-primary">
-                    ویرایش آدرس
-                  </summary>
-                  <div className="mt-5">
-                    <AccountForm operation="edit" id={address.id}>
-                      <AddressFields address={address} />
-                    </AccountForm>
-                  </div>
-                </details>
+                <AddressEditor address={address} />
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {!address.isDefault && (
                     <AccountForm

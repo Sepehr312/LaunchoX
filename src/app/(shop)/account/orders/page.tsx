@@ -1,3 +1,4 @@
+import { CopyOrderNumber } from "@/components/customer/CopyOrderNumber";
 import { CustomerEmpty } from "@/components/customer/CustomerEmpty";
 import { OrderBadge } from "@/components/customer/OrderBadge";
 import { getEnv } from "@/lib/env";
@@ -33,13 +34,12 @@ export default async function OrdersPage({
       )}
       <div className="grid gap-4">
         {result.items.map((order) => (
-          <Link
+          <article
             key={order.id}
-            href={`/account/orders/${order.id}`}
             className="checkout-panel grid items-center gap-4 sm:grid-cols-2"
           >
             <span className="font-bold">
-              {toPersianDigits(order.orderNumber)}
+              <CopyOrderNumber number={order.orderNumber} />
             </span>
             <span className="text-sm text-muted">
               ثبت در {formatDate(order.createdAt)}
@@ -54,10 +54,13 @@ export default async function OrdersPage({
                   ? "سفارش لغو شده"
                   : `حدود ${toPersianDigits(1)} هفته`}
             </span>
-            <span className="text-sm font-semibold text-primary">
+            <Link
+              href={`/account/orders/${order.id}`}
+              className="text-sm font-semibold text-primary"
+            >
               مشاهدهٔ جزئیات سفارش ←
-            </span>
-          </Link>
+            </Link>
+          </article>
         ))}
       </div>
       <nav

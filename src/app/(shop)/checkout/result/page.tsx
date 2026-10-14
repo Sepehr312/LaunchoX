@@ -1,3 +1,4 @@
+import { CopyOrderNumber } from "@/components/customer/CopyOrderNumber";
 import styles from "@/components/customer/customer.module.css";
 import { OrderBadge } from "@/components/customer/OrderBadge";
 import { getEnv } from "@/lib/env";
@@ -98,7 +99,7 @@ export default async function CheckoutResultPage({
           <div className="flex flex-wrap justify-between gap-2">
             <dt>شمارهٔ سفارش</dt>
             <dd dir="ltr" data-order-number={order.orderNumber}>
-              {toPersianDigits(order.orderNumber)}
+              <CopyOrderNumber number={order.orderNumber} />
             </dd>
           </div>
           <div className="flex flex-wrap justify-between gap-2">

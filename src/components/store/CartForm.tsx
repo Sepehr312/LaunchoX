@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import {
   addCartAction,
   updateCartAction,
@@ -28,6 +28,12 @@ export function CartForm({
         ? updateCartAction
         : removeCartAction;
   const [state, formAction, pending] = useActionState(action, undefined);
+  const [dismissed, setDismissed] = useState<typeof state>();
+  useEffect(() => {
+    if (!state?.ok) return;
+    const timer = setTimeout(() => setDismissed(state), 3500);
+    return () => clearTimeout(timer);
+  }, [state]);
   return (
     <form
       action={formAction}
@@ -121,7 +127,7 @@ export function CartForm({
           ))}
         </>
       )}
-      {state?.ok && (
+      {state?.ok && !pending && dismissed !== state && (
         <p role="status" className="text-sm text-success">
           {mode === "remove" ? "محصول حذف شد" : "سبد خرید به‌روز شد"}
         </p>

@@ -1,3 +1,5 @@
+import { OrderProgress } from "@/components/customer/OrderProgress";
+import { CopyOrderNumber } from "@/components/customer/CopyOrderNumber";
 import Link from "next/link";
 import { OrderBadge } from "@/components/customer/OrderBadge";
 import styles from "@/components/customer/customer.module.css";
@@ -48,10 +50,13 @@ export default async function OrderPage({
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">
-          سفارش {toPersianDigits(order.orderNumber)}
+          سفارش <CopyOrderNumber number={order.orderNumber} />
         </h2>
         <OrderBadge status={order.status} />
       </div>
+      <section className="checkout-panel">
+        <OrderProgress status={order.status} />
+      </section>
       <Link href="/account/orders" className="text-sm text-primary">
         بازگشت به سفارش‌ها
       </Link>

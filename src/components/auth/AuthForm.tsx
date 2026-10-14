@@ -5,6 +5,7 @@ import { loginAction, registerAction } from "@/actions/auth.actions";
 import { loginSchema, registerSchema } from "@/validations/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { PasswordInput } from "@/components/customer/PasswordInput";
 import { SnowflakeIcon, ShieldIcon } from "@/components/store/Icons";
 import styles from "@/components/customer/customer.module.css";
@@ -207,6 +208,12 @@ export function AuthForm({
           <p role="alert" className={`${styles.notice} ${styles.error}`}>
             {!state.ok ? state.error : initialError}
           </p>
+        )}
+        {register && (
+          <PasswordGuidance
+            password={values.password ?? ""}
+            confirmation={values.confirmPassword ?? ""}
+          />
         )}
         <Button type="submit" disabled={pending} className="min-h-12 w-full">
           {pending ? "در حال انجام…" : register ? "ساخت حساب کاربری" : "ورود"}
