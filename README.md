@@ -129,6 +129,7 @@ npm run seed -- --reset
 
 ## Decisions
 
+ 
 - Customer pages retain the shared header day/night toggle; the existing header theme changes independently while customer content remains light.
 
 - Login and registration default to `/account` when no valid callback destination is supplied; explicitly requested safe destinations such as checkout remain intact.
@@ -139,7 +140,49 @@ npm run seed -- --reset
 
 - Customer routes use a scoped light-only presentation with the existing CSS light palette; shared theme, UI primitives, types, services, and actions remain unchanged. The remember option retains only the email for the browser session. Active orders display the owner-requested approximate delivery estimate of one week; pending statuses use yellow only as requested.
 
+- Vazirmatn is self-hosted with next/font/local and its official OFL license because Google Fonts downloads fail during the product-detail production build. The shared font variable and fallback metrics are preserved.
+
+- Product details use the shared ProductDetails component with real active product data, category peers, existing cart actions, current cart quantity, and the stock/ten-item cap. Missing attributes and feedback remain empty; registered images are preserved. Product URLs validate slugs and return 404 for missing/inactive products, including products created after a build.
+
+
+- Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The eight homepage types share one definition; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
+
+
+- The approved Arctic footer is shared by the storefront and `/test`; informational destinations use accessible local dialogs, separate mobile/desktop day/night landscapes follow the shared header theme, and the storefront buying guide links to the homepage section.
+
+- Brand, price, capacity, and energy filters use independent native disclosures, initially collapsed in desktop and mobile panels; collapsing a section preserves its selected filters and supports keyboard controls. Product status switches always remain visible.
+
+- As requested, `/products` replaces numbered pagination with automatic incremental loading from the paginated API; filter and sort changes restart the list, and the desktop filter panel stays sticky with its own scroll area and hidden scrollbar. Scrolling past either end of the desktop panel continues scrolling the page. The mobile filter dialog keeps its apply button.
+
+- Product catalog filters apply on each change; URL navigation preserves scroll and keeps the mobile filter drawer open for multiple selections. The apply button remains in the mobile drawer to close it and reveal results; desktop filters have no apply button.
+
+- Catalog filter changes fetch only the paginated public product API instead of rendering the whole route again; superseded requests are canceled, and browser history and reload retain the selected filters.
+
+- Catalog and seed images reuse the approved category PNG assets; top-freezer, bottom-freezer, and twin products use their matching images within the combined refrigerator category. The image-only migration in `scripts/update-catalog-images.ts` defaults to a dry run, backs up the catalog before `--apply`, and verifies that other fields remain unchanged.
+
+- The `/products` showroom uses real server-paginated data with URL filters for category, price, stock, brands, capacity in liters, energy, and discounts. Brand and energy options come from active product attributes; capacity accepts Persian, Arabic, and ASCII digits. Discount order uses the percentage derived from price and compareAtPrice.
+
+- The header theme preference applies to the document root on every route, including page backgrounds, text, forms, and footer. An early script restores it before paint; system appearance remains the default until a manual choice is saved.
+
+- Storefront product grids reuse the approved Arctic preview card layout with real product attributes, links, stock, discounts, and cart actions; the homepage glass panel shows four active products ordered by soldCount. Product likes are stored in this browser, shared across cards and tabs, without an account favorites page or backend.
+
+- The homepage reuses the approved Arctic category carousel below the Benefits Bar, with the same eight visual shortcuts and shared header theme as `/test`; catalog data and category management remain unchanged.
+
+- Preview category rows size cards to show a whole number of items at rest and snap to complete cards after scrolling; glass edge buttons advance by one visible group. Touch, trackpad, and mouse wheel remain supported, and vertical wheel input scrolls the page again at the row boundaries.
+
+- The homepage reuses the approved three-slide Frostic preview with mobile playback and swipe; its theme follows the shared header toggle, and its buying-guide link targets the existing homepage FAQ.
+
+- All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle controls the header and homepage hero.
+
+- Catalog seed data includes 11 sample brands and links all 24 sample products through `Product.brand` while preserving legacy brand attributes. Repeated seeding preserves existing brand identities and settings; `seed -- --reset` also deletes and recreates brands.
+
+- For an existing local development catalog, `npx tsx --conditions=react-server --env-file=.env.local scripts/link-product-brands.ts` previews missing brand links from legacy attributes; add `--apply` to back up the catalog and brands, create missing brands, and fill only unassigned `Product.brand` references. Existing product fields and assigned brands are preserved.
+
+- Brand administration follows category full-form edits: omitted optional text fields are cleared, omitted slugs are generated from the name, and the management list includes inactive brands sorted by order and name. Linked products prevent deletion, while deactivation remains available without changing product visibility.
+
+
 - All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle remains scoped to the header.
+
 
 - راهنمای مشترک طراحی صفحات فروشگاه یخچال خانگی در [docs/UI-GUIDE.md](docs/UI-GUIDE.md) ثبت شده است؛ پس‌زمینه‌های روز/شب تأییدشده و عکس منتخب یخچال در `docs/assets/` نگه‌داری می‌شوند. ذخیرهٔ این مراجع به معنی پیاده‌سازی در سایت نیست.
 

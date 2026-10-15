@@ -31,6 +31,17 @@ export interface CategoryDTO extends EntityDTO {
   order: number;
   isActive: boolean;
 }
+export interface BrandDTO extends EntityDTO {
+  name: string;
+  slug: string;
+  logo?: string;
+  description?: string;
+  country?: string;
+  website?: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  order: number;
+}
 export interface ProductDTO extends EntityDTO {
   title: string;
   slug: string;
@@ -53,6 +64,11 @@ export interface ProductCategoryDTO {
 }
 export interface StoreProductDTO extends Omit<ProductDTO, "category"> {
   category: ProductCategoryDTO;
+}
+export interface ProductFilterOptionsDTO {
+  brands: string[];
+  energies: string[];
+  maxPrice: number;
 }
 export interface CategoryTreeDTO extends CategoryDTO {
   children: CategoryTreeDTO[];

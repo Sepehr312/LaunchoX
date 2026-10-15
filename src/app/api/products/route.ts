@@ -13,6 +13,10 @@ export async function GET(request: NextRequest) {
     maxPrice: params.get("maxPrice") ?? undefined,
     sort: params.get("sort") ?? undefined,
     inStock: params.get("inStock") ?? undefined,
+    brands: params.has("brands") ? params.getAll("brands") : undefined,
+    energies: params.has("energies") ? params.getAll("energies") : undefined,
+    capacity: params.get("capacity") ?? undefined,
+    discounted: params.get("discounted") ?? undefined,
   });
   if (!parsed.success)
     return NextResponse.json(

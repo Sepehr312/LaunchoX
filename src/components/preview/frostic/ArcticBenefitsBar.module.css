@@ -1,0 +1,68 @@
+.placement {
+  --benefits-height: 80px;
+  position: relative;
+  z-index: 10;
+  margin-block-start: calc(var(--benefits-height) / -2);
+}
+
+.bar {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border: 1px solid light-dark(#d6e9ff, #264c70);
+  border-radius: 16px;
+  background: light-dark(rgba(255, 255, 255, 0.78), rgba(10, 32, 50, 0.78));
+  box-shadow: 0 6px 24px rgb(38 113 194 / 7%);
+  backdrop-filter: blur(12px);
+}
+
+.bar::-webkit-scrollbar {
+  display: none;
+}
+
+.bar:focus-visible {
+  outline: 2px solid #1683ff;
+  outline-offset: 4px;
+}
+
+.bar[data-dragging="true"] {
+  scroll-snap-type: none;
+  cursor: grabbing;
+  user-select: none;
+}
+
+.item {
+  position: relative;
+}
+
+.item + .item::before {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  inline-size: 1px;
+  block-size: 45px;
+  background: light-dark(#c5d8ec, #31516c);
+  transform: translateY(-50%);
+  content: "";
+}
+
+.title {
+  color: light-dark(#102b63, #edf9ff);
+}
+
+.description {
+  color: light-dark(#788caa, #a8c2d2);
+}
+
+@media (hover: hover) and (max-width: 1023px) {
+  .bar {
+    cursor: grab;
+  }
+}
+
+@media (min-width: 1024px) {
+  .placement {
+    --benefits-height: 85px;
+  }
+}

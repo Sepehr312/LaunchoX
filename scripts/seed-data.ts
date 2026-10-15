@@ -21,7 +21,7 @@ export const seedCategories: SeedCategory[] = [
     slug: "digital",
     description:
       "فضای جادار، دسترسی سریع و طراحی یکپارچه برای آشپزخانه‌های مدرن",
-    image: "/images/products/side-by-side.png",
+    image: "/images/preview/categories/side-by-side.png",
     products: [
       {
         title: "یخچال سایدبای‌ساید آتلانتیس X900",
@@ -69,7 +69,7 @@ export const seedCategories: SeedCategory[] = [
     name: "یخچال در فرانسوی",
     slug: "clothing",
     description: "چیدمان منعطف و دسترسی راحت به مواد تازه در طراحی چهاردر",
-    image: "/images/products/french-door.png",
+    image: "/images/preview/categories/french-door.png",
     products: [
       {
         title: "یخچال چهاردر آیس‌لند F880",
@@ -117,7 +117,7 @@ export const seedCategories: SeedCategory[] = [
     name: "یخچال فریزر بالا و پایین",
     slug: "home-kitchen",
     description: "مدل‌های کاربردی و کم‌مصرف برای استفادهٔ روزمرهٔ خانواده",
-    image: "/images/products/fridge-freezer.png",
+    image: "/images/preview/categories/combi.png",
     products: [
       {
         title: "یخچال فریزر پایین وینتر B540",
@@ -165,7 +165,7 @@ export const seedCategories: SeedCategory[] = [
     name: "یخچال کم‌جا و هتلی",
     slug: "books",
     description: "سرمایش کارآمد برای دفتر کار، اتاق و فضاهای محدود",
-    image: "/images/products/compact.png",
+    image: "/images/preview/categories/mini.png",
     products: [
       {
         title: "یخچال هتلی مینی‌فراست M90",
@@ -213,7 +213,7 @@ export const seedCategories: SeedCategory[] = [
     name: "سرمایش فروشگاهی",
     slug: "sports-travel",
     description: "تجهیزات سرمایشی مقاوم و دقیق برای فروشگاه و محیط حرفه‌ای",
-    image: "/images/products/commercial.png",
+    image: "/images/preview/categories/commercial.png",
     products: [
       {
         title: "یخچال ویترینی ایستاده گلس‌کول ۶۰",

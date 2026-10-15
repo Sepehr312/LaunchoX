@@ -1,0 +1,227 @@
+.placement {
+  min-inline-size: 0;
+  margin-block: 24px;
+}
+
+.panel {
+  min-inline-size: 0;
+  padding: 10px;
+  border: 1px solid light-dark(rgb(255 255 255 / 80%), rgb(168 220 246 / 24%));
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    light-dark(rgb(255 255 255 / 60%), rgb(125 197 230 / 14%)),
+    light-dark(rgb(226 244 255 / 22%), rgb(10 32 50 / 30%))
+  );
+  box-shadow:
+    inset 0 1px 0 light-dark(rgb(255 255 255 / 92%), rgb(219 244 255 / 16%)),
+    0 10px 32px light-dark(rgb(38 113 194 / 8%), rgb(0 0 0 / 20%));
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+  backdrop-filter: blur(22px) saturate(145%);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-block-end: 10px;
+}
+
+.heading h2 {
+  color: light-dark(#102b63, #edf9ff);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.viewAll {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  min-block-size: 32px;
+  color: light-dark(#1683ff, #64b1ff);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.track {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.scrollButton {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 50%;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 1px solid light-dark(rgb(255 255 255 / 90%), rgb(181 229 250 / 35%));
+  border-radius: 50%;
+  background: light-dark(rgb(248 253 255 / 80%), rgb(14 43 62 / 82%));
+  color: var(--f-ink);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 20%),
+    0 4px 16px light-dark(rgb(32 100 145 / 18%), rgb(0 0 0 / 30%));
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.scrollButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.scrollButton:focus-visible {
+  outline: 2px solid #1683ff;
+  outline-offset: 3px;
+}
+
+.previous {
+  inset-inline-start: -8px;
+}
+
+.next {
+  inset-inline-end: -8px;
+}
+
+@media (hover: hover) {
+  .scrollButton:not(:disabled):hover {
+    background: light-dark(rgb(255 255 255 / 96%), rgb(27 66 89 / 96%));
+    box-shadow: 0 6px 20px rgb(38 113 194 / 24%);
+  }
+}
+
+.row {
+  --category-min-width: 120px;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: none;
+}
+
+.row::-webkit-scrollbar {
+  display: none;
+}
+
+.list {
+  display: flex;
+  flex-wrap: nowrap;
+  inline-size: 100%;
+  min-inline-size: 100%;
+  gap: 4px;
+  padding-block: 5px 8px;
+  justify-content: safe center;
+}
+
+.item {
+  flex: 0 0 var(--category-width, 120px);
+  min-inline-size: 0;
+  scroll-snap-align: start;
+}
+
+.card {
+  display: grid;
+  grid-template-rows: 100px minmax(0, 1fr);
+  inline-size: 100%;
+  block-size: 145px;
+  padding: 10px;
+  border: 1px solid light-dark(#dceaff, #31516c);
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    light-dark(rgb(255 255 255 / 46%), rgb(146 208 235 / 12%)),
+    light-dark(rgb(255 255 255 / 16%), rgb(16 43 63 / 20%))
+  );
+  box-shadow:
+    inset 0 1px 0 light-dark(rgb(255 255 255 / 80%), rgb(219 244 255 / 12%)),
+    0 3px 10px rgb(38 113 194 / 6%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.card:disabled {
+  cursor: default;
+}
+
+.image {
+  display: grid;
+  place-items: center;
+  min-inline-size: 0;
+}
+
+.image img {
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 0;
+  object-fit: contain;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 0;
+  color: light-dark(#102b63, #edf9ff);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+.row:focus-visible,
+.card:focus-visible,
+.viewAll:focus-visible {
+  outline: 2px solid #1683ff;
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .card:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 12px rgb(38 113 194 / 13%);
+  }
+}
+
+@media (min-width: 768px) {
+  .panel {
+    padding: 16px;
+  }
+
+  .row {
+    --category-min-width: 135px;
+  }
+
+  .card {
+    block-size: 150px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .card {
+    grid-template-rows: 115px minmax(0, 1fr);
+    block-size: 160px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .scrollButton {
+    transition: none;
+  }
+}

@@ -30,7 +30,7 @@ function subscribe(callback: () => void) {
   };
 }
 
-// Keep manual overrides local to preview consumers; never mutate the root theme.
+// Share the preference with the header, preview sections, and site theme bridge.
 export function usePreviewTheme() {
   const theme = useSyncExternalStore(
     subscribe,

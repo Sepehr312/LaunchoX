@@ -2,13 +2,12 @@ import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { FeatureStrip } from "@/components/store/FeatureStrip";
-import { HeroCarousel } from "@/components/store/HeroCarousel";
+import { StoreHero } from "@/components/store/StoreHero";
 import { ProductGrid } from "@/components/store/ProductGrid";
+import { BestSellingProducts } from "@/components/store/BestSellingProducts";
 import { SectionHeading } from "@/components/store/SectionHeading";
-import { ChevronIcon, SnowflakeIcon } from "@/components/store/Icons";
-import { listCategories } from "@/services/category.service";
-import { getFeaturedProducts, listProducts } from "@/services/product.service";
+import { ChevronIcon } from "@/components/store/Icons";
+import { listProducts } from "@/services/product.service";
 
 export const revalidate = 300;
 export const metadata: Metadata = {
@@ -16,68 +15,15 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [categories, featured, newest] = await Promise.all([
-    listCategories(),
-    getFeaturedProducts(4),
+  const [bestselling, newest] = await Promise.all([
+    listProducts({ page: 1, limit: 4, sort: "bestselling" }),
     listProducts({ page: 1, limit: 8, sort: "newest" }),
   ]);
   return (
     <main>
-      <HeroCarousel />
-      <div className="store-shell relative z-20 -mt-5 sm:-mt-8">
-        <FeatureStrip />
-      </div>
+      <StoreHero />
 
-      <section className="store-section">
-        <div className="store-shell">
-          <SectionHeading
-            eyebrow="مسیر سریع انتخاب"
-            title="برای هر فضا، سرمایش مناسب"
-            description="از خانه‌های کم‌جا تا آشپزخانه‌های حرفه‌ای"
-          />
-          {!categories.length && (
-            <div className="empty-state">
-              <h2>دسته‌بندی‌ای برای نمایش وجود ندارد</h2>
-              <p>هنوز دسته‌بندی محصولات فروشگاه آماده نشده است.</p>
-            </div>
-          )}
-          <div className="category-grid">
-            {categories.map((category, index) => (
-              <Link
-                key={category.id}
-                href={`/categories/${category.slug}`}
-                className="category-card"
-              >
-                <span className="category-number">۰{index + 1}</span>
-                <SnowflakeIcon className="size-8" />
-                <div>
-                  <h3>{category.name}</h3>
-                  <p>
-                    {category.description ?? "مشاهدهٔ مدل‌ها و مقایسهٔ مشخصات"}
-                  </p>
-                </div>
-                <ChevronIcon className="category-arrow size-5" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="store-section pt-0">
-        <div className="store-shell">
-          <SectionHeading
-            eyebrow="منتخب کارشناسان"
-            title="محصولات ویژه"
-            description="مدل‌هایی با توازن دقیق طراحی، ظرفیت و مصرف انرژی"
-            href="/products?sort=bestselling"
-          />
-          <ProductGrid
-            products={featured}
-            emptyTitle="هنوز محصول ویژه‌ای وجود ندارد"
-            emptyMessage="هنوز محصول ویژه‌ای برای نمایش آماده نشده است."
-          />
-        </div>
-      </section>
+      <BestSellingProducts products={bestselling.items} />
 
       <section className="showroom-story">
         <div className="store-shell grid items-center gap-8 lg:grid-cols-2">
@@ -120,7 +66,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="store-section pt-0">
+      <section
+        id="frostic-buying-guide"
+        className="store-section scroll-mt-24 pt-0"
+      >
         <div className="store-shell">
           <SectionHeading eyebrow="پیش از انتخاب" title="پرسش‌های پرتکرار" />
           <div className="faq-grid">

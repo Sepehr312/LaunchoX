@@ -46,4 +46,29 @@ describe("GET /api/products", () => {
     expect((await response.json()).error).toMatch(/[\u0600-\u06ff]/);
     expect(listProductsMock).not.toHaveBeenCalled();
   });
+  it("forwards repeated brand and energy values and the advanced filters", async () => {
+    listProductsMock.mockResolvedValue({ items: [], total: 0 });
+    const params = new URLSearchParams({
+      capacity: "large",
+      discounted: "true",
+      sort: "discount",
+    });
+    params.append("brands", "ال‌جی");
+    params.append("brands", "سامسونگ");
+    params.append("energies", "A+");
+    params.append("energies", "B");
+    const response = await GET(
+      new NextRequest(`http://localhost/api/products?${params}`),
+    );
+    expect(response.status).toBe(200);
+    expect(listProductsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        brands: ["ال‌جی", "سامسونگ"],
+        energies: ["A+", "B"],
+        capacity: "large",
+        discounted: true,
+        sort: "discount",
+      }),
+    );
+  });
 });

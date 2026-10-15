@@ -1,4 +1,13 @@
 @import "tailwindcss";
+/* Match the existing fallback metrics while the self-hosted font loads. */
+@font-face {
+  font-family: "Vazirmatn Fallback";
+  src: local("Arial");
+  ascent-override: 101.87%;
+  descent-override: 53.36%;
+  line-gap-override: 0%;
+  size-adjust: 100.66%;
+}
 
 .page-state {
   width: 100%;
@@ -177,23 +186,30 @@
 }
 
 :root {
+  color-scheme: light dark;
+  --background: light-dark(#eef7fb, #03111f);
+  --foreground: light-dark(#071f3d, #edf9ff);
+  --primary: light-dark(#087ec1, #63d4ff);
+  --primary-foreground: light-dark(#ffffff, #03223a);
+  --surface: light-dark(#fafdff, #081d2d);
+  --surface-raised: light-dark(rgba(255, 255, 255, 0.86), rgba(9, 31, 48, 0.9));
+  --glass: light-dark(rgba(245, 252, 255, 0.72), rgba(8, 28, 44, 0.73));
+  --muted: light-dark(#58718a, #9db9c9);
+  --border: light-dark(#c4dcea, #1b4058);
+  --border-strong: light-dark(#98c8e3, #2b6889);
+  --danger: light-dark(#d72f47, #ff8998);
+  --success: light-dark(#087b68, #72e2c6);
+  --navy: light-dark(#062345, #dff6ff);
+  --ice: light-dark(#dff6ff, #0d2a3d);
+  --cyan: light-dark(#45c5ef, #58d4ff);
+  --shadow: 0 22px 60px light-dark(rgba(11, 70, 111, 0.11), rgba(0, 0, 0, 0.32));
+}
+
+:root[data-theme="light"] {
   color-scheme: light;
-  --background: #eef7fb;
-  --foreground: #071f3d;
-  --primary: #087ec1;
-  --primary-foreground: #ffffff;
-  --surface: #fafdff;
-  --surface-raised: rgba(255, 255, 255, 0.86);
-  --glass: rgba(245, 252, 255, 0.72);
-  --muted: #58718a;
-  --border: #c4dcea;
-  --border-strong: #98c8e3;
-  --danger: #d72f47;
-  --success: #087b68;
-  --navy: #062345;
-  --ice: #dff6ff;
-  --cyan: #45c5ef;
-  --shadow: 0 22px 60px rgba(11, 70, 111, 0.11);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -207,28 +223,6 @@
   --color-danger: var(--danger);
   --color-success: var(--success);
   --font-sans: var(--font-vazirmatn);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --background: #03111f;
-    --foreground: #edf9ff;
-    --primary: #63d4ff;
-    --primary-foreground: #03223a;
-    --surface: #081d2d;
-    --surface-raised: rgba(9, 31, 48, 0.9);
-    --glass: rgba(8, 28, 44, 0.73);
-    --muted: #9db9c9;
-    --border: #1b4058;
-    --border-strong: #2b6889;
-    --danger: #ff8998;
-    --success: #72e2c6;
-    --navy: #dff6ff;
-    --ice: #0d2a3d;
-    --cyan: #58d4ff;
-    --shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
-  }
 }
 
 * {
@@ -1337,7 +1331,7 @@ a {
     padding-block: 2rem 5rem;
   }
 }
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
   body {
     background:
       radial-gradient(
@@ -1381,18 +1375,20 @@ a {
     filter: saturate(0.75) contrast(1.05) brightness(0.86);
   }
 }
-@media (prefers-color-scheme: dark) and (min-width: 1024px) {
-  .hero-shade {
-    background: linear-gradient(
-      90deg,
-      transparent 0 42%,
-      rgba(3, 17, 31, 0.5) 60%,
-      rgba(3, 17, 31, 0.96) 100%
-    );
-  }
-  .hero-copy {
-    border-color: transparent;
-    background: transparent;
+@media (min-width: 1024px) {
+  :root[data-theme="dark"] {
+    .hero-shade {
+      background: linear-gradient(
+        90deg,
+        transparent 0 42%,
+        rgba(3, 17, 31, 0.5) 60%,
+        rgba(3, 17, 31, 0.96) 100%
+      );
+    }
+    .hero-copy {
+      border-color: transparent;
+      background: transparent;
+    }
   }
 }
 @media (prefers-reduced-motion: reduce) {

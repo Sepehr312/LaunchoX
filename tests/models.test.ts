@@ -13,6 +13,7 @@ import { startTestMongo } from "./mongo-server";
 vi.mock("server-only", () => ({}));
 import { User } from "@/models/user";
 import { Category } from "@/models/category";
+import { Brand, type IBrand } from "@/models/brand";
 import { Product } from "@/models/product";
 import { Cart } from "@/models/cart";
 import { Order } from "@/models/order";
@@ -45,6 +46,7 @@ beforeAll(async () => {
   await Promise.all([
     User.init(),
     Category.init(),
+    Brand.init(),
     Product.init(),
     Cart.init(),
     Order.init(),
@@ -55,6 +57,7 @@ beforeEach(async () => {
   await Promise.all([
     User.deleteMany({}),
     Category.deleteMany({}),
+    Brand.deleteMany({}),
     Product.deleteMany({}),
     Cart.deleteMany({}),
     Order.deleteMany({}),
@@ -128,6 +131,74 @@ describe("users and serialization", () => {
     await expect(
       new User({ ...userInput, ...patch }).validate(),
     ).rejects.toBeInstanceOf(mongoose.Error.ValidationError);
+  });
+});
+
+describe("brands and product references", () => {
+  it("persists timestamps, defaults and serialization and updates timestamps", async () => {
+    const brand = await Brand.create({ name: "سامسونگ", slug: "samsung" });
+    expect(brand).toMatchObject({
+      isActive: true,
+      isFeatured: false,
+      order: 0,
+    });
+    expect(brand.createdAt).toBeInstanceOf(Date);
+    expect(brand.updatedAt).toBeInstanceOf(Date);
+    const originalCreatedAt = brand.createdAt;
+    await Brand.collection.updateOne(
+      { _id: brand._id },
+      { $set: { updatedAt: new Date("2000-01-01") } },
+    );
+    const updated = await Brand.findByIdAndUpdate(
+      brand._id,
+      { country: "کره جنوبی" },
+      { returnDocument: "after", runValidators: true },
+    ).orFail();
+    expect(updated.createdAt).toEqual(originalCreatedAt);
+    expect(updated.updatedAt.getTime()).toBeGreaterThan(
+      new Date("2000-01-01").getTime(),
+    );
+    const dto = toDTO(await Brand.findById(brand._id).lean().orFail());
+    expect(updated.toJSON()).toEqual(dto);
+    expect(dto).toMatchObject({
+      id: brand._id.toString(),
+      createdAt: expect.any(String),
+    });
+    expect(dto).not.toHaveProperty("_id");
+    expect(dto).not.toHaveProperty("__v");
+  });
+
+  it("enforces independent unique indexes for brand name and slug", async () => {
+    await Brand.create({ name: "سامسونگ", slug: "samsung" });
+    await expect(
+      Brand.create({ name: " سامسونگ ", slug: "other" }),
+    ).rejects.toMatchObject({ code: 11000 });
+    await expect(
+      Brand.create({ name: "دیگر", slug: " samsung " }),
+    ).rejects.toMatchObject({ code: 11000 });
+  });
+
+  it("persists and populates the optional brand while preserving attributes", async () => {
+    const brand = await Brand.create({ name: "سامسونگ", slug: "samsung" });
+    const attributes = [{ key: "برند", value: "سامسونگ" }];
+    const legacy = await Product.create({ ...productInput, attributes });
+    const linked = await Product.create({
+      ...productInput,
+      slug: "branded-product",
+      brand: brand._id,
+      attributes,
+    });
+    const storedLegacy = await Product.findById(legacy._id).orFail();
+    expect(storedLegacy.brand).toBeUndefined();
+    expect(storedLegacy.attributes[0]).toMatchObject(attributes[0]);
+    const storedLinked = await Product.findById(linked._id).orFail();
+    expect(storedLinked.brand).toEqual(brand._id);
+    expect(storedLinked.attributes[0]).toMatchObject(attributes[0]);
+    const populated = await Product.findById(linked._id)
+      .populate<{ brand: IBrand }>("brand")
+      .orFail();
+    expect(populated.brand.name).toBe(brand.name);
+    expect(populated.brand._id).toEqual(brand._id);
   });
 });
 

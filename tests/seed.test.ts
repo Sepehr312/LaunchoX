@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import mongoose from "mongoose";
 import { compare } from "bcryptjs";
 import { startTestMongo } from "./mongo-server";
@@ -9,6 +11,7 @@ import { Product } from "@/models/product";
 import { Category } from "@/models/category";
 import { Cart } from "@/models/cart";
 import { Counter } from "@/models/counter";
+import { Brand } from "@/models/brand";
 import { seedDatabase, parseSeedOptions } from "../scripts/seed-runner";
 
 const env = envSchema.parse({
@@ -60,13 +63,24 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
   const first = await seedDatabase(options);
   expect(first).toEqual({
     users: 2,
-    categories: 5,
+    categories: 8,
     products: 24,
     carts: 0,
     orders: 0,
     counters: 0,
+    brands: 11,
   });
   const products = await Product.find().lean();
+  const brands = await Brand.find().lean();
+  expect(brands.filter((brand) => brand.isFeatured)).toHaveLength(3);
+  expect(brands.every((brand) => brand.isActive)).toBe(true);
+  for (const product of products) {
+    const brand = brands.find((entry) => entry._id.equals(product.brand));
+    expect(brand).toBeDefined();
+    expect(brand?.name).toBe(
+      product.attributes.find((attribute) => attribute.key === "برند")?.value,
+    );
+  }
   expect(products.filter((product) => product.isFeatured)).toHaveLength(6);
   expect(
     products.filter((product) => product.stock === 0).length,
@@ -83,13 +97,28 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
     expect(product.attributes.length).toBeGreaterThanOrEqual(2);
     expect(product.attributes.length).toBeLessThanOrEqual(4);
     expect(product.images).toHaveLength(1);
-    expect(product.images[0]).toMatch(/^\/images\/products\/[a-z-]+\.png$/);
+    expect(product.images[0]).toMatch(
+      /^\/images\/preview\/categories\/[a-z-]+\.png$/,
+    );
+    expect(existsSync(join(process.cwd(), "public", product.images[0]))).toBe(
+      true,
+    );
   }
   for (const category of await Category.find().lean()) {
     const count = products.filter((product) =>
       product.category.equals(category._id),
     ).length;
-    expect(count).toBeGreaterThanOrEqual(4);
+    expect(count).toBe(
+      category.slug === "twin"
+        ? 0
+        : category.slug === "home-kitchen"
+          ? 1
+          : ["top-freezer", "bottom-freezer"].includes(category.slug)
+            ? 2
+            : category.slug === "sports-travel"
+              ? 4
+              : 5,
+    );
     expect(count).toBeLessThanOrEqual(6);
   }
   const admin = await User.findOne({ role: "admin" })
@@ -106,6 +135,9 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
   expect(customer.addresses[0].city).toBe("تهران");
   const second = await seedDatabase({ ...options, reset: false });
   expect(second).toEqual(first);
+  expect(
+    (await Brand.find().lean()).map((brand) => brand._id.toString()).sort(),
+  ).toEqual(brands.map((brand) => brand._id.toString()).sort());
   expect(
     (await Product.find().sort({ slug: 1 }).lean()).map((product) =>
       product._id.toString(),
