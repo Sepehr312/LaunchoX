@@ -12,14 +12,13 @@ export function StoreHeader({
   cartCount: number;
   authenticated?: boolean;
 }) {
-  const { theme, toggleTheme } = usePreviewTheme();
+  const { theme } = usePreviewTheme();
 
   return (
     <FrosticHeader
       cartCount={cartCount}
       authenticated={authenticated}
       theme={theme}
-      onThemeToggle={toggleTheme}
     />
   );
 }

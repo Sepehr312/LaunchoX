@@ -129,6 +129,7 @@ npm run seed -- --reset
 
 ## Decisions
 
+
  
 - Customer pages retain the shared header day/night toggle; the existing header theme changes independently while customer content remains light.
 
@@ -139,6 +140,9 @@ npm run seed -- --reset
 - Customer content uses a centered 1184px maximum width, 16px mobile gutters and 32px tablet/desktop gutters; profile forms are capped at 640px. Password changes expand beneath personal information. Saved addresses and the new-address form use adjacent RTL desktop columns and stack on mobile.
 
 - Customer routes use a scoped light-only presentation with the existing CSS light palette; shared theme, UI primitives, types, services, and actions remain unchanged. The remember option retains only the email for the browser session. Active orders display the owner-requested approximate delivery estimate of one week; pending statuses use yellow only as requested.
+
+- The shared header omits desktop and mobile theme toggles. All routes use the light ice-to-white background from globals.css, limited to the first 900px without repetition; the catalog wrapper stays transparent while cards and decorative artwork are preserved.
+
 
 - Vazirmatn is self-hosted with next/font/local and its official OFL license because Google Fonts downloads fail during the product-detail production build. The shared font variable and fallback metrics are preserved.
 

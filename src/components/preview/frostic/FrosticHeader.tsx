@@ -65,14 +65,12 @@ export function FrosticHeader({
   links = defaultLinks,
   activeHref,
   theme = "system",
-  onThemeToggle,
 }: {
   cartCount?: number;
   authenticated?: boolean;
   links?: readonly FrosticNavItem[];
   activeHref?: string;
   theme?: FrosticTheme;
-  onThemeToggle: () => void;
 }) {
   const pathname = usePathname();
   const selectedHref = activeHref ?? pathname;
@@ -209,26 +207,6 @@ export function FrosticHeader({
     );
   }
 
-  function themeButton(withLabel = false) {
-    return (
-      <button
-        type="button"
-        className={withLabel ? styles.themeRow : styles.iconButton}
-        onClick={onThemeToggle}
-        aria-label={theme === "dark" ? "تغییر به تم روشن" : "تغییر به تم تاریک"}
-      >
-        <FrosticIcon name="sun" className={styles.dayIcon} />
-        <FrosticIcon name="moon" className={styles.nightIcon} />
-        {withLabel && (
-          <>
-            <span>ظاهر فروشگاه</span>
-            <small>{theme === "dark" ? "شب" : "روز"}</small>
-          </>
-        )}
-      </button>
-    );
-  }
-
   return (
     <header
       className={`${themeStyles.theme} ${styles.header}`}
@@ -237,7 +215,6 @@ export function FrosticHeader({
     >
       <div className={styles.bar}>
         <div className={styles.actions}>
-          <div className={styles.themeAction}>{themeButton()}</div>
           <Link
             href="/cart"
             className={`${styles.iconButton} ${styles.cart}`}
@@ -359,7 +336,6 @@ export function FrosticHeader({
                   حساب کاربری
                   <FrosticIcon name="arrow" />
                 </Link>
-                {themeButton(true)}
                 <p className={styles.drawerNote}>
                   لانچ‌اوکس؛ انتخابی برای سال‌های پیش رو.
                 </p>
