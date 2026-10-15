@@ -1,0 +1,324 @@
+.page {
+  /* Use the documented Light palette for the brands listing. */
+  --background: #f2f8ff;
+  --surface: #fff;
+  --ice: #eaf5ff;
+  --foreground: #10245a;
+  --muted: #526582;
+  --primary: #006acb;
+  --primary-foreground: #fff;
+  --border: #d8e8f8;
+  --border-strong: #758aa6;
+  --shadow: 0 4px 16px rgb(30 90 150 / 8%);
+  color: var(--foreground);
+  color-scheme: light;
+  min-inline-size: 0;
+}
+.shell {
+  inline-size: 100%;
+  max-inline-size: 1280px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+.hero {
+  background: linear-gradient(180deg, var(--surface), var(--ice));
+  border-block-end: 1px solid var(--border);
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.heroContent {
+  text-align: center;
+  padding-block: 8px 48px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  font-size: 14px;
+}
+.hero h1 {
+  margin-block: 16px;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.hero p {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-inline-size: 640px;
+  margin: 24px auto 0;
+  padding-inline: 16px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--primary);
+}
+.search input {
+  min-block-size: 48px;
+  border: 0;
+  background: transparent;
+  padding-inline: 0;
+  font-size: 14px;
+}
+.search > svg {
+  flex-shrink: 0;
+}
+.search button {
+  display: grid;
+  place-items: center;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  cursor: pointer;
+}
+.search:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.search input:focus-visible {
+  outline: none;
+}
+.catalog {
+  padding-block: 32px 48px;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 24px;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.heading h2,
+.guide h2 {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.heading > span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  color: var(--muted);
+  background: var(--surface);
+  font-size: 12px;
+}
+.sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.sort select {
+  min-block-size: 44px;
+  max-inline-size: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+}
+.grid li {
+  min-inline-size: 0;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-block-size: 240px;
+  block-size: 100%;
+  padding: 24px 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: center;
+  overflow-wrap: anywhere;
+  transition:
+    border-color 160ms,
+    box-shadow 160ms,
+    transform 160ms;
+}
+.card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 12px 32px rgb(30 90 150 / 12%);
+  transform: translateY(-2px);
+}
+.logo {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 80px;
+  margin-block-end: 16px;
+}
+.logo img {
+  inline-size: 100%;
+  max-inline-size: 160px;
+  block-size: 80px;
+  object-fit: contain;
+}
+.placeholder {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.placeholder svg {
+  color: var(--primary);
+}
+.placeholder span {
+  font-size: 16px;
+  font-weight: 600;
+}
+.card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+.card p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-block: 4px 16px;
+}
+.cardAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  inline-size: 100%;
+  margin-block-start: auto;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 12px;
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  text-align: center;
+  margin-block: 24px;
+}
+.empty h3,
+.empty h1 {
+  font-size: 20px;
+  font-weight: 700;
+}
+.empty p {
+  color: var(--muted);
+  line-height: 1.8;
+}
+.guide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  margin-block-end: 48px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: linear-gradient(120deg, var(--ice), var(--surface));
+}
+.guideIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 64px;
+  block-size: 64px;
+  border-radius: 16px;
+  color: var(--primary);
+  background: var(--surface);
+}
+.guide > div {
+  flex: 1 1 320px;
+  min-inline-size: 0;
+}
+.guide p {
+  margin-block-start: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.guide a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  color: var(--primary);
+  font-size: 14px;
+}
+.page :is(a, button, select):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+@media (min-width: 768px) {
+  .shell {
+    padding-inline: 24px;
+  }
+  .hero h1 {
+    font-size: 44px;
+  }
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .card {
+    min-block-size: 264px;
+    padding: 32px 24px 24px;
+  }
+  .cardAction {
+    font-size: 14px;
+  }
+  .heading h2 {
+    font-size: 28px;
+  }
+}
+@media (min-width: 1024px) {
+  .shell {
+    padding-inline: 32px;
+  }
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .catalog {
+    padding-block-start: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card:hover {
+    transform: none;
+  }
+}

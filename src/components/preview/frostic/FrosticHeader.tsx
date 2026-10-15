@@ -23,7 +23,7 @@ export interface FrosticNavItem {
 const defaultLinks: readonly FrosticNavItem[] = [
   { label: "خانه", href: "/" },
   { label: "محصولات", href: "/products" },
-  { label: "برندها" },
+  { label: "برندها", href: "/brands" },
   { label: "مقایسه" },
   { label: "مجله خرید" },
   { label: "خدمات" },

@@ -130,6 +130,7 @@ npm run seed -- --reset
 ## Decisions
 
 - The shared header omits desktop and mobile theme toggles. All routes use the light ice-to-white background from globals.css, limited to the first 900px without repetition; the catalog wrapper stays transparent while cards and decorative artwork are preserved.
+- `/brands` lists active database brands with counts from the existing product filter, Persian/English live search and alphabetical sorting. `/brands/[slug]` validates the stored slug and redirects to `/products?brands=<stored name>`. Missing logos use placeholders; search aliases do not create brand records.
 
 - Vazirmatn is self-hosted with next/font/local and its official OFL license because Google Fonts downloads fail during the product-detail production build. The shared font variable and fallback metrics are preserved.
 
