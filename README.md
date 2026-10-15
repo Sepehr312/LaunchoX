@@ -129,7 +129,20 @@ npm run seed -- --reset
 
 ## Decisions
 
+
+ 
+- Customer pages retain the shared header day/night toggle; the existing header theme changes independently while customer content remains light.
+
+- Login and registration default to `/account` when no valid callback destination is supplied; explicitly requested safe destinations such as checkout remain intact.
+
+- Customer interaction cues use existing order statuses and validation rules. Clipboard copies the original order reference while displayed digits remain Persian. Address editing closes only after a successful existing action; selected-address and cart-saving cues do not change backend behavior.
+
+- Customer content uses a centered 1184px maximum width, 16px mobile gutters and 32px tablet/desktop gutters; profile forms are capped at 640px. Password changes expand beneath personal information. Saved addresses and the new-address form use adjacent RTL desktop columns and stack on mobile.
+
+- Customer routes use a scoped light-only presentation with the existing CSS light palette; shared theme, UI primitives, types, services, and actions remain unchanged. The remember option retains only the email for the browser session. Active orders display the owner-requested approximate delivery estimate of one week; pending statuses use yellow only as requested.
+
 - The shared header omits desktop and mobile theme toggles. All routes use the light ice-to-white background from globals.css, limited to the first 900px without repetition; the catalog wrapper stays transparent while cards and decorative artwork are preserved.
+
 
 - Vazirmatn is self-hosted with next/font/local and its official OFL license because Google Fonts downloads fail during the product-detail production build. The shared font variable and fallback metrics are preserved.
 
@@ -170,6 +183,7 @@ npm run seed -- --reset
 - For an existing local development catalog, `npx tsx --conditions=react-server --env-file=.env.local scripts/link-product-brands.ts` previews missing brand links from legacy attributes; add `--apply` to back up the catalog and brands, create missing brands, and fill only unassigned `Product.brand` references. Existing product fields and assigned brands are preserved.
 
 - Brand administration follows category full-form edits: omitted optional text fields are cleared, omitted slugs are generated from the name, and the management list includes inactive brands sorted by order and name. Linked products prevent deletion, while deactivation remains available without changing product visibility.
+
 
 - All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle remains scoped to the header.
 

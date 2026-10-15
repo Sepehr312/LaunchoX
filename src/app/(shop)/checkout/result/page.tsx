@@ -1,3 +1,6 @@
+import { CopyOrderNumber } from "@/components/customer/CopyOrderNumber";
+import styles from "@/components/customer/customer.module.css";
+import { OrderBadge } from "@/components/customer/OrderBadge";
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -32,20 +35,51 @@ export default async function CheckoutResultPage({
   });
   if (!order) notFound();
   const paid = order.payment.status === "paid";
-  const failed = order.status === "cancelled";
+  const failed =
+    order.payment.status === "failed" || order.status === "cancelled";
   return (
     <main className="store-shell py-12">
       <section className="checkout-panel mx-auto max-w-2xl">
         <p className="section-kicker">نتیجهٔ سفارش شما</p>
+        <div className="mt-4">
+          <OrderBadge status={order.payment.status} payment />
+        </div>
         <div
           aria-hidden="true"
           className={
             paid
               ? "checkout-result-symbol text-success"
-              : "checkout-result-symbol text-danger"
+              : failed
+                ? "checkout-result-symbol text-danger"
+                : `checkout-result-symbol ${styles.pending}`
           }
         >
-          {paid ? "✓" : failed ? "×" : "…"}
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            className="size-8"
+            aria-hidden="true"
+          >
+            {paid ? (
+              <>
+                <circle cx="12" cy="12" r="9" />
+                <path d="m7 12 3 3 7-7" />
+              </>
+            ) : failed ? (
+              <>
+                <circle cx="12" cy="12" r="9" />
+                <path d="m8 8 8 8m0-8-8 8" />
+              </>
+            ) : (
+              <>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </>
+            )}
+          </svg>
         </div>
         <h1 className="mb-4 text-2xl font-bold">
           {paid
@@ -65,7 +99,7 @@ export default async function CheckoutResultPage({
           <div className="flex flex-wrap justify-between gap-2">
             <dt>شمارهٔ سفارش</dt>
             <dd dir="ltr" data-order-number={order.orderNumber}>
-              {toPersianDigits(order.orderNumber)}
+              <CopyOrderNumber number={order.orderNumber} />
             </dd>
           </div>
           <div className="flex flex-wrap justify-between gap-2">
@@ -86,7 +120,13 @@ export default async function CheckoutResultPage({
           )}
         </dl>
         <div className="flex flex-wrap gap-3">
-          <Link href="/products" className="checkout-link">
+          <Link href={`/account/orders/${order.id}`} className="checkout-link">
+            مشاهدهٔ سفارش
+          </Link>
+          <Link
+            href="/products"
+            className="checkout-link checkout-link-secondary"
+          >
             بازگشت به فروشگاه
           </Link>
           <Link href="/cart" className="checkout-link checkout-link-secondary">

@@ -1,3 +1,4 @@
+import { CustomerEmpty } from "@/components/customer/CustomerEmpty";
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -26,12 +27,12 @@ export default async function CheckoutPage() {
         آدرس ارسال را انتخاب کنید و سفارش خود را نهایی کنید.
       </p>
       {!cart.items.length ? (
-        <section className="checkout-panel">
-          <p className="mb-4">سبد خرید شما خالی است.</p>
-          <Link href="/products" className="text-primary">
-            مشاهدهٔ محصولات
-          </Link>
-        </section>
+        <CustomerEmpty
+          title="سبد خرید شما خالی است"
+          description="برای ثبت سفارش، ابتدا محصولی به سبد خرید اضافه کنید."
+          href="/products"
+          label="مشاهدهٔ محصولات"
+        />
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="min-w-0">

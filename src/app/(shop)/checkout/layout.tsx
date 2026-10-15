@@ -1,3 +1,4 @@
+import { CustomerScope } from "@/components/customer/CustomerScope";
 import { requireUser } from "@/actions/auth.actions";
 
 export default async function CheckoutLayout({
@@ -6,5 +7,5 @@ export default async function CheckoutLayout({
   children: React.ReactNode;
 }) {
   await requireUser();
-  return children;
+  return <CustomerScope>{children}</CustomerScope>;
 }

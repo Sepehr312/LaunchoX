@@ -30,7 +30,13 @@ describe("authentication rate limit", () => {
   });
 });
 describe("callback destinations", () => {
-  it.each(["/", "/account", "/account?tab=orders", "/admin"])(
+  it.each([undefined, null, ""])(
+    "defaults missing destination %s to the customer account",
+    (value) => {
+      expect(safeCallbackUrl(value)).toBe("/account");
+    },
+  );
+  it.each(["/", "/account", "/account?tab=orders", "/admin", "/checkout"])(
     "allows local destination %s",
     (path) => {
       expect(safeCallbackUrl(path)).toBe(path);
@@ -50,6 +56,6 @@ describe("callback destinations", () => {
     undefined,
     "/\nevil",
   ])("rejects unsafe destination %s", (path) => {
-    expect(safeCallbackUrl(path)).toBe("/");
+    expect(safeCallbackUrl(path)).toBe("/account");
   });
 });
