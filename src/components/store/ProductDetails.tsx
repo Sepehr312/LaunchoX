@@ -467,7 +467,6 @@ export function ProductDetails({
       {!isStorefront && (
         <FrosticHeader
           theme="light"
-          onThemeToggle={() => {}}
           cartCount={0}
           activeHref="/products"
         />

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 /* Match the existing fallback metrics while the self-hosted font loads. */
 @font-face {
   font-family: "Vazirmatn Fallback";
@@ -186,6 +187,7 @@
 }
 
 :root {
+  --page-background: linear-gradient(180deg, #eaf5ff, #f2f8ff 260px, #fff 900px) top / 100% 900px no-repeat #fff;
   color-scheme: light dark;
   --background: light-dark(#eef7fb, #03111f);
   --foreground: light-dark(#071f3d, #edf9ff);
@@ -233,18 +235,16 @@ html {
   font-family: var(--font-vazirmatn), sans-serif;
 }
 body {
-  background:
-    radial-gradient(
-      circle at 85% -10%,
-      rgba(80, 198, 238, 0.16),
-      transparent 28rem
-    ),
-    linear-gradient(
-      180deg,
-      var(--background),
-      color-mix(in srgb, var(--background) 92%, white)
-    );
+  background: var(--page-background);
   color: var(--foreground);
+}
+:root,
+[data-theme] {
+  color-scheme: light !important;
+  --f-day: block !important;
+  --f-night: none !important;
+  --f-day-opacity: 1 !important;
+  --f-night-opacity: 0 !important;
 }
 button,
 input,
@@ -1332,15 +1332,6 @@ a {
   }
 }
 :root[data-theme="dark"] {
-  body {
-    background:
-      radial-gradient(
-        circle at 82% -5%,
-        rgba(38, 157, 207, 0.15),
-        transparent 30rem
-      ),
-      linear-gradient(180deg, #03111f, #051826 52%, #03111f);
-  }
   .hero-image-light {
     display: none;
   }

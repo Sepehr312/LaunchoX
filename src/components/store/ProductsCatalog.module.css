@@ -10,22 +10,7 @@
     0 4px 10px -4px light-dark(rgb(45 96 128 / 12%), rgb(0 0 0 / 22%)),
     0 20px 46px -16px light-dark(rgb(50 104 142 / 24%), rgb(0 0 0 / 50%));
   min-block-size: 100vh;
-  background:
-    radial-gradient(
-      ellipse at 95% 12%,
-      light-dark(#cbeafa80, #126a9830),
-      transparent 42%
-    ),
-    radial-gradient(
-      ellipse at 5% 38%,
-      light-dark(#c3e1ff66, #147a8b20),
-      transparent 45%
-    ),
-    linear-gradient(
-      160deg,
-      light-dark(#f8fcff, #061421),
-      light-dark(#eef6fc, #0a1e32)
-    );
+  background: transparent;
 }
 .shell {
   max-inline-size: 1500px;
