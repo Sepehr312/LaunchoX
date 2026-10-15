@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The shared header omits desktop and mobile theme toggles. All routes use the light ice-to-white background from globals.css, limited to the first 900px without repetition; the catalog wrapper stays transparent while cards and decorative artwork are preserved.
+
 - Vazirmatn is self-hosted with next/font/local and its official OFL license because Google Fonts downloads fail during the product-detail production build. The shared font variable and fallback metrics are preserved.
 
 - Product details use the shared ProductDetails component with real active product data, category peers, existing cart actions, current cart quantity, and the stock/ten-item cap. Missing attributes and feedback remain empty; registered images are preserved. Product URLs validate slugs and return 404 for missing/inactive products, including products created after a build.
