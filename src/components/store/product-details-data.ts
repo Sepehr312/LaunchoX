@@ -1,0 +1,35 @@
+import type { StoreProductDTO } from "@/types/dto";
+
+export function getRealPreviewData(product: StoreProductDTO) {
+  function attribute(...keys: string[]) {
+    return product.attributes.find((item) => keys.includes(item.key))?.value;
+  }
+
+  return {
+    brand: attribute("برند"),
+    model: attribute("مدل"),
+    color: attribute("رنگ"),
+    warranty: attribute("گارانتی", "ضمانت"),
+    shipping: attribute("ارسال", "زمان ارسال"),
+    discountPercent:
+      product.compareAtPrice && product.compareAtPrice > product.price
+        ? Math.round((1 - product.price / product.compareAtPrice) * 100)
+        : 0,
+    galleryViews: product.images.map((src, index) => ({
+      src,
+      label: product.images.length === 1 ? "تصویر محصول" : `تصویر ${index + 1}`,
+      scale: 1,
+      position: "50% 50%",
+    })),
+    specifications: [
+      {
+        title: "مشخصات کلی",
+        rows: [
+          ["دسته‌بندی", product.category.name],
+          ...(product.sku ? [["شناسه کالا", product.sku]] : []),
+          ...product.attributes.map(({ key, value }) => [key, value]),
+        ],
+      },
+    ],
+  };
+}

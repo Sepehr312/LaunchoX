@@ -1,6 +1,13 @@
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ next: vi.fn(), order: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  next: vi.fn(),
+  order: vi.fn(),
+  product: vi.fn(),
+}));
 vi.mock("@/services/order.service", () => ({ getOrderForUser: mocks.order }));
+vi.mock("@/services/product.service", () => ({
+  getProductBySlug: mocks.product,
+}));
 vi.mock("@/lib/env", () => ({
   getEnv: () => ({ NEXT_PUBLIC_SITE_URL: "http://localhost:3020" }),
 }));
@@ -18,6 +25,12 @@ vi.mock("next/server", () => ({
       return Response.redirect(url);
     }
     static next = mocks.next;
+    static rewrite(url: URL, init: ResponseInit) {
+      return new Response(null, {
+        ...init,
+        headers: { ...init.headers, "x-middleware-rewrite": url.toString() },
+      });
+    }
   },
 }));
 import { AppError } from "@/lib/errors";
@@ -25,7 +38,9 @@ import proxy from "@/proxy";
 
 function request(path: string, authenticated = false) {
   return {
-    nextUrl: new URL(path, "http://localhost:3000"),
+    nextUrl: Object.assign(new URL(path, "http://localhost:3000"), {
+      clone: () => new URL(path, "http://localhost:3000"),
+    }),
     headers: new Headers({ "x-launchox-path": "/spoofed" }),
     auth: authenticated ? { user: { id: "user" } } : null,
   } as unknown as Parameters<typeof proxy>[0];
@@ -33,6 +48,7 @@ function request(path: string, authenticated = false) {
 const event = {} as Parameters<typeof proxy>[1];
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.product.mockReset();
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue(new Response("صفحه پیدا نشد")),
@@ -40,6 +56,31 @@ beforeEach(() => {
   mocks.next.mockReturnValue(new Response(null));
 });
 afterEach(() => vi.unstubAllGlobals());
+it.each(["missing-product", "invalid_slug", "%E0%A4%A"])(
+  "returns HTTP 404 for unavailable or invalid product %s",
+  async (slug) => {
+    mocks.product.mockResolvedValueOnce(null);
+    const response = await proxy(request(`/products/${slug}`), event);
+    expect(response?.status).toBe(404);
+    expect(response?.headers.get("cache-control")).toBe("no-store");
+    expect(response?.headers.get("x-middleware-rewrite")).toBe(
+      "http://localhost:3000/_not-found",
+    );
+    if (slug !== "missing-product")
+      expect(mocks.product).not.toHaveBeenCalled();
+  },
+);
+it("passes active products and propagates product database failures", async () => {
+  mocks.product.mockResolvedValueOnce({ id: "active" });
+  expect(
+    (await proxy(request("/products/active-product"), event))?.status,
+  ).toBe(200);
+  expect(mocks.product).toHaveBeenCalledWith("active-product");
+  mocks.product.mockRejectedValueOnce(new Error("Database unavailable"));
+  await expect(
+    proxy(request("/products/active-product"), event),
+  ).rejects.toThrow("Database unavailable");
+});
 it("exports a callable proxy even when Auth.js resolves its wrapper asynchronously", async () => {
   expect(typeof proxy).toBe("function");
   const response = await proxy(request("/account?tab=orders"), event);
@@ -59,7 +100,9 @@ it.each(["/login", "/register"])(
   "redirects authenticated visitors from %s",
   async (path) => {
     const response = await proxy(request(path, true), event);
-    expect(response?.headers.get("location")).toBe("http://localhost:3000/account");
+    expect(response?.headers.get("location")).toBe(
+      "http://localhost:3000/account",
+    );
   },
 );
 it("passes authenticated requests and overwrites spoofed current-path headers", async () => {
