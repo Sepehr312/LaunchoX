@@ -1,4 +1,13 @@
 @import "tailwindcss";
+/* Match the existing fallback metrics while the self-hosted font loads. */
+@font-face {
+  font-family: "Vazirmatn Fallback";
+  src: local("Arial");
+  ascent-override: 101.87%;
+  descent-override: 53.36%;
+  line-gap-override: 0%;
+  size-adjust: 100.66%;
+}
 
 .page-state {
   width: 100%;

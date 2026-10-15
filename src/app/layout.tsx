@@ -1,6 +1,6 @@
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
-import { Vazirmatn } from "next/font/google";
+import localFont from "next/font/local";
 import { SiteTheme } from "@/components/ui/SiteTheme";
 import "./globals.css";
 
@@ -13,10 +13,13 @@ const initialThemeScript = `(() => {
     : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 })();`;
 
-const vazirmatn = Vazirmatn({
+const vazirmatn = localFont({
+  src: "./fonts/vazirmatn-variable.ttf",
+  weight: "100 900",
   variable: "--font-vazirmatn",
-  subsets: ["arabic", "latin"],
   display: "swap",
+  adjustFontFallback: false,
+  fallback: ["Vazirmatn Fallback"],
 });
 
 export const metadata: Metadata = {

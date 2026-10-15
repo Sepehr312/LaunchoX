@@ -129,6 +129,10 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Vazirmatn is self-hosted with next/font/local and its official OFL license because Google Fonts downloads fail during the product-detail production build. The shared font variable and fallback metrics are preserved.
+
+- Product details use the shared ProductDetails component with real active product data, category peers, existing cart actions, current cart quantity, and the stock/ten-item cap. Missing attributes and feedback remain empty; registered images are preserved. Product URLs validate slugs and return 404 for missing/inactive products, including products created after a build.
+
 
 - Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The eight homepage types share one definition; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
 
