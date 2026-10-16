@@ -42,6 +42,16 @@ export interface BrandDTO extends EntityDTO {
   isFeatured: boolean;
   order: number;
 }
+export interface StoreBrandDTO {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string;
+  productCount: number;
+}
+export interface StoreBrandDetailDTO extends StoreBrandDTO {
+  description?: string;
+}
 export interface ProductDTO extends EntityDTO {
   title: string;
   slug: string;

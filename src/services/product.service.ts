@@ -9,6 +9,8 @@ import { Category } from "@/models/category";
 import { Product } from "@/models/product";
 import { Brand } from "@/models/brand";
 import { brandIdSchema } from "@/validations/brand";
+import { getStoreBrandBySlug } from "@/services/brand.service";
+import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
 import type {
   PaginatedResult,
   ProductDTO,
@@ -32,6 +34,15 @@ async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
   const products = records.map((record) => toDTO(record) as ProductDTO);
   const ids = [...new Set(products.map((product) => product.category))];
   const categories = await Category.find({ _id: { $in: ids } }).lean();
+  const brandIds = records.flatMap((record) =>
+    "brand" in record && record.brand ? [String(record.brand)] : [],
+  );
+  const brands = await Brand.find({ _id: { $in: brandIds } })
+    .select("name")
+    .lean();
+  const brandNames = new Map(
+    brands.map((brand) => [String(brand._id), brand.name]),
+  );
   const categoryMap = new Map(
     categories.map((record) => {
       const category = toDTO(record);
@@ -41,7 +52,21 @@ async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
       ];
     }),
   );
-  return products.flatMap((product) => {
+  return products.flatMap((product, index) => {
+    const record = records[index];
+    const name =
+      "brand" in record ? brandNames.get(String(record.brand)) : undefined;
+    if (name) {
+      product.attributes = [
+        ...product.attributes.filter((attribute) => attribute.key !== "برند"),
+        {
+          key: "برند",
+          value: name,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+        },
+      ];
+    }
     const category = categoryMap.get(product.category);
     return category ? [{ ...product, category }] : [];
   });
@@ -50,6 +75,7 @@ async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
 type ProductStoreFilter = {
   isActive?: boolean;
   category?: Types.ObjectId;
+  brand?: Types.ObjectId | { $in: Types.ObjectId[] };
   $or?: Array<{ title: RegExp } | { description: RegExp }>;
   price?: { $gte?: number; $lte?: number };
   stock?: { $gt: number };
@@ -71,10 +97,6 @@ function storefrontFilter(input: ProductQueryInput): ProductStoreFilter {
   }
   if (input.inStock) filter.stock = { $gt: 0 };
   const attributes: object[] = [];
-  if (input.brands?.length)
-    attributes.push({
-      attributes: { $elemMatch: { key: "برند", value: { $in: input.brands } } },
-    });
   if (input.energies?.length)
     attributes.push({
       attributes: {
@@ -219,18 +241,33 @@ async function queryProductRecords(
   return { records: result?.items ?? [], total: result?.total[0]?.count ?? 0 };
 }
 
-export async function getProductFilterOptions(): Promise<ProductFilterOptionsDTO> {
+export async function getProductFilterOptions(
+  brandId?: string,
+): Promise<ProductFilterOptionsDTO> {
   await connectDB();
+  const scope = {
+    isActive: true,
+    ...(brandId
+      ? { brand: new Types.ObjectId(brandIdSchema.parse(brandId)) }
+      : {}),
+  };
   const [result] = await Product.aggregate<{
     attributes: { _id: string; values: string[] }[];
     price: { max: number }[];
   }>([
-    { $match: { isActive: true } },
+    { $match: scope },
     {
       $facet: {
         attributes: [
           { $unwind: "$attributes" },
-          { $match: { "attributes.key": { $in: ["برند", "رده انرژی"] } } },
+          {
+            $match: {
+              $or: [
+                { "attributes.key": "رده انرژی" },
+                { "attributes.key": "برند", brand: null },
+              ],
+            },
+          },
           {
             $group: {
               _id: "$attributes.key",
@@ -249,8 +286,16 @@ export async function getProductFilterOptions(): Promise<ProductFilterOptionsDTO
     )
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b, "fa"));
+  const linkedIds = await Product.distinct("brand", scope);
+  const brands = await Brand.find({ _id: { $in: linkedIds }, isActive: true })
+    .select("name")
+    .lean();
   return {
-    brands: values("برند"),
+    brands: brandId
+      ? []
+      : [
+          ...new Set([...brands.map((brand) => brand.name), ...values("برند")]),
+        ].sort((a, b) => a.localeCompare(b, "fa")),
     energies: values("رده انرژی"),
     maxPrice: result?.price[0]?.max ?? 0,
   };
@@ -258,9 +303,20 @@ export async function getProductFilterOptions(): Promise<ProductFilterOptionsDTO
 
 export async function listProducts(
   input: ProductQueryInput,
+  scopeBrandId?: string,
 ): Promise<PaginatedResult<StoreProductDTO>> {
   await connectDB();
   const filter = storefrontFilter(input);
+  if (scopeBrandId) {
+    filter.brand = new Types.ObjectId(brandIdSchema.parse(scopeBrandId));
+  } else if (input.brandSlug) {
+    const brand = await Brand.findOne({ slug: input.brandSlug, isActive: true })
+      .select("_id")
+      .lean();
+    filter.brand = brand ? brand._id : { $in: [] };
+  }
+  if (!scopeBrandId && input.brands?.length)
+    await applyBrandNames(filter, input.brands);
   const { records, total } = await queryProductRecords(input, filter);
   return {
     items: await withCategories(records),
@@ -269,6 +325,55 @@ export async function listProducts(
     total,
     totalPages: Math.ceil(total / input.limit),
   };
+}
+
+async function applyBrandNames(filter: ProductStoreFilter, names: string[]) {
+  const brands = await Brand.find({ name: { $in: names }, isActive: true })
+    .select("_id")
+    .lean();
+  filter.$and = [
+    ...(filter.$and ?? []),
+    {
+      $or: [
+        { brand: { $in: brands.map((brand) => brand._id) } },
+        {
+          brand: null,
+          attributes: { $elemMatch: { key: "برند", value: { $in: names } } },
+        },
+      ],
+    },
+  ];
+}
+
+export async function listBrandProducts(
+  slug: unknown,
+  values: StoreSearchParams,
+) {
+  const brand = await getStoreBrandBySlug(slug);
+  if (!brand) throw new AppError("برند پیدا نشد", "NOT_FOUND");
+  const parsed = parseProductQuery({
+    ...values,
+    brandSlug: undefined,
+    brands: undefined,
+  });
+  if (!parsed.success)
+    throw new AppError(
+      parsed.error.issues[0]?.message ?? "ورودی معتبر نیست",
+      "VALIDATION",
+    );
+  return listProducts(parsed.data, brand.id);
+}
+
+export async function getBrandCategories(brandId: string) {
+  await connectDB();
+  const ids = await Product.distinct("category", {
+    brand: brandIdSchema.parse(brandId),
+    isActive: true,
+  });
+  const categories = await Category.find({ _id: { $in: ids }, isActive: true })
+    .sort({ order: 1, name: 1 })
+    .lean();
+  return categories.map((category) => toDTO(category));
 }
 
 export async function getProductBySlug(
@@ -312,9 +417,22 @@ async function ensureCategory(category: string) {
     throw new AppError("دسته‌بندی پیدا نشد", "NOT_FOUND");
 }
 
-async function ensureBrand(brand: string | null | undefined) {
-  if (brand && !(await Brand.exists({ _id: brandIdSchema.parse(brand) })))
-    throw new AppError("برند پیدا نشد", "NOT_FOUND");
+async function ensureBrand(
+  brand: string | null | undefined,
+  productId?: string,
+) {
+  if (!brand) return;
+  const id = brandIdSchema.parse(brand);
+  const record = await Brand.findById(id).select("isActive").lean();
+  if (!record) throw new AppError("برند پیدا نشد", "NOT_FOUND");
+  if (
+    !record.isActive &&
+    !(productId && (await Product.exists({ _id: productId, brand: id })))
+  )
+    throw new AppError(
+      "برند غیرفعال برای اتصال جدید قابل انتخاب نیست",
+      "VALIDATION",
+    );
 }
 
 export async function createProduct(
@@ -353,7 +471,7 @@ export async function updateProduct(
 ): Promise<StoreProductDTO> {
   await connectDB();
   await ensureCategory(input.category);
-  await ensureBrand(input.brand);
+  await ensureBrand(input.brand, id);
   const slug =
     input.slug ??
     (await createUniqueSlug(input.title, (candidate) =>
@@ -401,6 +519,7 @@ export async function listProductsAdmin(
   await connectDB();
   const filter = storefrontFilter(input);
   delete filter.isActive;
+  if (input.brands?.length) await applyBrandNames(filter, input.brands);
   const { records, total } = await queryProductRecords(input, filter);
   return {
     items: await withCategories(records),

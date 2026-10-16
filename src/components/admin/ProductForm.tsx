@@ -138,7 +138,11 @@ export function ProductForm({
                 <option value={values.brand}>{values.brand}</option>
               )}
             {brands.map((item) => (
-              <option value={item.name} key={item.id}>
+              <option
+                value={item.name}
+                key={item.id}
+                disabled={!item.isActive && item.id !== brandId}
+              >
                 {item.name}
                 {!item.isActive && " (غیرفعال)"}
               </option>

@@ -23,7 +23,7 @@ export interface FrosticNavItem {
 const defaultLinks: readonly FrosticNavItem[] = [
   { label: "خانه", href: "/" },
   { label: "محصولات", href: "/products" },
-  { label: "برندها" },
+  { label: "برندها", href: "/brands" },
   { label: "مقایسه" },
   { label: "مجله خرید" },
   { label: "خدمات" },
@@ -187,7 +187,13 @@ export function FrosticHeader({
             <Link
               key={item.label}
               href={item.href}
-              aria-current={selectedHref === item.href ? "page" : undefined}
+              aria-current={
+                selectedHref === item.href ||
+                (item.href === "/brands" &&
+                  selectedHref?.startsWith("/brands/"))
+                  ? "page"
+                  : undefined
+              }
               onClick={() => setIsOpen(false)}
             >
               {item.label}
