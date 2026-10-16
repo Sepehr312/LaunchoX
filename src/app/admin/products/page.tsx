@@ -35,9 +35,11 @@ export default async function ProductsAdmin({
     <section className="admin-panel grid min-w-0 gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1>مدیریت محصولات</h1>
-        <Link href="/admin/products/new">محصول جدید</Link>
+        <Link className="admin-primary" href="/admin/products/new">
+          محصول جدید
+        </Link>
       </div>
-      <form className="flex flex-wrap gap-2">
+      <form className="admin-filter">
         <label className="min-w-0 flex-1">
           جستجوی محصول
           <input
@@ -57,7 +59,12 @@ export default async function ProductsAdmin({
             : "محصولی در این صفحه برای نمایش وجود ندارد. برای افزودن محصول، «محصول جدید» را انتخاب کنید."}
         </p>
       ) : (
-        <div className="min-w-0 overflow-x-auto">
+        <div
+          className="admin-table-scroll"
+          role="region"
+          aria-label="جدول اطلاعات"
+          tabIndex={0}
+        >
           <table className="w-full text-start">
             <thead>
               <tr>
@@ -70,7 +77,7 @@ export default async function ProductsAdmin({
                   "وضعیت",
                   "عملیات",
                 ].map((label) => (
-                  <th className="p-3 text-start" key={label}>
+                  <th scope="col" className="p-3 text-start" key={label}>
                     {label}
                   </th>
                 ))}

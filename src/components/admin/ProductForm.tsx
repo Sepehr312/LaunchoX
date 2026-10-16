@@ -1,22 +1,82 @@
 "use client";
+import { useAdminFormAction } from "@/components/admin/use-admin-form-action";
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { ArrowUp, ArrowDown, Plus, Trash2 } from "lucide-react";
 import { productAction } from "@/actions/admin/product.actions";
 import { formatDate, toPersianDigits } from "@/lib/format";
 import type { StoreProductDTO } from "@/types/dto";
+import {
+  FormSection,
+  FormField,
+  FormSelect,
+  FormTextarea,
+  FormToggle,
+  FormFeedback,
+  ImagePreview,
+} from "@/components/admin/AdminForm";
 
 export function ProductForm({
   product,
   categories,
+  brands = [],
+  brandId,
 }: {
   product?: StoreProductDTO;
+  brandId?: string;
   categories: { id: string; name: string }[];
+  brands?: { id: string; name: string; isActive: boolean }[];
 }) {
-  const [state, action, pending] = useActionState(productAction, undefined);
-  const [images, setImages] = useState(product?.images ?? [""]);
+  const [state, action, pending] = useAdminFormAction(
+    productAction,
+    product?.id,
+  );
+  const [values, setValues] = useState({
+    title: product?.title ?? "",
+    slug: product?.slug ?? "",
+    description: product?.description ?? "",
+    price: product ? toPersianDigits(product.price) : "",
+    compareAtPrice:
+      product?.compareAtPrice === undefined
+        ? ""
+        : toPersianDigits(product.compareAtPrice),
+    stock: toPersianDigits(product?.stock ?? 0),
+    sku: product?.sku ?? "",
+    category: product?.category.id ?? "",
+    brand:
+      brands.find((item) => item.id === brandId)?.name ??
+      product?.attributes.find((item) => item.key === "برند")?.value ??
+      "",
+    isActive: product?.isActive ?? true,
+    isFeatured: product?.isFeatured ?? false,
+  });
+  const [images, setImages] = useState(
+    product?.images.length ? product.images : [""],
+  );
   const [attributes, setAttributes] = useState<
     { key: string; value: string }[]
-  >(product?.attributes ?? []);
+  >(product?.attributes.filter((item) => item.key !== "برند") ?? []);
+  const errors = state && !state.ok ? state.fieldErrors : undefined;
+  const field = (
+    name:
+      | "title"
+      | "slug"
+      | "description"
+      | "price"
+      | "compareAtPrice"
+      | "stock"
+      | "sku"
+      | "category",
+  ) => ({
+    name,
+    value: values[name],
+    onChange: (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >,
+    ) => setValues({ ...values, [name]: e.target.value }),
+    error: errors?.[name],
+  });
   function move(index: number, offset: number) {
     setImages((current) => {
       const next = [...current];
@@ -24,246 +84,292 @@ export function ProductForm({
       return next;
     });
   }
-  function errors(name: string) {
-    return state && !state.ok
-      ? state.fieldErrors?.[name]?.map((error, i) => (
-          <p className="text-danger" key={i}>
-            {error}
-          </p>
-        ))
-      : null;
-  }
-  const fields = [
-    ["title", "عنوان", product?.title],
-    ["slug", "نامک (خالی برای ساخت خودکار)", product?.slug],
-    ["price", "قیمت فروش (تومان)", product?.price],
-    ["compareAtPrice", "قیمت قبلی (تومان)", product?.compareAtPrice],
-    ["stock", "موجودی", product?.stock ?? 0],
-    ["sku", "شناسهٔ کالا", product?.sku],
-  ] as const;
   return (
-    <form action={action} className="admin-product-form">
+    <form action={action} className="admin-product-form" aria-busy={pending}>
       <input
         type="hidden"
         name="operation"
-        value={product ? "edit" : "create"}
+        value={product || state?.ok ? "edit" : "create"}
       />
-      <input type="hidden" name="id" value={product?.id ?? ""} />
-      <fieldset disabled={pending} className="grid min-w-0 gap-5">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {fields.map(([name, label, value]) => (
-            <label key={name}>
-              {label}
-              <input
-                className="field-input"
-                name={name}
-                defaultValue={
-                  typeof value === "number" ? toPersianDigits(value) : value
-                }
-                required={["title", "price", "stock"].includes(name)}
-                inputMode={
-                  ["price", "compareAtPrice", "stock"].includes(name)
-                    ? "numeric"
-                    : undefined
-                }
-              />
-              {errors(name)}
-            </label>
-          ))}
-        </div>
-        <label>
-          توضیحات
-          <textarea
-            className="field-input"
-            name="description"
-            defaultValue={product?.description}
+      <input
+        type="hidden"
+        name="id"
+        value={product?.id ?? (state?.ok ? state.data.id : "")}
+      />
+      <FormFeedback state={state}>
+        <Link href={`/admin/products/${state?.ok ? state.data.id : ""}/edit`}>
+          ویرایش محصول
+        </Link>{" "}
+        · <Link href="/admin/products">فهرست محصولات</Link>
+      </FormFeedback>
+      <fieldset disabled={pending} className="admin-form-body">
+        <FormSection
+          title="اطلاعات اصلی"
+          description="نام، دسته‌بندی و توضیحات محصول را برای مشتری مشخص کنید."
+        >
+          <FormField
+            label="عنوان محصول"
             required
-            rows={5}
+            maxLength={150}
+            {...field("title")}
           />
-          {errors("description")}
-        </label>
-        <label>
-          دسته‌بندی
-          <select
-            className="field-input"
-            name="category"
-            defaultValue={product?.category.id ?? ""}
-            required
-          >
+          <FormField
+            label="نامک"
+            hint="خالی بگذارید تا از عنوان ساخته شود."
+            {...field("slug")}
+          />
+          <FormSelect label="دسته‌بندی" required {...field("category")}>
             <option value="">انتخاب دسته‌بندی</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
+            {categories.map((item) => (
+              <option value={item.id} key={item.id}>
+                {item.name}
               </option>
             ))}
-          </select>
-          {errors("category")}
-        </label>
-        {!categories.length && (
-          <p>
-            دسته‌بندی‌ای برای انتخاب وجود ندارد؛ ابتدا از بخش مدیریت
-            دسته‌بندی‌ها یک دسته‌بندی ایجاد کنید.
-          </p>
-        )}
-        <fieldset className="grid min-w-0 gap-3">
-          <legend>نشانی تصاویر (اولین تصویر، تصویر اصلی است)</legend>
-          {images.map((url, index) => (
-            <div key={index} className="grid min-w-0 gap-2">
-              <label>
-                نشانی تصویر {toPersianDigits(index + 1)}
-                <input
-                  className="field-input"
-                  name="images"
-                  dir="ltr"
-                  value={url}
-                  onChange={(event) =>
-                    setImages(
-                      images.map((value, i) =>
-                        i === index ? event.target.value : value,
-                      ),
-                    )
-                  }
-                  required
+          </FormSelect>
+          <FormSelect
+            label="برند"
+            error={errors?.brand}
+            value={values.brand}
+            onChange={(e) => setValues({ ...values, brand: e.target.value })}
+          >
+            <option value="">بدون برند</option>
+            {values.brand &&
+              !brands.some((item) => item.name === values.brand) && (
+                <option value={values.brand}>{values.brand}</option>
+              )}
+            {brands.map((item) => (
+              <option value={item.name} key={item.id}>
+                {item.name}
+                {!item.isActive && " (غیرفعال)"}
+              </option>
+            ))}
+          </FormSelect>
+          <input
+            type="hidden"
+            name="brand"
+            value={brands.find((item) => item.name === values.brand)?.id ?? ""}
+          />
+          {values.brand && (
+            <>
+              <input type="hidden" name="attributeKey" value="برند" />
+              <input type="hidden" name="attributeValue" value={values.brand} />
+            </>
+          )}
+          {!categories.length && (
+            <p className="admin-error admin-span">
+              ابتدا{" "}
+              <Link href="/admin/categories/new">یک دسته‌بندی بسازید</Link> تا
+              امکان ذخیره محصول فراهم شود.
+            </p>
+          )}
+          <FormTextarea
+            label="توضیحات محصول"
+            required
+            {...field("description")}
+          />
+        </FormSection>
+        <FormSection title="قیمت و موجودی">
+          <FormField
+            label="قیمت فروش (تومان)"
+            inputMode="numeric"
+            required
+            {...field("price")}
+          />
+          <FormField
+            label="قیمت قبلی (تومان)"
+            inputMode="numeric"
+            hint="برای تخفیف؛ باید از قیمت فروش بیشتر باشد."
+            {...field("compareAtPrice")}
+          />
+          <FormField
+            label="موجودی"
+            inputMode="numeric"
+            required
+            {...field("stock")}
+          />
+          <FormField label="شناسهٔ کالا" dir="ltr" {...field("sku")} />
+        </FormSection>
+        <FormSection
+          title="تصاویر محصول"
+          description="اولین تصویر، تصویر اصلی است. حداکثر هشت نشانی تصویر وارد کنید."
+        >
+          <div className="admin-span admin-image-list">
+            {images.map((url, index) => (
+              <div key={index} className="admin-image-row">
+                <ImagePreview
+                  src={url}
+                  alt={`تصویر ${toPersianDigits(index + 1)} محصول`}
                 />
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={index === 0}
-                  onClick={() => move(index, -1)}
-                >
-                  بالاتر
-                </button>
-                <button
-                  type="button"
-                  disabled={index === images.length - 1}
-                  onClick={() => move(index, 1)}
-                >
-                  پایین‌تر
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setImages(images.filter((_, i) => i !== index))
-                  }
-                >
-                  حذف تصویر
-                </button>
+                <div className="admin-image-controls">
+                  <FormField
+                    label={
+                      index === 0
+                        ? "تصویر اصلی"
+                        : `تصویر ${toPersianDigits(index + 1)}`
+                    }
+                    name="images"
+                    dir="ltr"
+                    required
+                    value={url}
+                    onChange={(e) =>
+                      setImages(
+                        images.map((v, i) =>
+                          i === index ? e.target.value : v,
+                        ),
+                      )
+                    }
+                  />
+                  <div className="admin-actions">
+                    <button
+                      type="button"
+                      aria-label={`جابه‌جایی تصویر ${toPersianDigits(index + 1)} به بالا`}
+                      disabled={index === 0}
+                      onClick={() => move(index, -1)}
+                    >
+                      <ArrowUp size={16} aria-hidden="true" />
+                      بالاتر
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`جابه‌جایی تصویر ${toPersianDigits(index + 1)} به پایین`}
+                      disabled={index === images.length - 1}
+                      onClick={() => move(index, 1)}
+                    >
+                      <ArrowDown size={16} aria-hidden="true" />
+                      پایین‌تر
+                    </button>
+                    <button
+                      type="button"
+                      disabled={images.length === 1}
+                      aria-label={`حذف تصویر ${toPersianDigits(index + 1)}`}
+                      onClick={() =>
+                        setImages(images.filter((_, i) => i !== index))
+                      }
+                    >
+                      <Trash2 size={16} aria-hidden="true" />
+                      حذف
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-          {errors("images")}
+            ))}
+          </div>
+          {errors?.images && (
+            <p className="admin-field-error admin-span">
+              {errors.images.join("، ")}
+            </p>
+          )}
           <button
             type="button"
             disabled={images.length >= 8}
             onClick={() => setImages([...images, ""])}
           >
+            <Plus size={18} aria-hidden="true" />
             افزودن تصویر
           </button>
-        </fieldset>
-        <fieldset className="grid min-w-0 gap-3">
-          <legend>مشخصات محصول</legend>
-          {attributes.map((attribute, index) => (
-            <div key={index} className="grid gap-2 sm:grid-cols-3">
-              <label>
-                کلید مشخصه
-                <input
-                  className="field-input"
+        </FormSection>
+        <FormSection
+          title="مشخصات فنی"
+          description="ویژگی‌هایی مثل ظرفیت، ابعاد و ردهٔ انرژی را وارد کنید."
+        >
+          <div className="admin-span">
+            {!attributes.length && (
+              <p className="admin-hint">هنوز مشخصه‌ای اضافه نشده است.</p>
+            )}
+            {attributes.map((attribute, index) => (
+              <div key={index} className="admin-attribute-row">
+                <FormField
+                  label="نام مشخصه"
                   name="attributeKey"
+                  required
                   value={attribute.key}
-                  required
-                  onChange={(event) =>
+                  onChange={(e) =>
                     setAttributes(
-                      attributes.map((value, i) =>
-                        i === index
-                          ? { ...value, key: event.target.value }
-                          : value,
+                      attributes.map((v, i) =>
+                        i === index ? { ...v, key: e.target.value } : v,
                       ),
                     )
                   }
                 />
-              </label>
-              <label>
-                مقدار مشخصه
-                <input
-                  className="field-input"
+                <FormField
+                  label="مقدار مشخصه"
                   name="attributeValue"
-                  value={attribute.value}
                   required
-                  onChange={(event) =>
+                  value={attribute.value}
+                  onChange={(e) =>
                     setAttributes(
-                      attributes.map((value, i) =>
-                        i === index
-                          ? { ...value, value: event.target.value }
-                          : value,
+                      attributes.map((v, i) =>
+                        i === index ? { ...v, value: e.target.value } : v,
                       ),
                     )
                   }
                 />
-              </label>
-              <button
-                type="button"
-                onClick={() =>
-                  setAttributes(attributes.filter((_, i) => i !== index))
-                }
-              >
-                حذف مشخصه
-              </button>
-            </div>
-          ))}
-          {errors("attributes")}
+                <button
+                  type="button"
+                  aria-label={`حذف مشخصه ${toPersianDigits(index + 1)}`}
+                  onClick={() =>
+                    setAttributes(attributes.filter((_, i) => i !== index))
+                  }
+                >
+                  <Trash2 size={18} aria-hidden="true" />
+                  حذف
+                </button>
+              </div>
+            ))}
+          </div>
+          {errors?.attributes && (
+            <p className="admin-field-error admin-span">
+              {errors.attributes.join("، ")}
+            </p>
+          )}
           <button
             type="button"
             onClick={() =>
               setAttributes([...attributes, { key: "", value: "" }])
             }
           >
+            <Plus size={18} aria-hidden="true" />
             افزودن مشخصه
           </button>
-        </fieldset>
-        <label>
-          <input
-            type="checkbox"
+        </FormSection>
+        <FormSection title="انتشار محصول">
+          <FormToggle
+            label="محصول فعال"
+            description="نمایش در فروشگاه"
             name="isActive"
-            defaultChecked={product?.isActive ?? true}
-          />{" "}
-          محصول فعال
-        </label>
-        <label>
-          <input
-            type="checkbox"
+            checked={values.isActive}
+            onChange={(e) =>
+              setValues({ ...values, isActive: e.target.checked })
+            }
+          />
+          <FormToggle
+            label="محصول ویژه"
+            description="نمایش در محصولات منتخب"
             name="isFeatured"
-            defaultChecked={product?.isFeatured ?? false}
-          />{" "}
-          محصول ویژه
-        </label>
+            checked={values.isFeatured}
+            onChange={(e) =>
+              setValues({ ...values, isFeatured: e.target.checked })
+            }
+          />
+        </FormSection>
         {product && (
-          <p className="break-all">
-            شناسه: {product.id} · تعداد فروش:{" "}
-            {toPersianDigits(product.soldCount)} · ایجاد:{" "}
+          <p className="admin-hint">
+            فروش: {toPersianDigits(product.soldCount)} · ایجاد:{" "}
             {formatDate(product.createdAt)} · آخرین ویرایش:{" "}
             {formatDate(product.updatedAt)}
           </p>
         )}
-        <button type="submit" disabled={!categories.length}>
-          {pending ? "در حال ذخیره…" : "ذخیره محصول"}
-        </button>
+        <div className="admin-form-footer">
+          <button
+            type="submit"
+            className="admin-primary"
+            disabled={!categories.length}
+          >
+            {pending ? "در حال ذخیره…" : "ذخیره محصول"}
+          </button>
+          <Link href="/admin/products">بازگشت به محصولات</Link>
+        </div>
       </fieldset>
-      {state && !state.ok && (
-        <p role="alert" className="text-danger">
-          {state.error}
-        </p>
-      )}
-      {state?.ok && (
-        <p role="status">
-          محصول ذخیره شد.{" "}
-          <Link href={`/admin/products/${state.data.id}/edit`}>
-            ویرایش محصول
-          </Link>{" "}
-          · <Link href="/admin/products">بازگشت به محصولات</Link>
-        </p>
-      )}
-      <Link href="/admin/products">بازگشت</Link>
     </form>
   );
 }

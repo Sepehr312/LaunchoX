@@ -9,6 +9,12 @@ vi.mock("@/lib/db", () => ({ connectDB: vi.fn(async () => mongoose) }));
 import { connectDB } from "@/lib/db";
 import { Brand } from "@/models/brand";
 import { Product } from "@/models/product";
+import { Category } from "@/models/category";
+import {
+  createProduct,
+  updateProduct,
+  getProductAdmin,
+} from "@/services/product.service";
 import {
   createBrand,
   deleteBrand,
@@ -18,6 +24,37 @@ import {
 } from "@/services/brand.service";
 
 let server: Awaited<ReturnType<typeof startTestMongo>> | undefined;
+
+it("links, switches and clears the product brand and rejects missing brands", async () => {
+  const category = await Category.create({
+    name: "Admin brand test",
+    slug: "admin-brand-test",
+  });
+  const first = await createBrand({ name: "First" });
+  const second = await createBrand({ name: "Second" });
+  const input = {
+    ...productInput,
+    category: String(category._id),
+    attributes: [],
+    isActive: true,
+    isFeatured: false,
+  };
+  const product = await createProduct({ ...input, brand: first.id });
+  expect((await getProductAdmin(product.id))?.brand).toBe(first.id);
+  await expect(deleteBrand(first.id)).rejects.toThrow("برند دارای محصول");
+  await updateProduct(product.id, { ...input, brand: second.id });
+  expect((await getProductAdmin(product.id))?.brand).toBe(second.id);
+  await expect(
+    updateProduct(product.id, {
+      ...input,
+      brand: new Types.ObjectId().toString(),
+    }),
+  ).rejects.toThrow("برند پیدا نشد");
+  expect((await getProductAdmin(product.id))?.brand).toBe(second.id);
+  await updateProduct(product.id, { ...input, brand: null });
+  expect((await getProductAdmin(product.id))?.brand).toBeUndefined();
+  await expect(deleteBrand(second.id)).resolves.toBeUndefined();
+});
 beforeAll(async () => {
   server = await startTestMongo();
   await mongoose.connect(server.uri, {

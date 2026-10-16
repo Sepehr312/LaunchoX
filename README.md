@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference while retaining the legacy brand attribute for catalog filters. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
+
 
  
 - Customer pages retain the shared header day/night toggle; the existing header theme changes independently while customer content remains light.

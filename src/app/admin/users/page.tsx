@@ -13,43 +13,65 @@ export default async function Users() {
   const users = await listUsersAdmin();
   return (
     <section className="admin-panel">
+      <p className="admin-eyebrow">مشتریان و دسترسی‌ها</p>
       <h1>مدیریت کاربران</h1>
+      <p className="admin-hint">
+        اطلاعات حساب‌ها و وضعیت دسترسی کاربران فروشگاه
+      </p>
       {users.length ? (
-        <table className="w-full table-fixed text-start text-sm">
-          <thead>
-            <tr>
-              {["کاربر", "نقش", "وضعیت", "عملیات"].map((label) => (
-                <th className="text-start" key={label}>
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="p-1 [overflow-wrap:anywhere]">
-                  {user.name}
-                  <span className="block" dir="ltr">
-                    {user.email}
-                  </span>
-                </td>
-                <td className="p-1">
-                  {user.role === "admin" ? "ادمین" : "مشتری"}
-                </td>
-                <td className="p-1">{user.isActive ? "فعال" : "غیرفعال"}</td>
-                <td className="p-1 [overflow-wrap:anywhere]">
-                  <UserActiveForm
-                    id={user.id}
-                    name={user.name}
-                    isActive={user.isActive}
-                    isSelf={user.id === admin.id}
-                  />
-                </td>
+        <div
+          className="admin-table-scroll"
+          role="region"
+          aria-label="جدول کاربران"
+          tabIndex={0}
+        >
+          <table>
+            <caption className="sr-only">حساب‌های کاربران فروشگاه</caption>
+            <thead>
+              <tr>
+                {["کاربر", "نقش", "وضعیت", "عملیات"].map((label) => (
+                  <th scope="col" className="text-start" key={label}>
+                    {label}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="p-1 [overflow-wrap:anywhere]">
+                    {user.name}
+                    <span className="block" dir="ltr">
+                      {user.email}
+                    </span>
+                  </td>
+                  <td className="p-1">
+                    {user.role === "admin" ? "ادمین" : "مشتری"}
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        user.isActive
+                          ? "admin-badge admin-badge-success"
+                          : "admin-badge"
+                      }
+                    >
+                      {user.isActive ? "فعال" : "غیرفعال"}
+                    </span>
+                  </td>
+                  <td className="p-1 [overflow-wrap:anywhere]">
+                    <UserActiveForm
+                      id={user.id}
+                      name={user.name}
+                      isActive={user.isActive}
+                      isSelf={user.id === admin.id}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p>کاربری ثبت نشده است.</p>
       )}
