@@ -10,6 +10,10 @@ import { objectIdSchema } from "@/validations/common";
 import { addressSchema } from "@/validations/address";
 import type { AddressDTO } from "@/types/dto";
 
+function defaultAddressFirst(addresses: AddressDTO[]): AddressDTO[] {
+  return addresses.sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+}
+
 export async function getCheckoutAddresses(
   userId: string,
 ): Promise<AddressDTO[]> {
@@ -21,7 +25,7 @@ export async function getCheckoutAddresses(
     .select("addresses")
     .lean();
   if (!user) throw new AppError("کاربر پیدا نشد", "NOT_FOUND");
-  return user.addresses.map((address) => toDTO(address));
+  return defaultAddressFirst(user.addresses.map((address) => toDTO(address)));
 }
 
 export async function addAddress(
@@ -45,7 +49,9 @@ export async function addAddress(
       "افزودن آدرس ممکن نیست؛ حداکثر ۵ آدرس مجاز است",
       "CONFLICT",
     );
-  return updated.addresses.map((address) => toDTO(address));
+  return defaultAddressFirst(
+    updated.addresses.map((address) => toDTO(address)),
+  );
 }
 
 export async function getProfile(userId: string) {
@@ -156,5 +162,5 @@ export async function manageAddress(
     ).lean();
   }
   if (!updated) throw new AppError("آدرس پیدا نشد", "NOT_FOUND");
-  return toDTO(updated).addresses;
+  return defaultAddressFirst(toDTO(updated).addresses);
 }

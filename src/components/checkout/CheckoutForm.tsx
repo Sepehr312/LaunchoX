@@ -6,7 +6,8 @@ import {
   addCheckoutAddressAction,
 } from "@/actions/checkout.actions";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { AddressFields } from "@/components/account/AddressFields";
+import { FieldErrorsContext } from "@/components/customer/CustomerField";
 import styles from "@/components/customer/customer.module.css";
 import { addressSchema } from "@/validations/address";
 import { toPersianDigits } from "@/lib/format";
@@ -21,18 +22,7 @@ function FormErrors({ state }: { state: ActionResult<unknown> | undefined }) {
   ) : null;
 }
 
-const addressFields = [
-  ["title", "عنوان آدرس", "text"],
-  ["recipientName", "نام گیرنده", "text"],
-  ["mobile", "موبایل گیرنده", "tel"],
-  ["province", "استان", "text"],
-  ["city", "شهر", "text"],
-  ["postalCode", "کد پستی", "text"],
-  ["addressLine", "نشانی کامل", "text"],
-] as const;
-
 export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
-  const [values, setValues] = useState<Record<string, string>>({});
   const [clientErrors, setClientErrors] = useState<Record<string, string[]>>(
     {},
   );
@@ -163,97 +153,35 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
                   (errors[String(issue.path[0])] ??= []).push(issue.message);
                 setClientErrors(errors);
                 event.currentTarget
-                  .querySelector<HTMLInputElement>(
+                  .querySelector<HTMLElement>(
                     `[name="${String(parsed.error.issues[0]?.path[0])}"]`,
                   )
                   ?.focus();
               } else setClientErrors({});
             }}
             action={addressAction}
-            className="mt-6 grid gap-4 sm:grid-cols-2"
+            className="mt-6 grid min-w-0 gap-4"
           >
-            {addressFields.map(([name, label, type]) => (
-              <div
-                key={name}
-                className={
-                  name === "addressLine"
-                    ? "grid gap-2 text-sm sm:col-span-2"
-                    : "grid gap-2 text-sm"
-                }
-              >
-                <label htmlFor={`checkout-${name}`}>{label}</label>
-                <Input
-                  id={`checkout-${name}`}
-                  name={name}
-                  value={values[name] ?? ""}
-                  onChange={(event) =>
-                    setValues((current) => ({
-                      ...current,
-                      [name]: event.target.value,
-                    }))
-                  }
-                  autoComplete={
-                    name === "postalCode"
-                      ? "postal-code"
-                      : name === "addressLine"
-                        ? "street-address"
-                        : name === "mobile"
-                          ? "tel"
-                          : name === "recipientName"
-                            ? "name"
-                            : "off"
-                  }
-                  type={type}
-                  required
-                  disabled={addressPending}
-                  inputMode={
-                    name === "postalCode" || name === "mobile"
-                      ? "numeric"
-                      : undefined
-                  }
-                  aria-invalid={
-                    !!clientErrors[name]?.length ||
-                    !!(
-                      addressState &&
-                      !addressState.ok &&
-                      addressState.fieldErrors?.[name]
-                    )
-                  }
-                />
-                {clientErrors[name]?.length ? (
-                  <span role="alert" className="text-xs text-danger">
-                    {clientErrors[name].join("؛ ")}
-                  </span>
-                ) : null}
-                {name === "postalCode" && (
-                  <span className="text-xs text-muted">
-                    کد پستی ۱۰ رقمی، بدون فاصله
-                  </span>
-                )}
-                {name === "addressLine" && (
-                  <span className="text-xs text-muted">
-                    خیابان، کوچه، پلاک، طبقه و واحد
-                  </span>
-                )}
-                {addressState &&
-                  !addressState.ok &&
-                  addressState.fieldErrors?.[name] && (
-                    <span className="text-danger">
-                      {addressState.fieldErrors[name].join("؛ ")}
-                    </span>
-                  )}
-              </div>
-            ))}
+            <FieldErrorsContext.Provider
+              value={
+                Object.keys(clientErrors).length
+                  ? clientErrors
+                  : addressState && !addressState.ok
+                    ? (addressState.fieldErrors ?? {})
+                    : {}
+              }
+            >
+              <AddressFields idPrefix="checkout" disabled={addressPending} />
+            </FieldErrorsContext.Provider>
             <Button
               type="submit"
               variant="secondary"
               disabled={addressPending || pending}
-              className="sm:col-span-2"
             >
               {addressPending ? "در حال ذخیره…" : "ذخیرهٔ آدرس"}
             </Button>
             {addressState?.ok && (
-              <p role="status" className="text-sm text-success sm:col-span-2">
+              <p role="status" className="text-sm text-success">
                 آدرس اضافه شد؛ مقصد سفارش را انتخاب کنید.
               </p>
             )}

@@ -71,6 +71,7 @@ it("enforces address ownership, limit and a single default under concurrent chan
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   await manageAddress(fixture.user, "edit", second, {
     ...addressInput,
+    province: "فارس",
     city: "شیراز",
   });
   await Promise.all([
@@ -79,7 +80,10 @@ it("enforces address ownership, limit and a single default under concurrent chan
   ]);
   addresses = await getCheckoutAddresses(fixture.user);
   expect(addresses.filter((a) => a.isDefault)).toHaveLength(1);
-  expect(addresses[1].city).toBe("شیراز");
+  expect(addresses[0].isDefault).toBe(true);
+  expect(addresses.find((address) => address.id === second)?.city).toBe(
+    "شیراز",
+  );
   await Promise.all(
     Array.from({ length: 3 }, () => addAddress(fixture.user, addressInput)),
   );
@@ -88,6 +92,34 @@ it("enforces address ownership, limit and a single default under concurrent chan
   });
   await manageAddress(fixture.user, "delete", second);
   expect(await getCheckoutAddresses(fixture.user)).toHaveLength(4);
+});
+it("puts the selected default first in address reads and mutation results without reordering the others", async () => {
+  const firstAdd = await addAddress(fixture.user, {
+    ...addressInput,
+    title: "دوم",
+  });
+  const secondId = firstAdd.find((address) => address.title === "دوم")!.id;
+  await addAddress(fixture.user, { ...addressInput, title: "سوم" });
+  const updated = await manageAddress(fixture.user, "default", secondId);
+  expect(updated.map((address) => address.title)).toEqual([
+    "دوم",
+    "خانه",
+    "سوم",
+  ]);
+  expect(
+    (await getCheckoutAddresses(fixture.user)).map((address) => address.id),
+  ).toEqual(updated.map((address) => address.id));
+  const added = await addAddress(fixture.user, {
+    ...addressInput,
+    title: "چهارم",
+  });
+  expect(added.map((address) => address.title)).toEqual([
+    "دوم",
+    "خانه",
+    "سوم",
+    "چهارم",
+  ]);
+  expect(added.filter((address) => address.isDefault)).toHaveLength(1);
 });
 it("hides foreign orders and prevents foreign cancellation without changing stock", async () => {
   const order = await createOrderFromCart(fixture.user, checkoutInput());

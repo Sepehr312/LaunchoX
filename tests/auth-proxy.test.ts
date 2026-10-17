@@ -36,13 +36,17 @@ vi.mock("next/server", () => ({
 import { AppError } from "@/lib/errors";
 import proxy from "@/proxy";
 
-function request(path: string, authenticated = false) {
+function request(
+  path: string,
+  authenticated = false,
+  role: "customer" | "admin" = "customer",
+) {
   return {
     nextUrl: Object.assign(new URL(path, "http://localhost:3000"), {
       clone: () => new URL(path, "http://localhost:3000"),
     }),
     headers: new Headers({ "x-launchox-path": "/spoofed" }),
-    auth: authenticated ? { user: { id: "user" } } : null,
+    auth: authenticated ? { user: { id: "user", role } } : null,
   } as unknown as Parameters<typeof proxy>[0];
 }
 const event = {} as Parameters<typeof proxy>[1];
@@ -111,6 +115,29 @@ it("passes authenticated requests and overwrites spoofed current-path headers", 
     mocks.next.mock.calls[0][0].request.headers.get("x-launchox-path"),
   ).toBe("/account?tab=orders");
 });
+
+it.each([
+  "/login",
+  "/register",
+  "/account",
+  "/account/",
+  "/account?tab=orders",
+])("redirects administrators from %s to the admin dashboard", async (path) => {
+  const response = await proxy(request(path, true, "admin"), event);
+  expect(response?.headers.get("location")).toBe("http://localhost:3000/admin");
+  expect(mocks.next).not.toHaveBeenCalled();
+});
+
+it.each(["/account", "/account/", "/checkout", "/admin/products"])(
+  "preserves customer account access and explicit destinations on %s",
+  async (path) => {
+    const role =
+      path === "/account" || path === "/account/" ? "customer" : "admin";
+    const response = await proxy(request(path, true, role), event);
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("location")).toBeNull();
+  },
+);
 
 it("returns HTTP 404 for foreign orders before streaming", async () => {
   mocks.order.mockRejectedValueOnce(

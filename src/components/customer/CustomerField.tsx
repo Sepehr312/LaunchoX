@@ -22,8 +22,8 @@ export function CustomerField({
         .join(" ") || undefined,
   };
   return (
-    <label htmlFor={id} className="grid min-w-0 gap-2 text-sm">
-      <span>{label}</span>
+    <div className="grid min-w-0 gap-2 text-sm">
+      <label htmlFor={id}>{label}</label>
       {props.type === "password" ? (
         <PasswordInput {...input} aria-label={label} />
       ) : (
@@ -39,6 +39,6 @@ export function CustomerField({
           {errors.join("؛ ")}
         </span>
       ) : null}
-    </label>
+    </div>
   );
 }
