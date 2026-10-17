@@ -45,6 +45,7 @@ export const productSchema = z
 export const productQuerySchema = paginationSchema
   .extend({
     category: optionalField(objectIdSchema),
+    brandSlug: optionalField(slugSchema),
     q: optionalField(requiredString),
     minPrice: optionalField(moneySchema),
     maxPrice: optionalField(moneySchema),

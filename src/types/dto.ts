@@ -31,6 +31,9 @@ export interface CategoryDTO extends EntityDTO {
   order: number;
   isActive: boolean;
 }
+export interface StoreCategoryDTO extends CategoryDTO {
+  productCount: number;
+}
 export interface BrandDTO extends EntityDTO {
   name: string;
   slug: string;
@@ -41,6 +44,16 @@ export interface BrandDTO extends EntityDTO {
   isActive: boolean;
   isFeatured: boolean;
   order: number;
+}
+export interface StoreBrandDTO {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string;
+  productCount: number;
+}
+export interface StoreBrandDetailDTO extends StoreBrandDTO {
+  description?: string;
 }
 export interface ProductDTO extends EntityDTO {
   title: string;
@@ -65,6 +78,21 @@ export interface ProductCategoryDTO {
 export interface StoreProductDTO extends Omit<ProductDTO, "category"> {
   category: ProductCategoryDTO;
 }
+export type CompareProductDTO = Pick<
+  StoreProductDTO,
+  | "id"
+  | "title"
+  | "slug"
+  | "price"
+  | "compareAtPrice"
+  | "stock"
+  | "sku"
+  | "images"
+  | "category"
+  | "attributes"
+  | "createdAt"
+  | "updatedAt"
+>;
 export interface ProductFilterOptionsDTO {
   brands: string[];
   energies: string[];

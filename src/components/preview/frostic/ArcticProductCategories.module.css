@@ -121,7 +121,7 @@
   flex-wrap: nowrap;
   inline-size: 100%;
   min-inline-size: 100%;
-  gap: 4px;
+  gap: var(--category-gap, 4px);
   padding-block: 5px 8px;
   justify-content: safe center;
 }

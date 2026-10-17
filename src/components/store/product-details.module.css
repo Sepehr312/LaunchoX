@@ -121,6 +121,7 @@
   z-index: 1;
 }
 .galleryTools button,
+.galleryTools > div > a,
 .dialogHeading button,
 .galleryNavigation button {
   display: grid;
@@ -132,6 +133,7 @@
   background: #fff;
 }
 .galleryTools button:hover,
+.galleryTools > div > a:hover,
 .dialogHeading button:hover,
 .galleryNavigation button:hover {
   background: var(--ice);
@@ -141,6 +143,13 @@
   position: static;
   margin: 0;
   pointer-events: auto;
+}
+.galleryTools > div {
+  margin: 0;
+}
+.galleryTools > div > a svg {
+  inline-size: 21px;
+  block-size: 21px;
 }
 .mainImage {
   display: block;

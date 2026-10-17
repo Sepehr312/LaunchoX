@@ -1,6 +1,11 @@
 import type { StoreProductDTO } from "@/types/dto";
 
-export function getRealPreviewData(product: StoreProductDTO) {
+export function getRealPreviewData(
+  product: Pick<
+    StoreProductDTO,
+    "attributes" | "price" | "compareAtPrice" | "images" | "category" | "sku"
+  >,
+) {
   function attribute(...keys: string[]) {
     return product.attributes.find((item) => keys.includes(item.key))?.value;
   }

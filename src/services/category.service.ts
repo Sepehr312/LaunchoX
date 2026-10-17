@@ -7,7 +7,11 @@ import { toDTO } from "@/lib/model-shared";
 import { createUniqueSlug } from "@/lib/slug";
 import { Category } from "@/models/category";
 import { Product } from "@/models/product";
-import type { CategoryDTO, CategoryTreeDTO } from "@/types/dto";
+import type {
+  CategoryDTO,
+  CategoryTreeDTO,
+  StoreCategoryDTO,
+} from "@/types/dto";
 import type { CategoryInput } from "@/validations/category";
 
 function asCategoryDTO(record: object): CategoryDTO {
@@ -56,6 +60,31 @@ export async function listCategories(): Promise<CategoryDTO[]> {
     .sort({ order: 1, name: 1 })
     .lean();
   return records.map(asCategoryDTO);
+}
+
+export async function listStoreCategories(): Promise<StoreCategoryDTO[]> {
+  const categories = await listCategories();
+  const counts = await Product.aggregate<{
+    _id: Types.ObjectId;
+    count: number;
+  }>([
+    {
+      $match: {
+        isActive: true,
+        category: {
+          $in: categories.map((category) => new Types.ObjectId(category.id)),
+        },
+      },
+    },
+    { $group: { _id: "$category", count: { $sum: 1 } } },
+  ]);
+  const countById = new Map(
+    counts.map((item) => [String(item._id), item.count]),
+  );
+  return categories.map((category) => ({
+    ...category,
+    productCount: countById.get(category.id) ?? 0,
+  }));
 }
 
 export async function getCategoryTree(): Promise<CategoryTreeDTO[]> {
