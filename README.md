@@ -125,9 +125,11 @@ npm run seed -- --reset
 
 ### آپلود تصویر
 
-فرم `src/components/admin/ProductForm.tsx` فعلاً نشانی تصاویر را دریافت و مرتب می‌کند؛ `images` در مدل محصول آرایه‌ای از نشانی‌هاست و با `src/validations/product.ts` بررسی می‌شود. تصاویر seed از `public/images/products/` می‌آیند. endpoint یا سرویس آپلود وجود ندارد. توسعهٔ آینده می‌تواند فایل را در یک سرویس ذخیره‌سازی قرار دهد و نشانی نتیجه را از مسیر action و سرویس محصول موجود ذخیره کند؛ کنترل دسترسی ادمین و اعتبارسنجی نوع و اندازهٔ فایل باید به مسیر آپلود اضافه شوند.
+فرم `src/components/admin/ProductForm.tsx` فعلاً نشانی تصاویر را دریافت و مرتب می‌کند؛ `images` در مدل محصول آرایه‌ای از نشانی‌هاست و با `src/validations/product.ts` بررسی می‌شود. تصاویر seed از `public/images/preview/categories/` می‌آیند. endpoint یا سرویس آپلود وجود ندارد. توسعهٔ آینده می‌تواند فایل را در یک سرویس ذخیره‌سازی قرار دهد و نشانی نتیجه را از مسیر action و سرویس محصول موجود ذخیره کند؛ کنترل دسترسی ادمین و اعتبارسنجی نوع و اندازهٔ فایل باید به مسیر آپلود اضافه شوند.
 
 ## Decisions
+
+- Retired QA scripts, home reference images and duplicate product/night-footer assets are removed. Footer backgrounds and browser fixtures reuse the retained category and desktop/mobile landscape images. Local test routes and their test-only fixtures are removed.
 
 - Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference while retaining the legacy brand attribute for catalog filters. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
 
