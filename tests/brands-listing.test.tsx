@@ -9,6 +9,7 @@ import BrandsPage, { metadata } from "@/app/(shop)/brands/page";
 const mocks = vi.hoisted(() => ({ list: vi.fn() }));
 vi.mock("@/services/brand.service", () => ({ listStoreBrands: mocks.list }));
 vi.mock("@/actions/admin/product.actions", () => ({ productAction: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
 
 it("disables inactive brands for new assignments and retains the existing inactive selection", () => {
   const brands = [{ id: "inactive", name: "برند غیرفعال", isActive: false }];

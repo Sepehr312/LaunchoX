@@ -1,3 +1,4 @@
+import { AdminTableScroll } from "@/components/admin/AdminTableScroll";
 import Link from "next/link";
 import Image from "next/image";
 import { z } from "zod";
@@ -82,12 +83,7 @@ export default async function Brands({
         {toPersianDigits(brands.length)} برند
       </p>
       {filtered.length ? (
-        <div
-          className="admin-table-scroll"
-          role="region"
-          aria-label="جدول برندها"
-          tabIndex={0}
-        >
+        <AdminTableScroll label="جدول برندها">
           <table>
             <caption className="sr-only">برندهای فروشگاه</caption>
             <thead>
@@ -145,7 +141,7 @@ export default async function Brands({
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminTableScroll>
       ) : (
         <div className="admin-empty">
           <Tags size={36} aria-hidden="true" />

@@ -125,9 +125,11 @@ npm run seed -- --reset
 
 ### آپلود تصویر
 
-فرم `src/components/admin/ProductForm.tsx` فعلاً نشانی تصاویر را دریافت و مرتب می‌کند؛ `images` در مدل محصول آرایه‌ای از نشانی‌هاست و با `src/validations/product.ts` بررسی می‌شود. تصاویر seed از `public/images/preview/categories/` می‌آیند. endpoint یا سرویس آپلود وجود ندارد. توسعهٔ آینده می‌تواند فایل را در یک سرویس ذخیره‌سازی قرار دهد و نشانی نتیجه را از مسیر action و سرویس محصول موجود ذخیره کند؛ کنترل دسترسی ادمین و اعتبارسنجی نوع و اندازهٔ فایل باید به مسیر آپلود اضافه شوند.
+با انتخاب کادر پیش‌نمایش در فرم محصول، دسته‌بندی یا برند می‌توان تصویر بارگذاری کرد. مسیر `/api/admin/images` دسترسی ادمین، نوع، اندازه و امضای فایل را بررسی می‌کند؛ فایل‌های PNG، JPEG، WebP و GIF تا ۵ مگابایت در MongoDB نگه‌داری و از `/api/images/[id]` نمایش داده می‌شوند. نشانی تصویر همچنان در فیلدهای فعلی محصول، دسته‌بندی یا برند ذخیره می‌شود. برای انتقال آینده به فضای ذخیره‌سازی مستقل، سرویس `src/services/image.service.ts` نقطهٔ اتصال است.
 
 ## Decisions
+
+- The requested admin fixes extend step 11 without changing its presentation: selecting an existing image preview uploads PNG/JPEG/WebP/GIF files up to 5 MiB; MongoDB stores the bytes and `/api/images/[id]` serves immutable public URLs, avoiding a new storage provider or ephemeral local files. Successful product/category/brand saves return to their list, and table surfaces support native touch scrolling and mouse dragging. Category deletion also checks legacy string references and never deletes linked products. This explicitly supersedes the earlier image-upload exclusion; unused uploads are retained for now.
 
 
 - Shared password visibility controls retain input focus during pointer activation, use a minimum 44px touch target and 16px input text, and sit outside field labels to keep mobile taps and keyboard activation consistent across login, registration and password changes.
@@ -233,7 +235,7 @@ npm run seed -- --reset
 - سفارش روی MongoDB مستقل نیز کار می‌کند؛ رزرو موجودی اتمیک و شکست‌ها با بازگرداندن موجودی جبران می‌شوند. قفل سبد checkout تکراری را محدود می‌کند و callback تکراری دوباره موجودی یا فروش را تغییر نمی‌دهد. سفارش‌های پرداخت‌نشدهٔ منقضی هنگام ثبت سفارش و فهرست سفارش‌های ادمین بررسی می‌شوند؛ cron مستقل وجود ندارد.
 - مالکیت سفارش در proxy و مجدداً در صفحه و سرویس بررسی می‌شود. انتخاب آدرس پیش‌فرض اتمیک است؛ حذف آدرس پیش‌فرض تا انتخاب مجدد، حساب را بدون آدرس پیش‌فرض می‌گذارد.
 - پنل ادمین نقش کاربران را فقط نمایش می‌دهد و غیرفعال‌سازی حساب خود ادمین را در سرویس رد می‌کند. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
-- پرداخت واقعی، OTP و آپلود تصویر قابلیت فعال فعلی نیستند؛ بخش نقطه‌های توسعه، محل اتصال آیندهٔ آن‌ها را مشخص می‌کند.
+- پرداخت واقعی و OTP قابلیت فعال فعلی نیستند؛ بخش نقطه‌های توسعه، محل اتصال آیندهٔ آن‌ها را مشخص می‌کند. آپلود تصویر اکنون در فرم‌های محصول، دسته‌بندی و برند از کادر پیش‌نمایش انجام می‌شود.
 - The `/brands` directory reuses the shop shell and Brand source, exposes only public fields, and counts active products by `Product.brand`. Card links open `/brands/[slug]`, resolved to the current active Brand ID; legacy name filters remain compatible. Search uses the existing name and slug (the model has no separate English name). Inactive brands cannot receive new product assignments, but existing assignments can be retained on edits. No migration is performed; products with only legacy attributes need the existing reviewed linking workflow before appearing in brand counts.
 
 - `/brands/[slug]` reuses ProductsCatalog and its incremental loading through a server action whose route slug is captured by Next.js; query brand selectors are ignored and the active Brand is revalidated for each load. Categories, prices, energy options and counts use real linked products. The Brand model has no English-name field, so no English name is inferred. Reference-backed brand names override legacy attributes in storefront DTOs and filters; unassigned legacy products retain text filtering until the existing opt-in linking workflow is approved. No migration is run.
