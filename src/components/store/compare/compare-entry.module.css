@@ -17,6 +17,28 @@
 .link:hover {
   background: var(--ice);
 }
+.iconEntry {
+  margin-inline-end: -5px;
+  pointer-events: auto;
+}
+.iconLink {
+  inline-size: 30px;
+  block-size: 30px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: light-dark(#3b5194, #a3d7ff);
+}
+.iconEntry .message {
+  position: absolute;
+  inset-inline: 0;
+  margin-block-start: 4px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
 .link:focus-visible,
 .message a:focus-visible {
   outline: 2px solid var(--primary);

@@ -125,9 +125,15 @@ npm run seed -- --reset
 
 ### آپلود تصویر
 
-فرم `src/components/admin/ProductForm.tsx` فعلاً نشانی تصاویر را دریافت و مرتب می‌کند؛ `images` در مدل محصول آرایه‌ای از نشانی‌هاست و با `src/validations/product.ts` بررسی می‌شود. تصاویر seed از `public/images/products/` می‌آیند. endpoint یا سرویس آپلود وجود ندارد. توسعهٔ آینده می‌تواند فایل را در یک سرویس ذخیره‌سازی قرار دهد و نشانی نتیجه را از مسیر action و سرویس محصول موجود ذخیره کند؛ کنترل دسترسی ادمین و اعتبارسنجی نوع و اندازهٔ فایل باید به مسیر آپلود اضافه شوند.
+فرم `src/components/admin/ProductForm.tsx` فعلاً نشانی تصاویر را دریافت و مرتب می‌کند؛ `images` در مدل محصول آرایه‌ای از نشانی‌هاست و با `src/validations/product.ts` بررسی می‌شود. تصاویر seed از `public/images/preview/categories/` می‌آیند. endpoint یا سرویس آپلود وجود ندارد. توسعهٔ آینده می‌تواند فایل را در یک سرویس ذخیره‌سازی قرار دهد و نشانی نتیجه را از مسیر action و سرویس محصول موجود ذخیره کند؛ کنترل دسترسی ادمین و اعتبارسنجی نوع و اندازهٔ فایل باید به مسیر آپلود اضافه شوند.
 
 ## Decisions
+
+- Product detail routes decode URL-encoded slugs once before validation and lookup, using the same validation in the page and proxy so Persian admin-created slugs remain accessible.
+
+- The homepage hero enables automatic slide rotation on desktop and mobile using the existing six-second interval, with the existing hover, focus, visibility, and reduced-motion pauses.
+
+- Retired QA scripts, home reference images and duplicate product/night-footer assets are removed. Footer backgrounds and browser fixtures reuse the retained category and desktop/mobile landscape images. Local test routes and their test-only fixtures are removed.
 
 - The homepage category shortcut shows “view all” from eight active categories onward. It offers the first eight in admin order on compact screens, then admits additional cards only when the existing 1560px section can fit readable 135px cards plus a preferred 16px gap; remaining categories stay in `/categories`. The section width stays unchanged, card gaps remain capped and short rows centered.
 
@@ -140,6 +146,7 @@ npm run seed -- --reset
 - The `/services` page extends the step 7 storefront with static buying, delivery, authorized installation and warranty guides, native expandable FAQs, order-account links and the existing footer contact details. No unverified service hours, installation commitments or request form are introduced; the shared header and after-sales footer link point to this page.
 
 - `/compare` is the approved live comparison page under the shared shop layout, with entry links on product cards, product details, and desktop/mobile navigation. Validated browser storage remembers selections across product pages; an explicit `products` URL, including an empty selection, takes priority. Database errors use the normal retry boundary. The picker scrollbar is hidden while scrolling stays enabled.
+
 
 - The public `/about` page reuses the shop layout, existing light tokens, product assets, section heading and navigation styles; desktop and mobile header links point to it. Its specification CTA opens `/products`; contact links to the existing footer contact section. Scroll reveals honor reduced motion and keep content visible by default.
 
@@ -227,3 +234,7 @@ npm run seed -- --reset
 - The approved brand directory and brand product pages are published at `/brands` and `/brands/[slug]`, with shared desktop/mobile header navigation, production card and breadcrumb links, and indexable metadata. Data access and filtering use the existing services; the former preview routes have been removed.
 
 - Brand directory cards use subtle translucent surfaces, 12px backdrop blur, fine borders and soft shadows over a faint ice backdrop; browsers without backdrop-filter retain an opaque readable surface, and reduced-motion preferences disable hover movement.
+
+- Standard storefront product cards place a compact icon-only comparison link below the like button, retaining a Persian accessible label and tooltip; compact cards and product-detail comparison links retain their existing presentation.
+
+- Product details place the icon-only comparison link between like and share in the gallery toolbar, matching the adjacent controls and retaining its Persian accessible label.

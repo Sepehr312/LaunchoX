@@ -38,7 +38,7 @@ with sync_playwright() as p:
 const user=await db.collection('users').findOne({role:'customer'});
 for(let i=0;i<12;i++) await db.collection('orders').insertOne({orderNumber:'LX-'+(300000+i),user:user._id,shippingAddress:{recipientName:'مشتری آزمایشی'},total:100000,status:'pending',payment:{status:'unpaid'},createdAt:new Date(Date.now()-i*1000),updatedAt:new Date()});
 const category=(await db.collection('categories').insertOne({name:'دسته داشبورد',slug:'dashboard-category',isActive:true,order:1})).insertedId;
-await db.collection('products').insertMany([{title:'یخچال با موجودی کم',stock:4,isActive:true},{title:'یخچال ناموجود',stock:0,isActive:false},{title:'موجودی کافی',stock:5,isActive:true}].map((product,index)=>({...product,slug:'dashboard-product-'+index,description:'Dashboard fixture',price:1000,images:['/images/products/compact.png'],category,attributes:[],isFeatured:false,soldCount:0,createdAt:new Date(),updatedAt:new Date()})));
+await db.collection('products').insertMany([{title:'یخچال با موجودی کم',stock:4,isActive:true},{title:'یخچال ناموجود',stock:0,isActive:false},{title:'موجودی کافی',stock:5,isActive:true}].map((product,index)=>({...product,slug:'dashboard-product-'+index,description:'Dashboard fixture',price:1000,images:['/images/preview/categories/mini.png'],category,attributes:[],isFeatured:false,soldCount:0,createdAt:new Date(),updatedAt:new Date()})));
 """)
     page.reload(); expect(page.locator('#latest-orders').locator('..').locator('article')).to_have_count(10)
     expect(page.locator('#low-stock').locator('..').locator('li')).to_have_count(2)

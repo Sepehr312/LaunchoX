@@ -14,9 +14,11 @@ import styles from "./compare-entry.module.css";
 export function CompareProductButton({
   id,
   title,
+  iconOnly = false,
 }: {
   id: string;
   title: string;
+  iconOnly?: boolean;
 }) {
   const saved = useSyncExternalStore(
     subscribeComparisonSelection,
@@ -29,12 +31,13 @@ export function CompareProductButton({
   const exists = selected.includes(id);
   const next = exists ? selected : [...selected, id];
   return (
-    <div className={styles.entry}>
+    <div className={`${styles.entry} ${iconOnly ? styles.iconEntry : ""}`}>
       <Link
         href={comparisonHref(next.length <= 4 ? next : selected)}
         prefetch={false}
-        className={styles.link}
+        className={`${styles.link} ${iconOnly ? styles.iconLink : ""}`}
         aria-label={`مقایسه ${title}`}
+        title={`مقایسه ${title}`}
         onClick={(event) => {
           if (!exists && selected.length === 4) {
             event.preventDefault();
@@ -42,8 +45,10 @@ export function CompareProductButton({
           }
         }}
       >
-        <GitCompareArrows size={16} />
-        <span>{exists ? "مشاهده در مقایسه" : "مقایسه محصول"}</span>
+        <GitCompareArrows size={16} aria-hidden="true" />
+        {!iconOnly && (
+          <span>{exists ? "مشاهده در مقایسه" : "مقایسه محصول"}</span>
+        )}
       </Link>
       {full && (
         <p role="status" className={styles.message}>

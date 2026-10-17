@@ -45,6 +45,7 @@ export function ProductCard({
       {variant === "default" && (
         <div className={styles.cardTop}>
           <ProductLikeButton id={product.id} title={product.title} />
+          <CompareProductButton id={product.id} title={product.title} iconOnly />
         </div>
       )}
       {variant === "default" && (
@@ -136,7 +137,9 @@ export function ProductCard({
           <strong>{formatPrice(product.price)}</strong>
         </div>
       </div>
-      <CompareProductButton id={product.id} title={product.title} />
+      {variant === "compact" && (
+        <CompareProductButton id={product.id} title={product.title} />
+      )}
       {state && !state.ok && (
         <p className={styles.feedback} role="alert">
           {state.error}

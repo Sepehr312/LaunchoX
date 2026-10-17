@@ -12,7 +12,7 @@ export function StoreHero({ categories }: { categories: CategoryDTO[] }) {
 
   return (
     <div className={themeStyles.theme} data-theme={theme}>
-      <FrosticHeroSlider mobileControls />
+      <FrosticHeroSlider autoPlay mobileControls />
       <ArcticBenefitsBar />
       <ArcticProductCategories categories={categories} />
     </div>

@@ -6,7 +6,7 @@ import {
 } from "next/server";
 import { getOrderForUser } from "@/services/order.service";
 import { getProductBySlug } from "@/services/product.service";
-import { objectIdSchema, slugSchema } from "@/validations/common";
+import { objectIdSchema, routeSlugSchema } from "@/validations/common";
 import { AppError } from "@/lib/errors";
 import { getEnv } from "@/lib/env";
 import { getAuthConfig } from "@/lib/auth.config";
@@ -69,13 +69,7 @@ export default async function proxy(
 ) {
   const productPath = /^\/products\/([^/]+)\/?$/.exec(request.nextUrl.pathname);
   if (productPath) {
-    let slug: string;
-    try {
-      slug = decodeURIComponent(productPath[1]);
-    } catch {
-      slug = "";
-    }
-    const parsed = slugSchema.safeParse(slug);
+    const parsed = routeSlugSchema.safeParse(productPath[1]);
     if (!parsed.success || !(await getProductBySlug(parsed.data))) {
       // Resolve missing products before loading boundaries commit HTTP 200.
       const url = request.nextUrl.clone();

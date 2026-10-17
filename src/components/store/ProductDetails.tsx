@@ -497,6 +497,13 @@ export function ProductDetails({
           <div className={styles.galleryPanel}>
             <div className={styles.galleryTools}>
               <ProductLikeButton id={product.id} title={product.title} />
+              {isStorefront && (
+                <CompareProductButton
+                  id={product.id}
+                  title={product.title}
+                  iconOnly
+                />
+              )}
               <button onClick={share} aria-label="اشتراک‌گذاری محصول">
                 <Share2 size={21} />
               </button>
@@ -559,9 +566,6 @@ export function ProductDetails({
                 </>
               )}
             </h1>
-            {isStorefront && (
-              <CompareProductButton id={product.id} title={product.title} />
-            )}
             <p className={styles.model}>
               {realProduct ? (
                 realData?.model ? (

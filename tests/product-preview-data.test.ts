@@ -8,8 +8,8 @@ describe("real product preview mapping", () => {
       ...mockProduct,
       sku: "REAL-1",
       images: [
-        "/images/products/side-by-side.png",
-        "/images/products/french-door.png",
+        "/images/preview/categories/side-by-side.png",
+        "/images/preview/categories/french-door.png",
       ],
       attributes: [
         {

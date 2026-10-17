@@ -5,7 +5,7 @@ const user=await db.collection('users').findOne({role:'customer'});
 const product=new mongoose.Types.ObjectId();
 await db.collection('products').insertOne({_id:product,title:'محصول تست',stock:3});
 for(const [index,status] of ['pending','processing','shipped','delivered','cancelled'].entries()) {
- await db.collection('orders').insertOne({orderNumber:'LX-'+(400001+index),user:user._id,items:[{product,title:'محصول تست',slug:'test',image:'/images/products/compact.png',price:100000,quantity:2}],subtotal:200000,shippingFee:50000,total:250000,shippingAddress:{recipientName:'گیرنده تست',province:'تهران',city:'تهران',addressLine:'خیابان تست',postalCode:'1234567890',mobile:'09123456789'},status,payment:{status:status==='pending'?'unpaid':'paid',refId:'test-ref'},note:'یادداشت تست',statusHistory:[{status,changedAt:new Date(),changedBy:user._id}],createdAt:new Date(),updatedAt:new Date()});
+ await db.collection('orders').insertOne({orderNumber:'LX-'+(400001+index),user:user._id,items:[{product,title:'محصول تست',slug:'test',image:'/images/preview/categories/mini.png',price:100000,quantity:2}],subtotal:200000,shippingFee:50000,total:250000,shippingAddress:{recipientName:'گیرنده تست',province:'تهران',city:'تهران',addressLine:'خیابان تست',postalCode:'1234567890',mobile:'09123456789'},status,payment:{status:status==='pending'?'unpaid':'paid',refId:'test-ref'},note:'یادداشت تست',statusHistory:[{status,changedAt:new Date(),changedBy:user._id}],createdAt:new Date(),updatedAt:new Date()});
 }
 """)
 with sync_playwright() as p:
