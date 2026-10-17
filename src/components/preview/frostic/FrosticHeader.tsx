@@ -27,7 +27,7 @@ const defaultLinks: readonly FrosticNavItem[] = [
   { label: "مقایسه" },
   { label: "مجله خرید" },
   { label: "خدمات" },
-  { label: "درباره ما" },
+  { label: "درباره ما", href: "/about" },
 ];
 
 function Brand() {
