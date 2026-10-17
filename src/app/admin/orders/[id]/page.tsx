@@ -64,7 +64,9 @@ export default async function OrderPage({
         <h2>مشتری</h2>
         <p>{customer?.name ?? "مشتری حذف‌شده"}</p>
         {customer && (
-          <p className="break-all">ایمیل: {toPersianDigits(customer.email)}</p>
+          <p className="break-all">
+            ایمیل: <bdi>{customer.email}</bdi>
+          </p>
         )}
         {customer?.mobile && <p>موبایل: {toPersianDigits(customer.mobile)}</p>}
       </section>
@@ -76,8 +78,8 @@ export default async function OrderPage({
       </div>
       <p className="text-sm text-muted">ثبت در {formatDate(order.createdAt)}</p>
       <div className="grid items-start gap-6 lg:grid-cols-2">
-        <section className="checkout-panel">
-          <h3 className="mb-6 text-xl font-bold">اقلام سفارش</h3>
+        <section className="admin-panel">
+          <h2 className="mb-6 text-xl font-bold">اقلام سفارش</h2>
           <div className="grid gap-5">
             {order.items.map((item) => (
               <article
@@ -139,8 +141,8 @@ export default async function OrderPage({
           )}
         </section>
         <div className="grid gap-6">
-          <section className="checkout-panel">
-            <h3 className="mb-5 text-xl font-bold">نشانی ارسال</h3>
+          <section className="admin-panel">
+            <h2 className="mb-5 text-xl font-bold">نشانی ارسال</h2>
             <p>{address.recipientName}</p>
             <p className="mt-3 leading-8 break-words">
               {address.province}، {address.city}،{" "}
@@ -154,7 +156,7 @@ export default async function OrderPage({
               <p className="mt-5 break-words">یادداشت: {order.note}</p>
             )}
           </section>
-          <section className="checkout-panel">
+          <section className="admin-panel">
             <h3 className="mb-5 text-xl font-bold">تاریخچهٔ سفارش</h3>
             <ol className="grid gap-4">
               {order.statusHistory.map((entry, index) => (

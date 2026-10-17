@@ -125,13 +125,19 @@ npm run seed -- --reset
 
 ### آپلود تصویر
 
-فرم `src/components/admin/ProductForm.tsx` فعلاً نشانی تصاویر را دریافت و مرتب می‌کند؛ `images` در مدل محصول آرایه‌ای از نشانی‌هاست و با `src/validations/product.ts` بررسی می‌شود. تصاویر seed از `public/images/products/` می‌آیند. endpoint یا سرویس آپلود وجود ندارد. توسعهٔ آینده می‌تواند فایل را در یک سرویس ذخیره‌سازی قرار دهد و نشانی نتیجه را از مسیر action و سرویس محصول موجود ذخیره کند؛ کنترل دسترسی ادمین و اعتبارسنجی نوع و اندازهٔ فایل باید به مسیر آپلود اضافه شوند.
+فرم `src/components/admin/ProductForm.tsx` فعلاً نشانی تصاویر را دریافت و مرتب می‌کند؛ `images` در مدل محصول آرایه‌ای از نشانی‌هاست و با `src/validations/product.ts` بررسی می‌شود. تصاویر seed از `public/images/preview/categories/` می‌آیند. endpoint یا سرویس آپلود وجود ندارد. توسعهٔ آینده می‌تواند فایل را در یک سرویس ذخیره‌سازی قرار دهد و نشانی نتیجه را از مسیر action و سرویس محصول موجود ذخیره کند؛ کنترل دسترسی ادمین و اعتبارسنجی نوع و اندازهٔ فایل باید به مسیر آپلود اضافه شوند.
 
 ## Decisions
+
 
 - Shared password visibility controls retain input focus during pointer activation, use a minimum 44px touch target and 16px input text, and sit outside field labels to keep mobile taps and keyboard activation consistent across login, registration and password changes.
 
 - Address creation and editing in the account and checkout share Persian-name filtering, numeric phone/postal inputs, dependent province/city selects and a multiline street address. The same name and province/city rules run on the server. Address DTO lists place the default first while preserving the order of other addresses. Province/city options are an offline snapshot of [MJavadSF/Iran_provinces_cities](https://github.com/MJavadSF/Iran_provinces_cities), normalized for Persian characters, with the upstream [MIT license](docs/iran-locations-LICENSE.txt); no runtime API or extra dependency is required.
+
+- Retired QA scripts, home reference images and duplicate product/night-footer assets are removed. Footer backgrounds and browser fixtures reuse the retained category and desktop/mobile landscape images. Local test routes and their test-only fixtures are removed.
+
+- Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference while retaining the legacy brand attribute for catalog filters. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
+
 
 
  

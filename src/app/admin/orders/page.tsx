@@ -42,7 +42,7 @@ export default async function OrdersAdmin({
   return (
     <section className="admin-panel grid min-w-0 gap-5">
       <h1>مدیریت سفارش‌ها</h1>
-      <form className="flex flex-wrap items-end gap-3">
+      <form className="admin-filter">
         <label className="min-w-0">
           وضعیت سفارش
           <select
@@ -58,11 +58,17 @@ export default async function OrdersAdmin({
             ))}
           </select>
         </label>
-        <button>اعمال فیلتر</button>
+        <button className="admin-primary">اعمال فیلتر</button>
+        <Link href="/admin/orders">پاک‌کردن فیلتر</Link>
       </form>
       <p>{toPersianDigits(result.total)} سفارش</p>
       {result.items.length ? (
-        <div className="min-w-0 overflow-x-auto">
+        <div
+          className="admin-table-scroll"
+          role="region"
+          aria-label="جدول اطلاعات"
+          tabIndex={0}
+        >
           <table className="w-full text-start">
             <thead>
               <tr>
@@ -74,7 +80,7 @@ export default async function OrdersAdmin({
                   "پرداخت",
                   "وضعیت",
                 ].map((label) => (
-                  <th key={label} className="p-3 text-start">
+                  <th scope="col" key={label} className="p-3 text-start">
                     {label}
                   </th>
                 ))}
@@ -93,8 +99,32 @@ export default async function OrdersAdmin({
                   </td>
                   <td className="p-3">{formatDate(order.createdAt)}</td>
                   <td className="p-3">{formatPrice(order.total)}</td>
-                  <td className="p-3">{paymentLabels[order.payment.status]}</td>
-                  <td className="p-3">{orderLabels[order.status]}</td>
+                  <td className="p-3">
+                    <span
+                      className={
+                        order.payment.status === "paid"
+                          ? "admin-badge admin-badge-success"
+                          : order.payment.status === "failed"
+                            ? "admin-badge admin-badge-danger"
+                            : "admin-badge admin-badge-warning"
+                      }
+                    >
+                      {paymentLabels[order.payment.status]}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span
+                      className={
+                        order.status === "cancelled"
+                          ? "admin-badge admin-badge-danger"
+                          : order.status === "delivered"
+                            ? "admin-badge admin-badge-success"
+                            : "admin-badge"
+                      }
+                    >
+                      {orderLabels[order.status]}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

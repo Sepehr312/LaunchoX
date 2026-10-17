@@ -28,7 +28,22 @@ export function OrderStatusForm({
     <section className="admin-panel grid gap-4">
       <h2>تغییر وضعیت سفارش</h2>
       {options.length ? (
-        <form action={action} className="grid gap-3" key={status}>
+        <form
+          action={action}
+          className="grid gap-3"
+          key={status}
+          aria-busy={pending}
+          onSubmit={(event) => {
+            const value = new FormData(event.currentTarget).get("status");
+            if (
+              value === "cancelled" &&
+              !window.confirm(
+                "این سفارش لغو شود؟ موجودی کالاها به انبار برمی‌گردد.",
+              )
+            )
+              event.preventDefault();
+          }}
+        >
           <input type="hidden" name="id" value={id} />
           <label>
             وضعیت بعدی
@@ -40,7 +55,7 @@ export function OrderStatusForm({
               ))}
             </select>
           </label>
-          <button disabled={pending}>
+          <button className="admin-primary" disabled={pending}>
             {pending ? "در حال ثبت…" : "ثبت وضعیت"}
           </button>
         </form>
@@ -49,9 +64,13 @@ export function OrderStatusForm({
       )}
       {state &&
         (state.ok ? (
-          <p role="status">وضعیت سفارش ثبت شد.</p>
+          <p role="status" className="admin-success">
+            وضعیت سفارش ثبت شد.
+          </p>
         ) : (
-          <p role="alert">{state.error}</p>
+          <p role="alert" className="admin-error">
+            {state.error}
+          </p>
         ))}
     </section>
   );

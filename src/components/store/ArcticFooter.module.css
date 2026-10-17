@@ -22,7 +22,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("/images/preview/footer/arctic-landscape-mobile-night.webp");
+  background-image: url("/images/preview/footer/arctic-landscape-mobile-day.webp");
   background-position: inherit;
   background-size: inherit;
   background-repeat: no-repeat;
@@ -233,7 +233,7 @@
     background-size: 100% 100%;
   }
   .landscape::before {
-    background-image: url("/images/preview/footer/arctic-landscape-night.webp");
+    background-image: url("/images/preview/footer/arctic-landscape.webp");
   }
 }
 @media (min-width: 1024px) {

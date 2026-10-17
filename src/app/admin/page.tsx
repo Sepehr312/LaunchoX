@@ -1,3 +1,12 @@
+import Link from "next/link";
+import {
+  ShoppingBag,
+  Wallet,
+  Clock3,
+  PackageSearch,
+  Plus,
+  ArrowUpLeft,
+} from "lucide-react";
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { requireAdmin } from "@/actions/auth.actions";
@@ -16,21 +25,25 @@ export default async function AdminPage() {
   const data = await getDashboardStats();
   const stats = [
     {
+      icon: ShoppingBag,
       label: "سفارش‌های امروز",
       value: toPersianDigits(data.todayOrders),
       detail: "از ابتدای روز به وقت تهران",
     },
     {
+      icon: Wallet,
       label: "درآمد این ماه",
       value: formatPrice(data.monthlyRevenue),
       detail: "پرداخت‌های موفق ماه شمسی جاری",
     },
     {
+      icon: Clock3,
       label: "سفارش‌های در انتظار",
       value: toPersianDigits(data.pendingOrders),
       detail: "سفارش‌های با وضعیت در انتظار",
     },
     {
+      icon: PackageSearch,
       label: "محصولات با موجودی کم",
       value: toPersianDigits(data.lowStockCount),
       detail: "موجودی کمتر از پنج واحد",
@@ -38,12 +51,18 @@ export default async function AdminPage() {
   ];
   return (
     <div className="space-y-8">
-      <header className="admin-panel">
-        <p className="mb-3 text-sm text-primary">پنل مدیریت / نمای کلی</p>
-        <h1 className="text-2xl font-black sm:text-3xl">داشبورد فروشگاه</h1>
-        <p className="mt-3 text-sm text-muted">
-          نبض فروش، سفارش‌ها و موجودی؛ در یک نگاه.
-        </p>
+      <header className="admin-panel admin-page-header">
+        <div>
+          <p className="mb-3 text-sm text-primary">پنل مدیریت / نمای کلی</p>
+          <h1 className="text-2xl font-black sm:text-3xl">داشبورد فروشگاه</h1>
+          <p className="mt-3 text-sm text-muted">
+            نبض فروش، سفارش‌ها و موجودی؛ در یک نگاه.
+          </p>
+        </div>
+        <Link className="admin-primary" href="/admin/products/new">
+          <Plus size={20} aria-hidden="true" />
+          محصول جدید
+        </Link>
       </header>
       <section
         aria-label="آمار فروشگاه"
@@ -51,6 +70,9 @@ export default async function AdminPage() {
       >
         {stats.map((stat) => (
           <article key={stat.label} className="admin-panel">
+            <span className="admin-stat-icon">
+              <stat.icon size={22} aria-hidden="true" />
+            </span>
             <h2 className="text-sm text-muted">{stat.label}</h2>
             <p className="my-4 text-2xl font-black break-words text-primary">
               {stat.value}
@@ -74,7 +96,14 @@ export default async function AdminPage() {
               <article key={order.id} className="admin-order">
                 <div className="min-w-0">
                   <h3 className="font-bold">
-                    <bdi>{toPersianDigits(order.orderNumber)}</bdi>
+                    <Link href={`/admin/orders/${order.id}`}>
+                      <bdi>{toPersianDigits(order.orderNumber)}</bdi>
+                      <ArrowUpLeft
+                        size={16}
+                        className="ms-2 inline"
+                        aria-hidden="true"
+                      />
+                    </Link>
                   </h3>
                   <p className="mt-2 text-sm break-words">
                     {order.customerName}
@@ -123,7 +152,9 @@ export default async function AdminPage() {
             {data.lowStockProducts.map((product) => (
               <li key={product.id} className="admin-order">
                 <span className="min-w-0 font-medium break-words">
-                  {product.title}
+                  <Link href={`/admin/products/${product.id}/edit`}>
+                    {product.title}
+                  </Link>
                 </span>
                 <Badge tone={product.stock === 0 ? "danger" : "primary"}>
                   {product.stock === 0
