@@ -10,7 +10,11 @@ export function PasswordInput(props: ComponentProps<"input">) {
       <button
         type="button"
         className={styles.eye}
-        onClick={() => setVisible(!visible)}
+        onPointerDown={(event) => {
+          // Keep the mobile keyboard open so a focus change cannot interrupt the tap.
+          if (event.button === 0) event.preventDefault();
+        }}
+        onClick={() => setVisible((current) => !current)}
         aria-label={`${visible ? "مخفی کردن" : "نمایش"} ${props["aria-label"] ?? "رمز عبور"}`}
         aria-pressed={visible}
         disabled={props.disabled}

@@ -129,11 +129,15 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Shared password visibility controls retain input focus during pointer activation, use a minimum 44px touch target and 16px input text, and sit outside field labels to keep mobile taps and keyboard activation consistent across login, registration and password changes.
+
+- Address creation and editing in the account and checkout share Persian-name filtering, numeric phone/postal inputs, dependent province/city selects and a multiline street address. The same name and province/city rules run on the server. Address DTO lists place the default first while preserving the order of other addresses. Province/city options are an offline snapshot of [MJavadSF/Iran_provinces_cities](https://github.com/MJavadSF/Iran_provinces_cities), normalized for Persian characters, with the upstream [MIT license](docs/iran-locations-LICENSE.txt); no runtime API or extra dependency is required.
+
 
  
 - Customer pages retain the shared header day/night toggle; the existing header theme changes independently while customer content remains light.
 
-- Login and registration default to `/account` when no valid callback destination is supplied; explicitly requested safe destinations such as checkout remain intact.
+- Login and registration default to `/account` for customers; administrators reaching this default destination are redirected by the proxy to `/admin` before the customer page renders. Authenticated administrators visiting `/login` or `/register` also go to `/admin`; explicitly requested safe destinations such as checkout and admin subpages remain intact.
 
 - Customer interaction cues use existing order statuses and validation rules. Clipboard copies the original order reference while displayed digits remain Persian. Address editing closes only after a successful existing action; selected-address and cart-saving cues do not change backend behavior.
 

@@ -95,7 +95,7 @@ export function AccountForm({
               }
               setClientErrors(fields);
               event.currentTarget
-                .querySelector<HTMLInputElement>(
+                .querySelector<HTMLElement>(
                   `[name="${String(parsed.error.issues[0]?.path[0])}"]`,
                 )
                 ?.focus();

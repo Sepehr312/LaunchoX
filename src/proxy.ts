@@ -27,7 +27,15 @@ const handleRequest: (
     request.auth?.user &&
     (pathname === "/login" || pathname === "/register")
   ) {
-    return NextResponse.redirect(new URL("/account", request.nextUrl));
+    const destination =
+      request.auth.user.role === "admin" ? "/admin" : "/account";
+    return NextResponse.redirect(new URL(destination, request.nextUrl));
+  }
+  if (
+    request.auth?.user.role === "admin" &&
+    (pathname === "/account" || pathname === "/account/")
+  ) {
+    return NextResponse.redirect(new URL("/admin", request.nextUrl));
   }
   // Resolve ownership before React streams loading boundaries and commits HTTP 200.
   const orderPath = /^\/account\/orders\/([^/]+)\/?$/.exec(pathname);
