@@ -150,6 +150,8 @@ npm run seed -- --reset
 
 - The public `/about` page reuses the shop layout, existing light tokens, product assets, section heading and navigation styles; desktop and mobile header links point to it. Its specification CTA opens `/products`; contact links to the existing footer contact section. Scroll reveals honor reduced motion and keep content visible by default.
 
+- Retired QA scripts, home reference images and duplicate product/night-footer assets are removed. Footer backgrounds and browser fixtures reuse the retained category and desktop/mobile landscape images. Local test routes and their test-only fixtures are removed.
+
 - Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference while retaining the legacy brand attribute for catalog filters. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
 
 
