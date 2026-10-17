@@ -24,7 +24,7 @@ const defaultLinks: readonly FrosticNavItem[] = [
   { label: "خانه", href: "/" },
   { label: "محصولات", href: "/products" },
   { label: "برندها", href: "/brands" },
-  { label: "مقایسه" },
+  { label: "مقایسه", href: "/compare" },
   { label: "مجله خرید" },
   { label: "خدمات" },
   { label: "درباره ما", href: "/about" },

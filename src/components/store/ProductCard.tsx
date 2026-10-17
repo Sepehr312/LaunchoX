@@ -6,6 +6,7 @@ import { useActionState } from "react";
 import { Check, ShoppingCart } from "lucide-react";
 import { addCartAction } from "@/actions/cart.actions";
 import { ProductLikeButton } from "@/components/store/ProductLikeButton";
+import { CompareProductButton } from "@/components/store/compare/CompareProductButton";
 import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 import type { StoreProductDTO } from "@/types/dto";
@@ -135,6 +136,7 @@ export function ProductCard({
           <strong>{formatPrice(product.price)}</strong>
         </div>
       </div>
+      <CompareProductButton id={product.id} title={product.title} />
       {state && !state.ok && (
         <p className={styles.feedback} role="alert">
           {state.error}

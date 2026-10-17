@@ -75,6 +75,21 @@ export interface ProductCategoryDTO {
 export interface StoreProductDTO extends Omit<ProductDTO, "category"> {
   category: ProductCategoryDTO;
 }
+export type CompareProductDTO = Pick<
+  StoreProductDTO,
+  | "id"
+  | "title"
+  | "slug"
+  | "price"
+  | "compareAtPrice"
+  | "stock"
+  | "sku"
+  | "images"
+  | "category"
+  | "attributes"
+  | "createdAt"
+  | "updatedAt"
+>;
 export interface ProductFilterOptionsDTO {
   brands: string[];
   energies: string[];

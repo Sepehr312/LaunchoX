@@ -16,8 +16,65 @@ import type {
   ProductDTO,
   StoreProductDTO,
   ProductFilterOptionsDTO,
+  CompareProductDTO,
 } from "@/types/dto";
 import type { ProductInput, ProductQueryInput } from "@/validations/product";
+import { compareIdsSchema, compareSearchSchema } from "@/validations/compare";
+
+const comparisonFields =
+  "title slug price compareAtPrice stock sku images category brand attributes createdAt updatedAt";
+
+export async function getComparisonProducts(
+  input: unknown,
+): Promise<CompareProductDTO[]> {
+  const ids = compareIdsSchema.parse(input);
+  if (!ids.length) return [];
+  await connectDB();
+  const records = await Product.find({
+    _id: { $in: ids },
+    isActive: true,
+  })
+    .select(comparisonFields)
+    .lean();
+  const products = await withCategories(records);
+  return ids.flatMap((id) => products.filter((product) => product.id === id));
+}
+
+export async function searchComparisonProducts(
+  input: unknown,
+): Promise<{ items: CompareProductDTO[]; totalPages: number }> {
+  const { q, page } = compareSearchSchema.parse(input);
+  await connectDB();
+  const pattern = new RegExp(escapedRegex(q), "i");
+  const brands = q
+    ? await Brand.find({ name: pattern, isActive: true }).select("_id").lean()
+    : [];
+  const filter = {
+    isActive: true,
+    ...(q
+      ? {
+          $or: [
+            { title: pattern },
+            { brand: { $in: brands.map((brand) => brand._id) } },
+            { attributes: { $elemMatch: { key: "برند", value: pattern } } },
+          ],
+        }
+      : {}),
+  };
+  const [records, total] = await Promise.all([
+    Product.find(filter)
+      .select(comparisonFields)
+      .sort({ createdAt: -1, _id: 1 })
+      .skip((page - 1) * 12)
+      .limit(12)
+      .lean(),
+    Product.countDocuments(filter),
+  ]);
+  return {
+    items: await withCategories(records),
+    totalPages: Math.ceil(total / 12),
+  };
+}
 
 const sortOptions = {
   newest: { createdAt: -1 },
