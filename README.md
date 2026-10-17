@@ -129,6 +129,14 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The homepage category shortcut shows “view all” from eight active categories onward. It offers the first eight in admin order on compact screens, then admits additional cards only when the existing 1560px section can fit readable 135px cards plus a preferred 16px gap; remaining categories stay in `/categories`. The section width stays unchanged, card gaps remain capped and short rows centered.
+
+- Homepage category cards share spare row width through a gap capped at 16px, then remain centered on wider displays; their existing size cap and mobile carousel behavior are preserved.
+
+- Category product pages hide the category switcher on desktop and mobile; the general and brand catalogs retain their category filters, while sorting and other filters stay available within a selected category.
+
+- The shared desktop and mobile header links to `/categories` between brands and comparison. This directory reuses the brands page visual style, lists active database categories with active product counts (including out-of-stock products), uses the existing catalog illustrations, and links to the existing filtered category pages. Buying guides only link to categories present in the directory.
+
 - The `/services` page extends the step 7 storefront with static buying, delivery, authorized installation and warranty guides, native expandable FAQs, order-account links and the existing footer contact details. No unverified service hours, installation commitments or request form are introduced; the shared header and after-sales footer link point to this page.
 
 - `/compare` is the approved live comparison page under the shared shop layout, with entry links on product cards, product details, and desktop/mobile navigation. Validated browser storage remembers selections across product pages; an explicit `products` URL, including an empty selection, takes priority. Database errors use the normal retry boundary. The picker scrollbar is hidden while scrolling stays enabled.
@@ -178,7 +186,7 @@ npm run seed -- --reset
 
 - Storefront product grids reuse the approved Arctic preview card layout with real product attributes, links, stock, discounts, and cart actions; the homepage glass panel shows four active products ordered by soldCount. Product likes are stored in this browser, shared across cards and tabs, without an account favorites page or backend.
 
-- The homepage reuses the approved Arctic category carousel below the Benefits Bar, with the same eight visual shortcuts and shared header theme as `/test`; catalog data and category management remain unchanged.
+- The homepage Arctic carousel reads active categories from the database in admin-defined order, using their current names and slugs. Category images prefer the admin-saved image, then the existing illustration by slug, then a neutral icon. The fixed catalog list supplies only fallback artwork; deletion, activation, creation and edits use the existing admin cache invalidation. Empty and single-category layouts are supported.
 
 - Preview category rows size cards to show a whole number of items at rest and snap to complete cards after scrolling; glass edge buttons advance by one visible group. Touch, trackpad, and mouse wheel remain supported, and vertical wheel input scrolls the page again at the row boundaries.
 

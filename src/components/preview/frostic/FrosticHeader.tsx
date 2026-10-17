@@ -24,8 +24,8 @@ const defaultLinks: readonly FrosticNavItem[] = [
   { label: "خانه", href: "/" },
   { label: "محصولات", href: "/products" },
   { label: "برندها", href: "/brands" },
+  { label: "دسته‌بندی", href: "/categories" },
   { label: "مقایسه", href: "/compare" },
-  { label: "مجله خرید" },
   { label: "خدمات", href: "/services" },
   { label: "درباره ما", href: "/about" },
 ];
@@ -189,8 +189,8 @@ export function FrosticHeader({
               href={item.href}
               aria-current={
                 selectedHref === item.href ||
-                (item.href === "/brands" &&
-                  selectedHref?.startsWith("/brands/"))
+                ((item.href === "/brands" || item.href === "/categories") &&
+                  selectedHref?.startsWith(`${item.href}/`))
                   ? "page"
                   : undefined
               }

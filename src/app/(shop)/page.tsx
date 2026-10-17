@@ -8,6 +8,7 @@ import { BestSellingProducts } from "@/components/store/BestSellingProducts";
 import { SectionHeading } from "@/components/store/SectionHeading";
 import { ChevronIcon } from "@/components/store/Icons";
 import { listProducts } from "@/services/product.service";
+import { listCategories } from "@/services/category.service";
 
 export const revalidate = 300;
 export const metadata: Metadata = {
@@ -15,13 +16,14 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [bestselling, newest] = await Promise.all([
+  const [bestselling, newest, categories] = await Promise.all([
     listProducts({ page: 1, limit: 4, sort: "bestselling" }),
     listProducts({ page: 1, limit: 8, sort: "newest" }),
+    listCategories(),
   ]);
   return (
     <main>
-      <StoreHero />
+      <StoreHero categories={categories} />
 
       <BestSellingProducts products={bestselling.items} />
 

@@ -31,6 +31,9 @@ export interface CategoryDTO extends EntityDTO {
   order: number;
   isActive: boolean;
 }
+export interface StoreCategoryDTO extends CategoryDTO {
+  productCount: number;
+}
 export interface BrandDTO extends EntityDTO {
   name: string;
   slug: string;

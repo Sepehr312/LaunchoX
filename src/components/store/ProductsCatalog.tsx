@@ -597,39 +597,29 @@ export function ProductsCatalog({
             <Snowflake className={styles.iceMark} aria-hidden="true" />
           </section>
         )}
-        <div
-          className={styles.categories}
-          role="group"
-          aria-label="دسته‌بندی محصولات"
-        >
-          {[{ id: "", name: "همه", slug: "" }, ...categories].map((category) =>
-            selectedCategory ? (
-              <Link
-                key={category.id}
-                href={
-                  category.id ? `/categories/${category.slug}` : "/products"
-                }
-                aria-current={
-                  selectedCategory.id === category.id ? "page" : undefined
-                }
-              >
-                {category.name}
-              </Link>
-            ) : (
-              <button
-                key={category.id}
-                type="button"
-                aria-pressed={
-                  query.category === category.id ||
-                  (!query.category && !category.id)
-                }
-                onClick={() => update({ ...filters, category: category.id })}
-              >
-                {category.name}
-              </button>
-            ),
-          )}
-        </div>
+        {!selectedCategory && (
+          <div
+            className={styles.categories}
+            role="group"
+            aria-label="دسته‌بندی محصولات"
+          >
+            {[{ id: "", name: "همه", slug: "" }, ...categories].map(
+              (category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  aria-pressed={
+                    query.category === category.id ||
+                    (!query.category && !category.id)
+                  }
+                  onClick={() => update({ ...filters, category: category.id })}
+                >
+                  {category.name}
+                </button>
+              ),
+            )}
+          </div>
+        )}
         {(requestError || error) && (
           <p role="alert" className={styles.activeFilters}>
             {requestError || error}
