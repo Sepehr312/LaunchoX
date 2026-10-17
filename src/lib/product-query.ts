@@ -18,6 +18,7 @@ export function parseProductQuery(
     page: stringValue("page"),
     limit: stringValue("limit"),
     category: overrides.category ?? stringValue("category"),
+    brandSlug: stringValue("brandSlug"),
     q: overrides.q ?? stringValue("q"),
     minPrice: stringValue("minPrice"),
     maxPrice: stringValue("maxPrice"),

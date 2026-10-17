@@ -6,9 +6,11 @@ import { toDTO } from "@/lib/model-shared";
 import { createUniqueSlug } from "@/lib/slug";
 import { Brand } from "@/models/brand";
 import { Product } from "@/models/product";
-import type { BrandDTO } from "@/types/dto";
+import type { BrandDTO, StoreBrandDTO, StoreBrandDetailDTO } from "@/types/dto";
+import { slugSchema } from "@/validations/common";
 import {
   brandIdSchema,
+  brandRouteSlugSchema,
   createBrandSchema,
   updateBrandSchema,
 } from "@/validations/brand";
@@ -30,11 +32,67 @@ export async function listBrands(): Promise<BrandDTO[]> {
   return brands.map((brand) => toDTO(brand));
 }
 
+export async function listStoreBrands(): Promise<StoreBrandDTO[]> {
+  await connectDB();
+  const brands = await Brand.find({ isActive: true })
+    .select("name slug logo")
+    .lean();
+  const counts = await Product.aggregate<{ _id: unknown; count: number }>([
+    {
+      $match: {
+        isActive: true,
+        brand: { $in: brands.map((brand) => brand._id) },
+      },
+    },
+    { $group: { _id: "$brand", count: { $sum: 1 } } },
+  ]);
+  const countById = new Map(
+    counts.map((item) => [String(item._id), item.count]),
+  );
+  return brands.flatMap((brand) =>
+    slugSchema.safeParse(brand.slug).success
+      ? [
+          {
+            id: String(brand._id),
+            name: brand.name,
+            slug: brand.slug,
+            logo: brand.logo,
+            productCount: countById.get(String(brand._id)) ?? 0,
+          },
+        ]
+      : [],
+  );
+}
+
 export async function getBrand(rawId: unknown): Promise<BrandDTO | null> {
   const id = brandIdSchema.parse(rawId);
   await connectDB();
   const brand = await Brand.findById(id).lean();
   return brand ? toDTO(brand) : null;
+}
+
+export async function getStoreBrandBySlug(
+  rawSlug: unknown,
+): Promise<StoreBrandDetailDTO | null> {
+  const parsed = brandRouteSlugSchema.safeParse(rawSlug);
+  if (!parsed.success) return null;
+  await connectDB();
+  const brand = await Brand.findOne({ slug: parsed.data, isActive: true })
+    .select("name slug logo description")
+    .lean();
+  if (!brand) return null;
+  const productCount = await Product.countDocuments({
+    brand: brand._id,
+    isActive: true,
+  });
+  return {
+    id: String(brand._id),
+    name: brand.name,
+    slug: brand.slug,
+    logo: brand.logo,
+    description: brand.description,
+    productCount,
+  };
 }
 
 export async function createBrand(rawInput: unknown): Promise<BrandDTO> {

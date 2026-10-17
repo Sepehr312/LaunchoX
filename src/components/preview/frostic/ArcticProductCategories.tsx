@@ -3,19 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Snowflake } from "lucide-react";
 import { catalogCategories } from "@/lib/catalog-categories";
+import type { CategoryDTO } from "@/types/dto";
 import styles from "./ArcticProductCategories.module.css";
 
-const categories = catalogCategories.map((category) => ({
-  id: category.slug,
-  title: category.title,
-  image: `/images/preview/categories/${category.image}.png`,
-  href: `/categories/${category.slug}`,
-}));
-
-export function ArcticProductCategories() {
+export function ArcticProductCategories({
+  categories,
+}: {
+  categories: CategoryDTO[];
+}) {
   const rowRef = useRef<HTMLDivElement>(null);
+  const [categoryLimit, setCategoryLimit] = useState(8);
+  const displayedCategories = categories.slice(0, categoryLimit);
+  const displayedCount = displayedCategories.length;
   const [navigation, setNavigation] = useState({
     overflowing: false,
     previous: false,
@@ -61,6 +62,8 @@ export function ArcticProductCategories() {
 
     function updateLayout() {
       if (!row) return;
+      // Keep extra cards within the original panel, allowing a readable card width.
+      setCategoryLimit(Math.max(8, Math.floor((row.clientWidth + 16) / 151)));
       const minimumWidth = Number.parseFloat(
         getComputedStyle(row).getPropertyValue("--category-min-width"),
       );
@@ -68,17 +71,29 @@ export function ArcticProductCategories() {
       const visibleCount = Math.max(
         1,
         Math.min(
-          categories.length,
+          displayedCount,
           Math.floor((row.clientWidth + gap) / (minimumWidth + gap)),
         ),
       );
       const availableWidth =
         (row.clientWidth - gap * (visibleCount - 1)) / visibleCount;
       const cardWidth =
-        visibleCount === categories.length
+        visibleCount === displayedCount
           ? Math.min(150, availableWidth)
           : availableWidth;
       row.style.setProperty("--category-width", `${cardWidth}px`);
+      const cardGap =
+        visibleCount === displayedCount && displayedCount > 1
+          ? Math.min(
+              16,
+              Math.max(
+                gap,
+                (row.clientWidth - cardWidth * displayedCount) /
+                  (displayedCount - 1),
+              ),
+            )
+          : gap;
+      row.style.setProperty("--category-gap", `${cardGap}px`);
       updateNavigation();
     }
 
@@ -91,7 +106,7 @@ export function ArcticProductCategories() {
       row.removeEventListener("scroll", updateNavigation);
       row.removeEventListener("wheel", handleWheel);
     };
-  }, []);
+  }, [displayedCount]);
 
   function scrollCategories(direction: "previous" | "next") {
     const row = rowRef.current;
@@ -106,7 +121,8 @@ export function ArcticProductCategories() {
 
   return (
     <section
-      className={`${styles.placement} mx-auto w-full max-w-[1560px] px-5 sm:px-8`}
+      id="categories"
+      className={`${styles.placement} mx-auto w-full max-w-[1560px] scroll-mt-24 px-5 sm:px-8`}
       dir="rtl"
       aria-labelledby="arctic-categories-title"
       data-arctic-categories
@@ -114,9 +130,9 @@ export function ArcticProductCategories() {
       <div className={styles.panel}>
         <div className={styles.heading}>
           <h2 id="arctic-categories-title">دسته‌بندی محصولات</h2>
-          {categories.length > 9 && (
-            <Link href="/products" className={styles.viewAll}>
-              دیدن همه
+          {categories.length >= 8 && (
+            <Link href="/categories" className={styles.viewAll}>
+              مشاهده همه
               <ChevronLeft size={16} strokeWidth={1.8} aria-hidden="true" />
             </Link>
           )}
@@ -154,32 +170,53 @@ export function ArcticProductCategories() {
             aria-label="دسته‌بندی‌ها؛ برای مشاهده همه موارد، افقی پیمایش کنید"
             tabIndex={0}
           >
-            <ul className={styles.list}>
-              {categories.map((category) => {
-                const content = (
-                  <>
-                    <div className={styles.image}>
-                      <Image
-                        src={category.image}
-                        alt={`نمای نمونهٔ ${category.title}`}
-                        width={120}
-                        height={115}
-                        sizes="(max-width: 767px) 98px, (max-width: 1023px) 113px, 128px"
-                      />
-                    </div>
-                    <span className={styles.title}>{category.title}</span>
-                  </>
-                );
+            {categories.length === 0 ? (
+              <p className="py-6 text-center text-muted">
+                هنوز دسته‌بندی‌ای برای نمایش وجود ندارد.
+              </p>
+            ) : (
+              <ul className={styles.list}>
+                {displayedCategories.map((category) => {
+                  const visual = catalogCategories.find(
+                    (item) => item.slug === category.slug,
+                  );
+                  const image =
+                    category.image ??
+                    (visual
+                      ? `/images/preview/categories/${visual.image}.png`
+                      : undefined);
+                  const content = (
+                    <>
+                      <div className={styles.image}>
+                        {image ? (
+                          <Image
+                            src={image}
+                            alt={`نمای نمونهٔ ${category.name}`}
+                            width={120}
+                            height={115}
+                            sizes="(max-width: 767px) 98px, (max-width: 1023px) 113px, 128px"
+                          />
+                        ) : (
+                          <Snowflake size={56} aria-hidden="true" />
+                        )}
+                      </div>
+                      <span className={styles.title}>{category.name}</span>
+                    </>
+                  );
 
-                return (
-                  <li key={category.id} className={styles.item}>
-                    <Link href={category.href} className={styles.card}>
-                      {content}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                  return (
+                    <li key={category.id} className={styles.item}>
+                      <Link
+                        href={`/categories/${encodeURIComponent(category.slug)}`}
+                        className={styles.card}
+                      >
+                        {content}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
       </div>

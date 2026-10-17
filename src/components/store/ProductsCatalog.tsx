@@ -20,11 +20,13 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 import { ProductCard } from "@/components/store/ProductCard";
+import { BrandHero, BrandAbout } from "@/components/store/BrandDetail";
 import type {
   CategoryDTO,
   PaginatedResult,
   StoreProductDTO,
   ProductFilterOptionsDTO,
+  StoreBrandDetailDTO,
 } from "@/types/dto";
 import type { ProductQueryInput } from "@/validations/product";
 import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
@@ -103,6 +105,7 @@ function FilterControls({
   brands,
   energies,
   priceCeiling,
+  hideBrands = false,
 }: {
   filters: Filters;
   update: (next: Filters) => void;
@@ -110,6 +113,7 @@ function FilterControls({
   brands: string[];
   energies: string[];
   priceCeiling: number;
+  hideBrands?: boolean;
 }) {
   const id = useId();
   return (
@@ -122,27 +126,29 @@ function FilterControls({
           <RotateCcw size={14} /> پاک کردن
         </button>
       </div>
-      <FilterSection title="برند">
-        <div className={styles.optionGrid}>
-          {brands.map((brand) => (
-            <label key={brand} className={styles.choice}>
-              <input
-                type="checkbox"
-                checked={filters.brands.includes(brand)}
-                onChange={(event) =>
-                  update({
-                    ...filters,
-                    brands: event.target.checked
-                      ? [...filters.brands, brand]
-                      : filters.brands.filter((item) => item !== brand),
-                  })
-                }
-              />
-              {brand}
-            </label>
-          ))}
-        </div>
-      </FilterSection>
+      {!hideBrands && (
+        <FilterSection title="برند">
+          <div className={styles.optionGrid}>
+            {brands.map((brand) => (
+              <label key={brand} className={styles.choice}>
+                <input
+                  type="checkbox"
+                  checked={filters.brands.includes(brand)}
+                  onChange={(event) =>
+                    update({
+                      ...filters,
+                      brands: event.target.checked
+                        ? [...filters.brands, brand]
+                        : filters.brands.filter((item) => item !== brand),
+                    })
+                  }
+                />
+                {brand}
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+      )}
       <FilterSection title="محدوده قیمت">
         <label htmlFor={`${id}-min`} className={styles.priceValue}>
           از <output>{formatPrice(filters.min)}</output>
@@ -273,6 +279,8 @@ export function ProductsCatalog({
   query: initialQuery,
   error,
   selectedCategory,
+  brand,
+  loadProducts,
 }: {
   categories: CategoryDTO[];
   options: ProductFilterOptionsDTO;
@@ -280,10 +288,16 @@ export function ProductsCatalog({
   query: ProductQueryInput;
   error?: string;
   selectedCategory?: CategoryDTO;
+  brand?: StoreBrandDetailDTO;
+  loadProducts?: (
+    values: Record<string, string | string[]>,
+  ) => Promise<PaginatedResult<StoreProductDTO>>;
 }) {
-  const basePath = selectedCategory
-    ? `/categories/${selectedCategory.slug}`
-    : "/products";
+  const basePath = brand
+    ? `/brands/${encodeURIComponent(brand.slug)}`
+    : selectedCategory
+      ? `/categories/${selectedCategory.slug}`
+      : "/products";
   const propsKey = JSON.stringify(initialQuery);
   const [catalog, setCatalog] = useState({
     propsKey,
@@ -303,6 +317,10 @@ export function ProductsCatalog({
   const load = useCallback(
     async (params: URLSearchParams, push = true, append = false) => {
       const requestParams = new URLSearchParams(params);
+      if (brand) {
+        requestParams.delete("brands");
+        requestParams.delete("brandSlug");
+      }
       if (selectedCategory) {
         requestParams.set("category", selectedCategory.id);
       }
@@ -325,13 +343,18 @@ export function ProductsCatalog({
       setPending(true);
       setRequestError(undefined);
       try {
-        const response = await fetch(`/api/products?${requestParams}`, {
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error("Catalog request failed");
-        const body = (await response.json()) as {
-          data: PaginatedResult<StoreProductDTO>;
-        };
+        let body: { data: PaginatedResult<StoreProductDTO> };
+        if (loadProducts) {
+          body = { data: await loadProducts(values) };
+        } else {
+          const response = await fetch(`/api/products?${requestParams}`, {
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error("Catalog request failed");
+          body = (await response.json()) as {
+            data: PaginatedResult<StoreProductDTO>;
+          };
+        }
         if (controller.signal.aborted) return;
         setCatalog((previous) => {
           const existing = append ? previous.result.items : [];
@@ -350,6 +373,10 @@ export function ProductsCatalog({
         });
         if (push) {
           const urlParams = new URLSearchParams(params);
+          if (brand) {
+            urlParams.delete("brands");
+            urlParams.delete("brandSlug");
+          }
           if (selectedCategory) urlParams.delete("category");
           window.history.pushState(
             null,
@@ -368,7 +395,14 @@ export function ProductsCatalog({
         }
       }
     },
-    [propsKey, initialResult.limit, selectedCategory, basePath],
+    [
+      propsKey,
+      initialResult.limit,
+      selectedCategory,
+      basePath,
+      brand,
+      loadProducts,
+    ],
   );
   useEffect(() => {
     const restore = () => {
@@ -385,7 +419,7 @@ export function ProductsCatalog({
     };
   }, [load, initialResult.limit]);
   const priceCeiling = Math.max(
-    150000000,
+    brand ? 1000000 : 150000000,
     Math.ceil(options.maxPrice / 1000000) * 1000000,
     query.minPrice ?? 0,
     query.maxPrice ?? 0,
@@ -466,6 +500,7 @@ export function ProductsCatalog({
 
   function navigate(next: Filters, nextSort = sort) {
     const params = new URLSearchParams();
+    if (query.brandSlug) params.set("brandSlug", query.brandSlug);
     if (next.category) params.set("category", next.category);
     if (next.min > 0) params.set("minPrice", String(next.min));
     if (next.max !== priceCeiling) params.set("maxPrice", String(next.max));
@@ -492,6 +527,7 @@ export function ProductsCatalog({
   }
   const visible = result.items;
   const activeCount =
+    Number(Boolean(!brand && query.brandSlug)) +
     Number(query.minPrice !== undefined || query.maxPrice !== undefined) +
     Number(Boolean(query.inStock)) +
     (query.brands?.length ?? 0) +
@@ -507,6 +543,7 @@ export function ProductsCatalog({
     update,
     reset,
     priceCeiling,
+    hideBrands: Boolean(brand),
     brands: [...new Set([...options.brands, ...(query.brands ?? [])])],
     energies: [...new Set([...options.energies, ...(query.energies ?? [])])],
   };
@@ -514,72 +551,75 @@ export function ProductsCatalog({
   return (
     <div
       className={`${themeStyles.theme} ${styles.page}`}
-      data-theme={theme}
+      data-theme={brand ? "light" : theme}
       data-products-catalog
+      data-brand-catalog={brand ? "true" : undefined}
     >
       <main className={styles.shell}>
         <nav aria-label="مسیر صفحه" className={styles.breadcrumb}>
           <Link href="/">خانه</Link>
           <ChevronLeft size={14} />
+          {brand && (
+            <>
+              <Link href="/brands">برندها</Link>
+              <ChevronLeft size={14} />
+            </>
+          )}
           {selectedCategory && (
             <>
               <Link href="/products">محصولات</Link>
               <ChevronLeft size={14} />
             </>
           )}
-          <span aria-current="page">{selectedCategory?.name ?? "محصولات"}</span>
+          <span aria-current="page">
+            {brand?.name ?? selectedCategory?.name ?? "محصولات"}
+          </span>
         </nav>
-        <section className={styles.intro} aria-labelledby="products-title">
-          <div>
-            <p className={styles.eyebrow}>
-              <Snowflake size={16} /> انتخابی برای سال‌های پیش رو
-            </p>
-            <div className={styles.titleRow}>
-              <h1 id="products-title">
-                {selectedCategory?.name ?? "یخچال و فریزر"}
-              </h1>
-              <span>{toPersianDigits(result.total)} محصول</span>
+        {brand ? (
+          <BrandHero brand={brand} />
+        ) : (
+          <section className={styles.intro} aria-labelledby="products-title">
+            <div>
+              <p className={styles.eyebrow}>
+                <Snowflake size={16} /> انتخابی برای سال‌های پیش رو
+              </p>
+              <div className={styles.titleRow}>
+                <h1 id="products-title">
+                  {selectedCategory?.name ?? "یخچال و فریزر"}
+                </h1>
+                <span>{toPersianDigits(result.total)} محصول</span>
+              </div>
+              <p className={styles.subtitle}>
+                {selectedCategory?.description ??
+                  "تازگی بیشتر، آرامش بیشتر. همراه مناسب آشپزخانه‌تان را پیدا کنید."}
+              </p>
             </div>
-            <p className={styles.subtitle}>
-              {selectedCategory?.description ??
-                "تازگی بیشتر، آرامش بیشتر. همراه مناسب آشپزخانه‌تان را پیدا کنید."}
-            </p>
+            <Snowflake className={styles.iceMark} aria-hidden="true" />
+          </section>
+        )}
+        {!selectedCategory && (
+          <div
+            className={styles.categories}
+            role="group"
+            aria-label="دسته‌بندی محصولات"
+          >
+            {[{ id: "", name: "همه", slug: "" }, ...categories].map(
+              (category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  aria-pressed={
+                    query.category === category.id ||
+                    (!query.category && !category.id)
+                  }
+                  onClick={() => update({ ...filters, category: category.id })}
+                >
+                  {category.name}
+                </button>
+              ),
+            )}
           </div>
-          <Snowflake className={styles.iceMark} aria-hidden="true" />
-        </section>
-        <div
-          className={styles.categories}
-          role="group"
-          aria-label="دسته‌بندی محصولات"
-        >
-          {[{ id: "", name: "همه", slug: "" }, ...categories].map((category) =>
-            selectedCategory ? (
-              <Link
-                key={category.id}
-                href={
-                  category.id ? `/categories/${category.slug}` : "/products"
-                }
-                aria-current={
-                  selectedCategory.id === category.id ? "page" : undefined
-                }
-              >
-                {category.name}
-              </Link>
-            ) : (
-              <button
-                key={category.id}
-                type="button"
-                aria-pressed={
-                  query.category === category.id ||
-                  (!query.category && !category.id)
-                }
-                onClick={() => update({ ...filters, category: category.id })}
-              >
-                {category.name}
-              </button>
-            ),
-          )}
-        </div>
+        )}
         {(requestError || error) && (
           <p role="alert" className={styles.activeFilters}>
             {requestError || error}
@@ -689,6 +729,7 @@ export function ProductsCatalog({
             )}
           </div>
         </div>
+        {brand && <BrandAbout brand={brand} />}
       </main>
       <dialog
         ref={dialog}

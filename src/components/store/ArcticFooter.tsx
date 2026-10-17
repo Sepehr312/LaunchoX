@@ -91,9 +91,7 @@ export function ArcticFooter({
           <button onClick={() => showInformation("returns")}>
             شرایط بازگشت کالا
           </button>
-          <button onClick={() => showInformation("support")}>
-            خدمات پس از فروش
-          </button>
+          <Link href="/services">خدمات پس از فروش</Link>
           <Link href={buyingGuideHref}>راهنمای خرید</Link>
         </nav>
         <nav className={styles.quick} aria-labelledby="footer-quick-title">

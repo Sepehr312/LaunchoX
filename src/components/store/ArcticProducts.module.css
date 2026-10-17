@@ -64,8 +64,9 @@
   inset-block-start: 10px;
   inset-inline: 10px;
   display: flex;
-  align-items: start;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
   pointer-events: none;
   z-index: 1;
 }

@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { FrosticHeader } from "@/components/preview/frostic/FrosticHeader";
 import { ProductLikeButton } from "@/components/store/ProductLikeButton";
+import { CompareProductButton } from "@/components/store/compare/CompareProductButton";
 import { StoreFooter } from "@/components/store/StoreFooter";
 import { Button } from "@/components/ui/Button";
 import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
@@ -465,11 +466,7 @@ export function ProductDetails({
       data-product-source={realProduct ? "database" : "mock"}
     >
       {!isStorefront && (
-        <FrosticHeader
-          theme="light"
-          cartCount={0}
-          activeHref="/products"
-        />
+        <FrosticHeader theme="light" cartCount={0} activeHref="/products" />
       )}
       <main className={styles.content}>
         <nav className={styles.breadcrumb} aria-label="مسیر صفحه">
@@ -500,6 +497,13 @@ export function ProductDetails({
           <div className={styles.galleryPanel}>
             <div className={styles.galleryTools}>
               <ProductLikeButton id={product.id} title={product.title} />
+              {isStorefront && (
+                <CompareProductButton
+                  id={product.id}
+                  title={product.title}
+                  iconOnly
+                />
+              )}
               <button onClick={share} aria-label="اشتراک‌گذاری محصول">
                 <Share2 size={21} />
               </button>
