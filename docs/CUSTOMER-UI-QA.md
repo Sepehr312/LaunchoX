@@ -57,3 +57,15 @@ The account regression script accepts external tool paths as arguments, keeping 
 ```sh
 node tests/customer-account-browser.mjs /path/to/node_modules/playwright /path/to/chrome
 ```
+
+## Customer account navigation
+
+The account navigation now occupies the right column on desktop (1024px and wider), can collapse to a 64px control, and returns to the expanded 240px column without changing the active page. On narrower screens, the page starts with a `منوی حساب` button instead of the full card above the content. It opens a native modal drawer on the right using the same server-rendered greeting, navigation, and logout action.
+
+The drawer closes through its close button, Escape, backdrop click, a navigation link, or resizing to desktop. Background scrolling is restored on close/unmount, keyboard focus cycles within the drawer, and the trigger regains focus. No new persistence, service, dependency, authentication behavior, or admin change was introduced.
+
+`tests/customer-navigation-browser.mjs` verifies desktop placement/collapse, active links, modal focus, all close paths, resizing, logout, design breakpoint widths, and real touch emulation at 360×800 plus access to actions at 360×480. Screenshots were visually reviewed. Evidence: [navigation results](customer-review/navigation/results.json), [desktop expanded](customer-review/navigation/desktop-expanded.png), [desktop collapsed](customer-review/navigation/desktop-collapsed.png), [mobile open](customer-review/navigation/mobile-touch-open.png), [mobile closed](customer-review/navigation/mobile-closed.png).
+
+```sh
+node tests/customer-navigation-browser.mjs /path/to/node_modules/playwright /path/to/chrome
+```

@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Customer account navigation uses an expanded right sidebar from 1024px, collapsible to a small control; smaller viewports use a right-side modal drawer. Desktop expansion lasts within the account layout, and mobile navigation closes the drawer after a link, Escape, backdrop click, or transition to desktop.
+
 - Customer account forms preserve drafts when an action fails and reset additions/passwords only after success. Saved address DTO changes refresh the editor, the account greeting reads the current profile, and the login-only email preference updates immediately in sessionStorage without being changed by registration.
 
 

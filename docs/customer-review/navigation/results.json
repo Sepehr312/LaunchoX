@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "desktop sidebar is on the right",
+    "desktop collapse expands content and reopens",
+    "desktop links retain active states and account content",
+    "mobile drawer opens from the right with no horizontal overflow",
+    "dialog focus stays inside and Escape restores the trigger",
+    "mobile links close the drawer and navigate",
+    "backdrop closes the mobile drawer",
+    "resizing to desktop closes the modal and restores scrolling",
+    "account layouts fit all design breakpoints",
+    "touch interaction works on a 360px mobile device",
+    "logout is accessible from the mobile menu"
+  ]
+}
