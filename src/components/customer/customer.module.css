@@ -1,4 +1,5 @@
 .scope {
+  overflow-wrap: anywhere;
   min-width: 0;
   color: var(--foreground);
 }

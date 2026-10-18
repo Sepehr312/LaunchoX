@@ -15,7 +15,7 @@ Branch: `ui/customer`. Scope: corrective maintenance of customer UI, not a new S
 
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
-- `npm run test`: 34 files, 419 tests passed.
+- `npm run test`: 34 files, 420 tests passed.
 - `npm run build`: passed using the standard Turbopack build.
 - Real Chrome browser regression: `tests/customer-fixes-browser.mjs`, with an isolated randomly named local MongoDB database and a production server on port 3024. The script removes its temporary database and stops its server after each run.
 - Viewport: 360 × 800. Product listing, login, profile, addresses, order list, all five order detail states, cart, and checkout have document width equal to viewport width. Screenshots were also visually reviewed.
@@ -39,3 +39,21 @@ MongoDB must be running locally on port 27017. Browser fixtures never use the ap
 ## Git
 
 Repository-local author: `dinakhapple-arch <dinakh.apple@gmail.com>`, supplied by the user. This change uses a descriptive fix commit rather than another `step 12` label. Previously merged commits are not rewritten.
+
+## Account audit fixes
+
+The follow-up customer-only audit findings are fixed without changes to admin, authentication actions, proxy, models, services, dependencies, or global styles.
+
+- `AccountForm` cancels implicit form resets and permits explicit resets only after successful additions and password changes. Both uncontrolled profile drafts and controlled address drafts survive server-side rejection. Successful password changes still clear all password fields.
+- Address editor fields remount when the saved address DTO changes. Reopening and saving again preserves the latest saved address instead of restoring old data.
+- The account layout loads the current profile for its greeting rather than the original session name.
+- Customer-scoped text wrapping contains long unbroken addresses at 360px. The existing copy-order control now has a 44px touch target.
+- The login email preference updates immediately when checked/unchecked or when its selected email changes; it uses normalized validated email values. Unchecking keeps the current visible input but removes storage immediately. Registration does not mutate this preference. Closing the tab clears it.
+
+Additional real-browser coverage: `tests/customer-account-browser.mjs` runs eleven regression groups using mobile/touch emulation, isolated temporary customers, and the production build. It exercises duplicate-mobile rejection, successful profile updates, repeated address saves, successful address resets, a simulated concurrent address-capacity rejection, long addresses, copy sizing, failed and successful password changes, and email preference lifecycle. Long-content layouts pass at 360, 768, 1024, and 1440px. Results and screenshots: [account fixes](customer-review/account-fixes/results.json).
+
+The account regression script accepts external tool paths as arguments, keeping application environment access in `src/lib/env.ts`:
+
+```sh
+node tests/customer-account-browser.mjs /path/to/node_modules/playwright /path/to/chrome
+```

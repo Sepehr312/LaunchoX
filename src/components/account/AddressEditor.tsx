@@ -26,7 +26,7 @@ export function AddressEditor({ address }: { address: AddressDTO }) {
         </summary>
         <div className="mt-5">
           <AccountForm operation="edit" id={address.id} onSuccess={onSuccess}>
-            <AddressFields address={address} />
+            <AddressFields key={JSON.stringify(address)} address={address} />
           </AccountForm>
         </div>
       </details>

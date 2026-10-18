@@ -1,3 +1,4 @@
+import { getProfile } from "@/services/user.service";
 import { requireUser, logoutAction } from "@/actions/auth.actions";
 import { CustomerNavigation } from "@/components/customer/CustomerNavigation";
 import { Button } from "@/components/ui/Button";
@@ -8,7 +9,8 @@ export default async function AccountLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireUser();
+  const session = await requireUser();
+  const user = await getProfile(session.id);
   return (
     <main className={`store-shell ${styles.scope} ${styles.shell}`}>
       <aside className={styles.sidebar}>

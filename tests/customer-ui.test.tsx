@@ -9,6 +9,7 @@ import { CustomerEmpty } from "@/components/customer/CustomerEmpty";
 import { CartForm } from "@/components/store/CartForm";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import type { AddressDTO, OrderDTO } from "@/types/dto";
+vi.mock("next/navigation", () => ({ usePathname: () => "/account" }));
 vi.mock("@/actions/auth.actions", () => ({
   loginAction: vi.fn(),
   registerAction: vi.fn(),
@@ -133,7 +134,7 @@ vi.mock("@/lib/env", () => ({
 vi.mock("@/actions/account.actions", () => ({ accountAction: vi.fn() }));
 vi.mock("@/services/user.service", () => ({
   getProfile: async () => ({
-    name: "مشتری نمونه",
+    name: "نام تازهٔ مشتری",
     email: "customer@example.com",
     mobile: "09123456789",
   }),
@@ -194,6 +195,15 @@ vi.mock("@/services/order.service", () => ({
   }),
 }));
 describe("customer page composition", () => {
+  it("greets customers using their current profile rather than the original session name", async () => {
+    const { default: AccountLayout } =
+      await import("@/app/(shop)/account/layout");
+    const html = renderToStaticMarkup(
+      await AccountLayout({ children: <p>محتوای حساب</p> }),
+    );
+    expect(html).toContain("نام تازهٔ مشتری، خوش آمدید");
+    expect(html).not.toContain("مشتری نمونه، خوش آمدید");
+  });
   it("renders profile, address management and order details with their existing actions", async () => {
     const { default: Profile } = await import("@/app/(shop)/account/page");
     const profile = renderToStaticMarkup(await Profile());

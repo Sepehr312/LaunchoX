@@ -31,9 +31,13 @@ export function AccountForm({
     confirmation: "",
   });
   const formRef = useRef<HTMLFormElement>(null);
+  const allowReset = useRef(false);
   useEffect(() => {
-    if (state?.ok && (operation === "password" || operation === "add"))
+    if (state?.ok && (operation === "password" || operation === "add")) {
+      allowReset.current = true;
       formRef.current?.reset();
+      allowReset.current = false;
+    }
     if (state?.ok) onSuccess?.();
   }, [state, operation, onSuccess]);
   const errors = Object.keys(clientErrors).length
@@ -62,7 +66,14 @@ export function AccountForm({
                 target.value,
             }));
         }}
-        onReset={() => setPasswords({ password: "", confirmation: "" })}
+        onResetCapture={(event) => {
+          // React also resets forms for structured action failures; preserve drafts until explicit success.
+          if (!allowReset.current) event.preventDefault();
+        }}
+        onReset={(event) => {
+          if (!event.defaultPrevented)
+            setPasswords({ password: "", confirmation: "" });
+        }}
         onSubmit={(event) => {
           if (
             confirm &&

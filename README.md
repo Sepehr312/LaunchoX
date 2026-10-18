@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Customer account forms preserve drafts when an action fails and reset additions/passwords only after success. Saved address DTO changes refresh the editor, the account greeting reads the current profile, and the login-only email preference updates immediately in sessionStorage without being changed by registration.
+
 
 - Shared password visibility controls retain input focus during pointer activation, use a minimum 44px touch target and 16px input text, and sit outside field labels to keep mobile taps and keyboard activation consistent across login, registration and password changes.
 

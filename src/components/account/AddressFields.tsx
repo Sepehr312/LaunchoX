@@ -54,7 +54,9 @@ export function AddressFields({
   useEffect(() => {
     const form = container.current?.closest("form");
     // Controlled province and city fields must also reset after a successful addition.
-    const reset = () => setValues(initialValues(address));
+    const reset = (event: Event) => {
+      if (!event.defaultPrevented) setValues(initialValues(address));
+    };
     form?.addEventListener("reset", reset);
     return () => form?.removeEventListener("reset", reset);
   }, [address]);
