@@ -1,27 +1,41 @@
 # Customer UI verification
 
-Branch: `ui/customer`.
+Branch: `ui/customer`. Scope: corrective maintenance of customer UI, not a new SPEC implementation step. This report supersedes the earlier incomplete browser verification report.
 
-The existing application flow is retained. Customer presentation is light-only and uses the existing light CSS palette. Shared root layout, global CSS, UI primitives, types, actions, services, and models are unchanged. This intentionally overrides the SPEC dark-mode suggestion for customer pages, following the user's instructions.
+## Changes
 
-## Verified
+- Customer error boundaries directly export the existing shared `ErrorState`; its retry refreshes server components and resets the boundary. The duplicate `CustomerError` was removed.
+- Customer CSS no longer copies the global palette or overrides the body background. It uses the shared light tokens and background in `globals.css`, following `DESIGN-SYSTEM.md` and `UI-DIRECTION.md`.
+- Order lists and details share delivery messaging: unpaid payments have no estimate; paid active orders have the existing approximate week estimate; delivered and cancelled orders show their terminal state.
+- The login checkbox explicitly says that only the email is retained until the tab closes. Authentication lifetime is unchanged.
+- Obsolete README decisions about theme switching were removed. The final design is light-only; the historical SPEC dark-mode suggestion is superseded by the design documents.
+- Admin pages, authentication actions, proxy, services, models, and shared global styles are unchanged.
 
-- `npm run lint`: passed without warnings.
+## Verification
+
+- `npm run lint`: passed.
 - `npm run typecheck`: passed.
-- `npm run test`: 26 files, 292 tests passed. MongoDB tests used independently created databases through the local official MongoDB binary.
-- `npm run build -- --webpack`: passed. Default Turbopack build could not open its internal port in the execution environment; the initial network-restricted run also could not fetch Google Fonts.
-- HTTP checks: guest login, registration, empty cart, protected-account redirect, sample-customer login, profile, address list, order list, and empty checkout passed.
-- UI rendering tests: login/registration fields and error state; password privacy; payment/delivery status distinctions; cart quantity boundaries and submitted values; checkout address requirement and five-address capacity; empty-state actions; profile/security/address/order page composition; successful, failed, and pending payment result pages with links to the owned order.
-- Existing browser acceptance scripts were updated for the new field labels, collapsed address forms, password visibility buttons, and cart quantity controls. Their Python syntax checks passed.
+- `npm run test`: 34 files, 419 tests passed.
+- `npm run build`: passed using the standard Turbopack build.
+- Real Chrome browser regression: `tests/customer-fixes-browser.mjs`, with an isolated randomly named local MongoDB database and a production server on port 3024. The script removes its temporary database and stops its server after each run.
+- Viewport: 360 × 800. Product listing, login, profile, addresses, order list, all five order detail states, cart, and checkout have document width equal to viewport width. Screenshots were also visually reviewed.
+- With OS appearance set to dark, customer pages still use the same light scheme and body background as the storefront.
+- Retry: a deliberately broken order fixture triggers the real error boundary. After repairing the fixture in MongoDB, clicking the shared retry button sends an RSC request and displays a newly changed recipient name without navigating away.
+- Ownership: requesting another customer's order returns HTTP 404, satisfying the existing step 10 acceptance condition.
+- The email checkbox stores only the email in sessionStorage. No password is persisted.
 
-- Additional cues: order progression and cancellation rendering, live password confirmation and byte-limit guidance passed automated tests. Clipboard, successful-address-collapse, and transient cart-feedback behavior still require a stable interactive browser walkthrough.
+Screenshots and machine-readable results are in [customer-review](customer-review/results.json). Examples: [login](customer-review/login-360.png), [orders](customer-review/orders-360.png), [error](customer-review/retry-error-360.png), [recovered order](customer-review/retry-recovered-360.png).
 
-## Manual verification remaining
+Run the browser check with an external Playwright installation and an installed Chrome binary, without adding project dependencies:
 
-Native browser automation was unstable: window focus changed during actions, its connection closed, and screenshot content did not consistently match accessibility state. Some account/address content was inspected, but a complete interactive acceptance run and visual checks at 360 pixels were not completed. The updated browser acceptance scripts have not been executed. Do not treat automated rendering checks as a completed browser walkthrough.
+```sh
+LAUNCHO_PLAYWRIGHT_PATH=/path/to/node_modules/playwright \
+LAUNCHO_CHROME_PATH=/path/to/chrome \
+node tests/customer-fixes-browser.mjs
+```
 
-## Deliberate limitations
+MongoDB must be running locally on port 27017. Browser fixtures never use the application database. This focused run does not claim to execute all historical Windows-specific browser scripts, or to cover admin UI, real payment, OTP, or every customer form mutation.
 
-- The remember option retains only the email for the browser session; authentication-session duration is unchanged.
-- Active orders display the owner-requested approximate delivery estimate of one week in both the list and details. This is a presentation estimate, not a live shipment date.
-- Payments continue to use the existing fake provider. No real gateway or OTP was added.
+## Git
+
+Repository-local author: `dinakhapple-arch <dinakh.apple@gmail.com>`, supplied by the user. This change uses a descriptive fix commit rather than another `step 12` label. Previously merged commits are not rewritten.

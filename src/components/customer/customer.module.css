@@ -1,30 +1,6 @@
-/* Keep the existing light palette local to customer routes, including in dark OS mode. */
-:global(html):has(.scope) {
-  color-scheme: light;
-  --background: #eef7fb;
-  --foreground: #071f3d;
-  --primary: #087ec1;
-  --primary-foreground: #ffffff;
-  --surface: #fafdff;
-  --surface-raised: rgba(255, 255, 255, 0.86);
-  --glass: rgba(245, 252, 255, 0.72);
-  --muted: #58718a;
-  --border: #c4dcea;
-  --border-strong: #98c8e3;
-  --danger: #d72f47;
-  --success: #087b68;
-  --navy: #062345;
-  --ice: #dff6ff;
-  --cyan: #45c5ef;
-  --shadow: 0 16px 48px rgba(11, 70, 111, 0.07);
-}
-:global(body):has(.scope) {
-  background: var(--background);
-}
 .scope {
   min-width: 0;
   color: var(--foreground);
-  color-scheme: light;
 }
 .scope input,
 .scope select,
@@ -34,11 +10,6 @@
 }
 .scope label {
   font-size: 0.875rem;
-}
-.scope :global(.checkout-panel) {
-  background: var(--surface);
-  border-radius: 1.5rem;
-  box-shadow: var(--shadow);
 }
 .scope h2,
 .scope h3 {
@@ -65,7 +36,6 @@
   display: grid;
   place-items: center;
   padding: 1.5rem 1rem;
-  background: radial-gradient(ellipse at top, var(--ice), transparent 65%);
 }
 .authCard {
   width: 100%;

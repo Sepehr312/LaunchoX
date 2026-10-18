@@ -1,0 +1,116 @@
+{
+  "viewport": "360x800",
+  "results": [
+    {
+      "path": "/products",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/login",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account/addresses",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account/orders",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/cart",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/checkout",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account/orders/6ad4eeed237ada69125caf33",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account/orders/6ad4eeed237ada69125caf34",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account/orders/6ad4eeed237ada69125caf35",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account/orders/6ad4eeed237ada69125caf36",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    },
+    {
+      "path": "/account/orders/6ad4eeed237ada69125caf37",
+      "width": 360,
+      "scroll": 360,
+      "scheme": "light",
+      "background": "linear-gradient(rgb(234, 245, 255), rgb(242, 248, 255) 260px, rgb(255, 255, 255) 900px)"
+    }
+  ],
+  "retry": {
+    "refreshRequests": 8,
+    "recoveredWithoutNavigation": true
+  },
+  "ownership": "other customer order returns 404",
+  "deliveryStates": [
+    [
+      "pending",
+      "unpaid"
+    ],
+    [
+      "processing",
+      "paid"
+    ],
+    [
+      "shipped",
+      "paid"
+    ],
+    [
+      "delivered",
+      "paid"
+    ],
+    [
+      "cancelled",
+      "failed"
+    ]
+  ]
+}

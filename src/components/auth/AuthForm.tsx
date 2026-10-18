@@ -200,8 +200,7 @@ export function AuthForm({
               className="size-4 min-h-0! accent-primary"
               disabled={pending}
             />
-            مرا به خاطر بسپار{" "}
-            <span className="text-xs text-muted">(ایمیل در این نشست)</span>
+            ایمیل را تا بسته‌شدن این تب نگه دار
           </label>
         )}
         {(!state.ok || initialError) && (

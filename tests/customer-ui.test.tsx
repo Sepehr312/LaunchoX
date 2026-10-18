@@ -1,3 +1,4 @@
+import { OrderDelivery } from "@/components/customer/OrderDelivery";
 import { OrderProgress } from "@/components/customer/OrderProgress";
 import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { describe, expect, it, vi } from "vitest";
@@ -44,7 +45,7 @@ describe("customer forms and purchase states", () => {
     expect(login).toContain('type="password"');
     expect(login).toContain('autoComplete="current-password"');
     expect(login).toContain('name="callbackUrl"');
-    expect(login).toContain("مرا به خاطر بسپار");
+    expect(login).toContain("ایمیل را تا بسته‌شدن این تب نگه دار");
     expect(login).not.toContain('name="confirmPassword"');
     const register = renderToStaticMarkup(
       <AuthForm mode="register" callbackUrl="/checkout" />,
@@ -209,8 +210,8 @@ describe("customer page composition", () => {
     const list = renderToStaticMarkup(
       await Orders({ searchParams: Promise.resolve({}) }),
     );
-    expect(list).toContain("زمان تقریبی تحویل");
-    expect(list).toContain("حدود ۱ هفته");
+    expect(list).toContain("زمان تحویل پس از پرداخت موفق مشخص می‌شود");
+    expect(list).not.toContain("حدود ۱ هفته");
     const { default: Details } =
       await import("@/app/(shop)/account/orders/[id]/page");
     const details = renderToStaticMarkup(
@@ -273,5 +274,47 @@ describe("customer interaction cues", () => {
       <PasswordGuidance password="" confirmation="" />,
     );
     expect(empty).not.toContain("text-success");
+  });
+});
+
+describe("order delivery messages", () => {
+  it.each(["unpaid", "failed", "refunded"] as const)(
+    "does not estimate delivery for %s payments",
+    (paymentStatus) => {
+      const html = renderToStaticMarkup(
+        <OrderDelivery status="pending" paymentStatus={paymentStatus} />,
+      );
+      expect(html).toContain("پس از پرداخت موفق");
+      expect(html).not.toContain("هفته");
+    },
+  );
+  it.each(["pending", "processing", "shipped"] as const)(
+    "estimates delivery for paid %s orders",
+    (status) => {
+      expect(
+        renderToStaticMarkup(
+          <OrderDelivery status={status} paymentStatus="paid" />,
+        ),
+      ).toContain("حدود ۱ هفته");
+    },
+  );
+  it("shows terminal states without an estimate", () => {
+    expect(
+      renderToStaticMarkup(
+        <OrderDelivery status="delivered" paymentStatus="paid" />,
+      ),
+    ).toContain("تحویل داده شده");
+    for (const paymentStatus of [
+      "paid",
+      "unpaid",
+      "failed",
+      "refunded",
+    ] as const) {
+      const html = renderToStaticMarkup(
+        <OrderDelivery status="cancelled" paymentStatus={paymentStatus} />,
+      );
+      expect(html).toContain("لغو شده");
+      expect(html).not.toContain("هفته");
+    }
   });
 });
