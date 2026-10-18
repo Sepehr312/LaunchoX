@@ -183,7 +183,6 @@ npm run seed -- --reset
 
 
  
-- Customer pages retain the shared header day/night toggle; the existing header theme changes independently while customer content remains light.
 
 - Login and registration default to `/account` for customers; administrators reaching this default destination are redirected by the proxy to `/admin` before the customer page renders. Authenticated administrators visiting `/login` or `/register` also go to `/admin`; explicitly requested safe destinations such as checkout and admin subpages remain intact.
 
@@ -191,7 +190,7 @@ npm run seed -- --reset
 
 - Customer content uses a centered 1184px maximum width, 16px mobile gutters and 32px tablet/desktop gutters; profile forms are capped at 640px. Password changes expand beneath personal information. Saved addresses and the new-address form use adjacent RTL desktop columns and stack on mobile.
 
-- Customer routes use a scoped light-only presentation with the existing CSS light palette; shared theme, UI primitives, types, services, and actions remain unchanged. The remember option retains only the email for the browser session. Active orders display the owner-requested approximate delivery estimate of one week; pending statuses use yellow only as requested.
+- Customer routes reuse the shared light palette and page background from `globals.css`. The login checkbox stores only the email in sessionStorage until the tab closes. Delivery estimates appear only for paid orders that have not been delivered or cancelled; pending badges retain their existing yellow treatment.
 
 - The shared header omits desktop and mobile theme toggles. All routes use the light ice-to-white background from globals.css, limited to the first 900px without repetition; the catalog wrapper stays transparent while cards and decorative artwork are preserved.
 
@@ -204,7 +203,7 @@ npm run seed -- --reset
 - Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The eight homepage types share one definition; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
 
 
-- The approved Arctic footer is shared by the storefront and `/test`; informational destinations use accessible local dialogs, separate mobile/desktop day/night landscapes follow the shared header theme, and the storefront buying guide links to the homepage section.
+- The approved Arctic footer is shared by the storefront and `/test`; informational destinations use accessible local dialogs, the storefront buying guide links to the homepage section.
 
 - Brand, price, capacity, and energy filters use independent native disclosures, initially collapsed in desktop and mobile panels; collapsing a section preserves its selected filters and supports keyboard controls. Product status switches always remain visible.
 
@@ -218,7 +217,6 @@ npm run seed -- --reset
 
 - The `/products` showroom uses real server-paginated data with URL filters for category, price, stock, brands, capacity in liters, energy, and discounts. Brand and energy options come from active product attributes; capacity accepts Persian, Arabic, and ASCII digits. Discount order uses the percentage derived from price and compareAtPrice.
 
-- The header theme preference applies to the document root on every route, including page backgrounds, text, forms, and footer. An early script restores it before paint; system appearance remains the default until a manual choice is saved.
 
 - Storefront product grids reuse the approved Arctic preview card layout with real product attributes, links, stock, discounts, and cart actions; the homepage glass panel shows four active products ordered by soldCount. Product likes are stored in this browser, shared across cards and tabs, without an account favorites page or backend.
 
@@ -226,9 +224,7 @@ npm run seed -- --reset
 
 - Preview category rows size cards to show a whole number of items at rest and snap to complete cards after scrolling; glass edge buttons advance by one visible group. Touch, trackpad, and mouse wheel remain supported, and vertical wheel input scrolls the page again at the row boundaries.
 
-- The homepage reuses the approved three-slide Frostic preview with mobile playback and swipe; its theme follows the shared header toggle, and its buying-guide link targets the existing homepage FAQ.
 
-- All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle controls the header and homepage hero.
 
 - Catalog seed data includes 11 sample brands and links all 24 sample products through `Product.brand` while preserving legacy brand attributes. Repeated seeding preserves existing brand identities and settings; `seed -- --reset` also deletes and recreates brands.
 
@@ -237,7 +233,6 @@ npm run seed -- --reset
 - Brand administration follows category full-form edits: omitted optional text fields are cleared, omitted slugs are generated from the name, and the management list includes inactive brands sorted by order and name. Linked products prevent deletion, while deactivation remains available without changing product visibility.
 
 
-- All storefront routes reuse the approved `/test` glass header with live cart and authentication props; its appearance toggle remains scoped to the header.
 
 
 - راهنمای مشترک طراحی صفحات فروشگاه یخچال خانگی در [docs/UI-GUIDE.md](docs/UI-GUIDE.md) ثبت شده است؛ پس‌زمینه‌های روز/شب تأییدشده و عکس منتخب یخچال در `docs/assets/` نگه‌داری می‌شوند. ذخیرهٔ این مراجع به معنی پیاده‌سازی در سایت نیست.
@@ -246,7 +241,7 @@ npm run seed -- --reset
 
 - حداقل Node در SPEC و `package.json` برابر 20.19 باقی مانده است؛ برای سازگاری با Vitest فعلی، راه‌اندازی با Node.js 24 توصیه می‌شود.
 - کاتالوگ seed با حفظ نامک‌ها و قرارداد پنج دسته/۲۴ محصول به فروشگاه سرمایشی تبدیل شده است. تصاویر محلی و Hero روشن/تیره در `public/images` نگه‌داری می‌شوند؛ Hero دادهٔ نمایشی داخل کامپوننت است و مدل مدیریتی مستقل ندارد.
-- تم از ترجیح سیستم پیروی می‌کند. نمایش قیمت و عدد و تاریخ با ابزارهای فارسی و تاریخ شمسی در `src/lib/format.ts` انجام می‌شود؛ مرز روز و ماه گزارش‌ها بر اساس `Asia/Tehran` است.
+- نمایش قیمت و عدد و تاریخ با ابزارهای فارسی و تاریخ شمسی در `src/lib/format.ts` انجام می‌شود؛ مرز روز و ماه گزارش‌ها بر اساس `Asia/Tehran` است.
 - فایل مدل‌ها برای رعایت AGENTS.md با حروف کوچک نام‌گذاری شده‌اند، برخلاف نمونهٔ نام‌گذاری SPEC. لایه‌های سرور با `server-only` محافظت می‌شوند و seed با شرط `react-server` اجرا می‌شود.
 - تنظیمات محیطی هنگام استفاده با `getEnv()` بررسی می‌شوند؛ build به اتصال دیتابیس وابسته نیست. DTOها شناسه و تاریخ رشته‌ای دارند و `passwordHash` و `__v` را حذف می‌کنند.
 - رمزها با bcrypt و cost 12 ذخیره می‌شوند. رمز ثبت‌نام حداکثر ۷۲ بایت است و trim یا نرمال‌سازی نمی‌شود. نقش و مبلغ و مالک سفارش از ورودی فرم پذیرفته نمی‌شوند.

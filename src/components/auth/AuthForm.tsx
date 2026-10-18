@@ -12,16 +12,30 @@ import styles from "@/components/customer/customer.module.css";
 import type { AuthActionState } from "@/types/auth";
 function subscribeToStorage(callback: () => void) {
   window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
+  window.addEventListener("launchox:remember-email", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("launchox:remember-email", callback);
+  };
 }
 function readRememberedEmail() {
   try {
     const email = sessionStorage.getItem("launchox-remember-email");
-    return email && loginSchema.shape.email.safeParse(email).success
-      ? email
-      : "";
+    const parsed = loginSchema.shape.email.safeParse(email);
+    return parsed.success ? parsed.data : "";
   } catch {
     return "";
+  }
+}
+function rememberEmail(value: string) {
+  try {
+    const parsed = loginSchema.shape.email.safeParse(value);
+    if (parsed.success)
+      sessionStorage.setItem("launchox-remember-email", parsed.data);
+    else sessionStorage.removeItem("launchox-remember-email");
+    window.dispatchEvent(new Event("launchox:remember-email"));
+  } catch {
+    // Storage restrictions must not prevent login.
   }
 }
 export function AuthForm({
@@ -116,16 +130,8 @@ export function AuthForm({
               ?.focus();
           } else {
             setClientErrors({});
-            try {
-              if (effectiveRemember)
-                sessionStorage.setItem(
-                  "launchox-remember-email",
-                  values.email ?? rememberedEmail,
-                );
-              else sessionStorage.removeItem("launchox-remember-email");
-            } catch {
-              /* Login remains available when browser storage is blocked. */
-            }
+            if (!register)
+              rememberEmail(effectiveRemember ? parsed.data.email : "");
           }
         }}
       >
@@ -155,6 +161,10 @@ export function AuthForm({
                 ...current,
                 [field.name]: event.target.value,
               }));
+              if (!register && field.name === "email" && effectiveRemember) {
+                setRemember(true);
+                rememberEmail(event.target.value);
+              }
               setClientErrors((current) => ({ ...current, [field.name]: [] }));
             },
           };
@@ -195,13 +205,18 @@ export function AuthForm({
               type="checkbox"
               checked={effectiveRemember}
               onChange={(event) => {
-                setRemember(event.target.checked);
+                const checked = event.target.checked;
+                setValues((current) => ({
+                  ...current,
+                  email: current.email ?? rememberedEmail,
+                }));
+                setRemember(checked);
+                rememberEmail(checked ? (values.email ?? rememberedEmail) : "");
               }}
               className="size-4 min-h-0! accent-primary"
               disabled={pending}
             />
-            مرا به خاطر بسپار{" "}
-            <span className="text-xs text-muted">(ایمیل در این نشست)</span>
+            ایمیل را تا بسته‌شدن این تب نگه دار
           </label>
         )}
         {(!state.ok || initialError) && (
