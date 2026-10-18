@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The owner-requested user role editor is an admin-only exception to the earlier no-role-form-input rule: guarded actions validate only the target ID and the customer/admin role, preserve unrelated fields and block self-role changes. Public registration/profile forms still cannot assign roles. Admin guards recheck current database role/activity so stale JWT roles cannot retain access. Administrators sort first; email text aligns with its RTL column heading. Role fields remount on confirmed role changes while action feedback is retained, keeping the select synchronized after saves and server refreshes.
+
 - Admin order details use the approved two-column concept: products/history in the main column and explicit next-step actions, customer/shipping and payment cards beside it. Mobile shows the action first. Cancellation uses a native confirmation dialog; paid cancellations do not initiate refunds. List filters travel as validated query parameters to preserve the return destination, and history/payment timestamps use Tehran time through the shared formatter.
 
 - Admin orders reuse the approved light admin shell, status totals across all orders, and URL-backed live filters. Search matches literal order references (including Persian digits) or current customer names after a 300ms pause; payment and status changes apply immediately. Date ranges mean the last 7, 30, or 90 rolling days. Filter changes reset pagination and preserve the other selections; no apply/reset buttons are shown.
@@ -248,7 +250,7 @@ npm run seed -- --reset
 - ادغام سبد مهمان بعد از ورود و ثبت‌نام انجام می‌شود. شمارندهٔ هدر مجموع تعداد واحدهای قابل‌خرید است؛ اقلام نامعتبر و کاهش موجودی هنگام خواندن سبد کنترل می‌شوند.
 - سفارش روی MongoDB مستقل نیز کار می‌کند؛ رزرو موجودی اتمیک و شکست‌ها با بازگرداندن موجودی جبران می‌شوند. قفل سبد checkout تکراری را محدود می‌کند و callback تکراری دوباره موجودی یا فروش را تغییر نمی‌دهد. سفارش‌های پرداخت‌نشدهٔ منقضی هنگام ثبت سفارش و فهرست سفارش‌های ادمین بررسی می‌شوند؛ cron مستقل وجود ندارد.
 - مالکیت سفارش در proxy و مجدداً در صفحه و سرویس بررسی می‌شود. انتخاب آدرس پیش‌فرض اتمیک است؛ حذف آدرس پیش‌فرض تا انتخاب مجدد، حساب را بدون آدرس پیش‌فرض می‌گذارد.
-- پنل ادمین نقش کاربران را فقط نمایش می‌دهد و غیرفعال‌سازی حساب خود ادمین را در سرویس رد می‌کند. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
+- پنل ادمین طبق درخواست مالک، نقش کاربران دیگر را بین مشتری و ادمین تغییر می‌دهد؛ تغییر نقش و غیرفعال‌سازی حساب خود ادمین در سرویس رد می‌شود. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
 - پرداخت واقعی و OTP قابلیت فعال فعلی نیستند؛ بخش نقطه‌های توسعه، محل اتصال آیندهٔ آن‌ها را مشخص می‌کند. آپلود تصویر اکنون در فرم‌های محصول، دسته‌بندی و برند از کادر پیش‌نمایش انجام می‌شود.
 - The `/brands` directory reuses the shop shell and Brand source, exposes only public fields, and counts active products by `Product.brand`. Card links open `/brands/[slug]`, resolved to the current active Brand ID; legacy name filters remain compatible. Search uses the existing name and slug (the model has no separate English name). Inactive brands cannot receive new product assignments, but existing assignments can be retained on edits. No migration is performed; products with only legacy attributes need the existing reviewed linking workflow before appearing in brand counts.
 

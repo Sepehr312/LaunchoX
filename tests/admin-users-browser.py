@@ -19,7 +19,7 @@ with sync_playwright() as p:
     expect(page.locator('tbody tr')).to_have_count(3)
     self_row = page.locator('tbody tr').filter(has=page.get_by_text('admin@example.com',exact=True))
     expect(self_row.get_by_role('switch')).to_be_disabled()
-    expect(self_row.get_by_text('ادمین',exact=True)).to_be_visible()
+    expect(self_row.get_by_role('combobox')).to_have_value('admin')
     expect(page.get_by_role('navigation',name='ناوبری مدیریت').get_by_role('link',name='کاربران',exact=True)).to_have_attribute('aria-current','page')
     for width in [360,768,1440]:
         page.set_viewport_size({'width':width,'height':900})
@@ -28,7 +28,7 @@ with sync_playwright() as p:
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(width,theme)
             assert page.locator('html').get_attribute('dir')=='rtl'
     row = page.locator('tbody tr').filter(has_text='customer@example.com')
-    expect(row.get_by_text('مشتری',exact=True)).to_be_visible()
+    expect(row.get_by_role('combobox')).to_have_value('customer')
     row.get_by_role('switch').click(); expect(row.get_by_text('غیرفعال',exact=True)).to_be_visible()
     page.reload(); row = page.locator('tbody tr').filter(has_text='customer@example.com')
     expect(row.get_by_text('غیرفعال',exact=True)).to_be_visible()

@@ -5,7 +5,7 @@ import { headers, cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { getAuthConfig } from "@/lib/auth.config";
 import { consumeAuthAttempt, getClientIp } from "@/lib/rate-limit";
-import { authenticateUser } from "@/services/auth.service";
+import { authenticateUser, getUserAccess } from "@/services/auth.service";
 import { loginSchema, safeCallbackUrl } from "@/validations/auth";
 import { guestIdSchema } from "@/validations/cart";
 import { mergeGuestCart } from "@/services/cart.service";
@@ -60,6 +60,8 @@ export async function requireUser() {
 
 export async function requireAdmin() {
   const user = await requireUser();
-  if (user.role !== "admin") notFound();
-  return user;
+  // JWT roles can predate an administrator's role or activity changes.
+  const access = await getUserAccess(user.id);
+  if (!access?.isActive || access.role !== "admin") notFound();
+  return { ...user, role: access.role };
 }

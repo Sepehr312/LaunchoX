@@ -3,6 +3,15 @@ import { hash, compare } from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { User } from "@/models/user";
+import { objectIdSchema } from "@/validations/common";
+
+export async function getUserAccess(input: unknown) {
+  const id = objectIdSchema.safeParse(input);
+  if (!id.success) return null;
+  await connectDB();
+  const user = await User.findById(id.data).select("role isActive").lean();
+  return user ? { role: user.role, isActive: user.isActive } : null;
+}
 export async function authenticateUser(input: {
   email: string;
   password: string;
