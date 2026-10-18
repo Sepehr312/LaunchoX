@@ -1,9 +1,8 @@
 import { requireAdmin } from "@/actions/auth.actions";
 import { logoutAction } from "@/actions/auth.actions";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
-import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { Snowflake, ArrowUpLeft, ShieldCheck } from "lucide-react";
+import { Snowflake, ArrowUpLeft, ShieldCheck, LogOut } from "lucide-react";
 import styles from "@/components/admin/Admin.module.css";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +28,10 @@ export default async function AdminLayout({
           </Link>
           <AdminNavigation>
             <form action={logoutAction}>
-              <Button type="submit">خروج از حساب</Button>
+              <button type="submit" className="admin-logout">
+                <LogOut size={18} strokeWidth={1.5} aria-hidden="true" />
+                خروج از حساب
+              </button>
             </form>
           </AdminNavigation>
           <div className="admin-sidebar-footer">
@@ -41,7 +43,10 @@ export default async function AdminLayout({
               مشاهده فروشگاه <ArrowUpLeft size={18} aria-hidden="true" />
             </Link>
             <form action={logoutAction}>
-              <Button type="submit">خروج</Button>
+              <button type="submit" className="admin-logout">
+                <LogOut size={18} strokeWidth={1.5} aria-hidden="true" />
+                خروج از حساب
+              </button>
             </form>
           </div>
         </aside>

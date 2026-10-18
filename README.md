@@ -131,6 +131,8 @@ npm run seed -- --reset
 
 - The owner-requested user role editor is an admin-only exception to the earlier no-role-form-input rule: guarded actions validate only the target ID and the customer/admin role, preserve unrelated fields and block self-role changes. Public registration/profile forms still cannot assign roles. Admin guards recheck current database role/activity so stale JWT roles cannot retain access. Administrators sort first; email text aligns with its RTL column heading. Role fields remount on confirmed role changes while action feedback is retained, keeping the select synchronized after saves and server refreshes.
 
+- At the user's request, the admin dashboard shows the three latest orders instead of the ten specified in SPEC section 9. Desktop and mobile admin logout controls use a muted text label and outlined exit icon matching the supplied reference.
+
 - Admin order details use the approved two-column concept: products/history in the main column and explicit next-step actions, customer/shipping and payment cards beside it. Mobile shows the action first. Cancellation uses a native confirmation dialog; paid cancellations do not initiate refunds. List filters travel as validated query parameters to preserve the return destination, and history/payment timestamps use Tehran time through the shared formatter.
 
 - Admin orders reuse the approved light admin shell, status totals across all orders, and URL-backed live filters. Search matches literal order references (including Persian digits) or current customer names after a 300ms pause; payment and status changes apply immediately. Date ranges mean the last 7, 30, or 90 rolling days. Filter changes reset pagination and preserve the other selections; no apply/reset buttons are shown.

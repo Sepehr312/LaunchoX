@@ -47,7 +47,7 @@ export async function getDashboardStats() {
         "orderNumber shippingAddress.recipientName createdAt total status payment.status",
       )
       .sort({ createdAt: -1, _id: -1 })
-      .limit(10)
+      .limit(3)
       .lean(),
     Product.find({ stock: { $lt: 5 } })
       .select("title stock isActive images")

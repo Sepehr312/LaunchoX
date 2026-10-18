@@ -27,7 +27,7 @@ it("returns empty orders and zero revenue without mutating inventory", async () 
   ).toBe(5);
 });
 
-it("limits newest orders to ten, sums paidAt revenue and includes inactive zero stock", async () => {
+it("limits newest orders to three, sums paidAt revenue and includes inactive zero stock", async () => {
   const order = await createOrderFromCart(fixture.user, checkoutInput());
   const source = await Order.findById(order.id).lean().orFail();
   const { today, month } = getDashboardPeriod();
@@ -66,8 +66,11 @@ it("limits newest orders to ten, sums paidAt revenue and includes inactive zero 
   expect(data.monthlyRevenue).toBe(order.total);
   expect(data.todayOrders).toBe(11);
   expect(data.pendingOrders).toBe(12);
-  expect(data.latestOrders).toHaveLength(10);
-  expect(data.latestOrders[0].orderNumber).toBe("LX-200010");
+  expect(data.latestOrders.map((order) => order.orderNumber)).toEqual([
+    "LX-200010",
+    "LX-200009",
+    "LX-200008",
+  ]);
   expect(data.lowStockCount).toBe(2);
   expect(data.lowStockProducts[0]).toMatchObject({
     id: fixture.second,

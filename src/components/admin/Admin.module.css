@@ -232,7 +232,7 @@
   color: var(--muted);
   font-size: 12px;
 }
-.scope button,
+.scope button:not(:global(.admin-logout)),
 .scope :global(.admin-primary) {
   min-height: 44px;
   border-radius: 12px;
@@ -247,11 +247,29 @@
   font-size: 14px;
   transition: background 160ms;
 }
-.scope button {
+.scope button:not(:global(.admin-logout)) {
   color: var(--foreground);
   background: var(--surface);
 }
 .scope button:hover {
+  background: var(--ice);
+}
+.scope :global(.admin-logout) {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.scope :global(.admin-logout:hover) {
   background: var(--ice);
 }
 .scope :global(.admin-primary) {

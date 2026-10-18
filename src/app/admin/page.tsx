@@ -94,7 +94,7 @@ export default async function AdminPage() {
             <div>
               <h2 id="latest-orders">
                 <ListOrdered size={20} aria-hidden="true" />
-                {toPersianDigits(10)} سفارش آخر
+                {toPersianDigits(3)} سفارش آخر
               </h2>
               <p className="admin-hint">
                 جدیدترین سفارش‌های ثبت‌شده، از همه وضعیت‌ها
