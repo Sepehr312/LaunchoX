@@ -69,3 +69,9 @@ The drawer closes through its close button, Escape, backdrop click, a navigation
 ```sh
 node tests/customer-navigation-browser.mjs /path/to/node_modules/playwright /path/to/chrome
 ```
+
+## Checkout image sizing
+
+The customer checkout summary now declares the same 56×80 dimensions used by its existing `w-14 h-20 object-contain` styling. The visible layout is preserved. An isolated development-browser check at 360px and 1440px confirmed the rendered dimensions, no horizontal overflow, and no Next.js image-size warning. Lint, typecheck, all 420 tests, and the production build pass.
+
+The separate Next.js smooth-scroll notice concerns the shared document root and remains outside the customer-only change scope; root layout and global styles are unchanged.

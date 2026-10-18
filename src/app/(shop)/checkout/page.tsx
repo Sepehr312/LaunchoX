@@ -59,7 +59,7 @@ export default async function CheckoutPage() {
                   <Image
                     src={item.product.images[0]}
                     alt={item.product.title}
-                    width={64}
+                    width={56}
                     height={80}
                     className="h-20 w-14 shrink-0 object-contain"
                   />
