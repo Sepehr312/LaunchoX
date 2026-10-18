@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const adminCatalogViewSchema = z.enum(["table", "cards"]);
+
 export const adminListQuerySchema = z.object({
   q: z
     .string({ error: "عبارت جستجو معتبر نیست" })

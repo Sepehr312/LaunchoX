@@ -1,0 +1,35 @@
+.view {
+  min-width: 0;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block: 16px;
+  font-size: 14px;
+}
+.toggle {
+  display: flex;
+  gap: 4px;
+}
+.view .toggleButton {
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+.view .active,
+.view .active:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+.view :global(.admin-table-scroll) {
+  margin-block-start: 0;
+}

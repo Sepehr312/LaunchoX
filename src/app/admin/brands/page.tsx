@@ -6,6 +6,8 @@ import { AdminListHeader } from "@/components/admin/AdminListHeader";
 import { AdminListSearch } from "@/components/admin/AdminListSearch";
 import { AdminTableScroll } from "@/components/admin/AdminTableScroll";
 import { BrandRowActions } from "@/components/admin/BrandRowActions";
+import { AdminCatalogView } from "@/components/admin/AdminCatalogView";
+import { BrandCards } from "@/components/admin/BrandCards";
 import { listBrands } from "@/services/brand.service";
 import { adminListQuerySchema } from "@/validations/admin-list";
 import { toPersianDigits } from "@/lib/format";
@@ -52,95 +54,98 @@ export default async function Brands({
           placeholder="نام یا نامک برند را جستجو کنید…"
           query={q}
         />
-        <p className="admin-list-count">
-          {toPersianDigits(filtered.length)} برند از{" "}
-          {toPersianDigits(brands.length)} برند
-        </p>
-        {filtered.length ? (
-          <AdminTableScroll label="جدول برندها">
-            <table className="admin-list-table">
-              <caption className="sr-only">برندهای فروشگاه</caption>
-              <thead>
-                <tr>
-                  {["تصویر", "برند", "کشور", "ترتیب", "وضعیت", "عملیات"].map(
-                    (label) => (
-                      <th scope="col" key={label}>
-                        {label}
-                      </th>
-                    ),
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((brand) => (
-                  <tr key={brand.id}>
-                    <td>
-                      {brand.logo ? (
-                        <Image
-                          src={brand.logo}
-                          alt=""
-                          width={60}
-                          height={68}
-                          unoptimized
-                          className="admin-product-thumbnail"
-                        />
-                      ) : (
-                        <span className="admin-list-placeholder">
-                          <Tags size={24} aria-hidden="true" />
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <Link
-                        className="admin-list-title"
-                        href={`/admin/brands/${brand.id}/edit`}
-                      >
-                        {brand.name}
-                      </Link>
-                      <small className="admin-list-secondary">
-                        <bdi>{brand.slug}</bdi>
-                      </small>
-                    </td>
-                    <td>{brand.country || "ثبت نشده"}</td>
-                    <td>{toPersianDigits(brand.order)}</td>
-                    <td>
-                      <span
-                        className={
-                          brand.isActive
-                            ? "admin-badge admin-badge-success"
-                            : "admin-badge"
-                        }
-                      >
-                        {brand.isActive ? "فعال" : "غیرفعال"}
-                      </span>
-                      {brand.isFeatured && (
-                        <span className="admin-badge admin-badge-warning">
-                          ویژه
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <BrandRowActions id={brand.id} name={brand.name} />
-                    </td>
+        <AdminCatalogView
+          entity="brands"
+          count={`${toPersianDigits(filtered.length)} برند از ${toPersianDigits(brands.length)} برند`}
+          hasItems={filtered.length > 0}
+          cards={<BrandCards brands={filtered} />}
+          table={
+            <AdminTableScroll label="جدول برندها">
+              <table className="admin-list-table">
+                <caption className="sr-only">برندهای فروشگاه</caption>
+                <thead>
+                  <tr>
+                    {["تصویر", "برند", "کشور", "ترتیب", "وضعیت", "عملیات"].map(
+                      (label) => (
+                        <th scope="col" key={label}>
+                          {label}
+                        </th>
+                      ),
+                    )}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </AdminTableScroll>
-        ) : (
-          <div className="admin-empty">
-            <Tags size={36} aria-hidden="true" />
-            <h2>
-              {brands.length
-                ? "برندی با این عبارت جستجو پیدا نشد"
-                : "اولین برند فروشگاه را بسازید"}
-            </h2>
-            <p>نام، لوگو و اطلاعات سازنده را اینجا مدیریت کنید.</p>
-            {!brands.length && (
-              <Link href="/admin/brands/new">افزودن برند</Link>
-            )}
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {filtered.map((brand) => (
+                    <tr key={brand.id}>
+                      <td>
+                        {brand.logo ? (
+                          <Image
+                            src={brand.logo}
+                            alt=""
+                            width={60}
+                            height={68}
+                            unoptimized
+                            className="admin-product-thumbnail"
+                          />
+                        ) : (
+                          <span className="admin-list-placeholder">
+                            <Tags size={24} aria-hidden="true" />
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <Link
+                          className="admin-list-title"
+                          href={`/admin/brands/${brand.id}/edit`}
+                        >
+                          {brand.name}
+                        </Link>
+                        <small className="admin-list-secondary">
+                          <bdi>{brand.slug}</bdi>
+                        </small>
+                      </td>
+                      <td>{brand.country || "ثبت نشده"}</td>
+                      <td>{toPersianDigits(brand.order)}</td>
+                      <td>
+                        <span
+                          className={
+                            brand.isActive
+                              ? "admin-badge admin-badge-success"
+                              : "admin-badge"
+                          }
+                        >
+                          {brand.isActive ? "فعال" : "غیرفعال"}
+                        </span>
+                        {brand.isFeatured && (
+                          <span className="admin-badge admin-badge-warning">
+                            ویژه
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <BrandRowActions id={brand.id} name={brand.name} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </AdminTableScroll>
+          }
+          empty={
+            <div className="admin-empty">
+              <Tags size={36} aria-hidden="true" />
+              <h2>
+                {brands.length
+                  ? "برندی با این عبارت جستجو پیدا نشد"
+                  : "اولین برند فروشگاه را بسازید"}
+              </h2>
+              <p>نام، لوگو و اطلاعات سازنده را اینجا مدیریت کنید.</p>
+              {!brands.length && (
+                <Link href="/admin/brands/new">افزودن برند</Link>
+              )}
+            </div>
+          }
+        />
         <footer className="admin-list-footer">
           <p>
             نمایش {toPersianDigits(filtered.length)} از{" "}

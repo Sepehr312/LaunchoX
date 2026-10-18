@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Brand and category lists retain the table by default and add the approved responsive card view with real saved logos/images, existing edit/delete actions and shared live search. A validated browser preference remembers the view separately for each list; blocked storage falls back to an in-memory selection. Card styles use dedicated CSS modules, and missing images display an icon.
+
 - Product, brand and category create/edit forms extend step 11 with the approved form mockup: one white page panel, ice-blue section headers, full-width identity fields, a desktop media/publication column, native checkboxes and a shared save footer. The layout stacks on mobile; existing validation, image uploads and save navigation are reused.
 
 - Brand, category and user lists share the approved product-list header, table spacing and compact row actions. All four lists use a shared live search with a 300 ms typing delay, URL state, preserved input focus and a product-page reset on query changes; there are no submit/reset controls or brand status filter. Category search matches name/slug and user search matches name/email across the existing complete DTO lists. Existing edit/delete guards and self-account protection remain in place. Header create links use an accessible 44 px plus-only button below 640 px and retain their full labels on larger screens.
