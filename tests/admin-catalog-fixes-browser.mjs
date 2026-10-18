@@ -85,6 +85,80 @@ try {
 
   for (const entity of ["categories", "brands", "products"]) {
     await page.goto(`${base}/admin/${entity}/new`);
+    for (const width of [360, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.locator(".admin-editor-main").waitFor({ state: "visible" });
+      await page.locator(".admin-editor-aside").waitFor({ state: "visible" });
+      assert.equal(await page.locator("h1").count(), 1);
+      assert.equal(await page.locator(".admin-editor-aside").count(), 1);
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        `${entity} create form overflows at ${width}px`,
+      );
+      const main = await page.locator(".admin-editor-main").boundingBox();
+      const aside = await page.locator(".admin-editor-media").boundingBox();
+      assert.ok(main && aside, `${entity}: form columns must be visible`);
+      assert.ok(
+        width >= 1200
+          ? Math.abs(main.y - aside.y) < 2
+          : main.y >= aside.y + aside.height,
+      );
+      if (entity === "products" && width < 1200) {
+        const headings = await page
+          .locator(".admin-product-form h2")
+          .allTextContents();
+        assert.deepEqual(headings, [
+          "تصاویر محصول",
+          "اطلاعات اصلی",
+          "قیمت و موجودی",
+          "مشخصات فنی",
+          "انتشار محصول",
+        ]);
+      }
+    }
+    const active = page.locator('input[name="isActive"]');
+    await active.focus();
+    await page.keyboard.press("Space");
+    assert.equal(await active.isChecked(), false);
+    await page.keyboard.press("Space");
+    assert.equal(await active.isChecked(), true);
+    assert.equal(
+      await page.locator('.admin-editor-aside input[name="isActive"]').count(),
+      1,
+    );
+    if (entity === "products") {
+      assert.equal(
+        await page.locator('.admin-editor-media input[name="images"]').count(),
+        1,
+      );
+      await page
+        .getByRole("button", { name: "افزودن تصویر", exact: true })
+        .click();
+      const images = page.locator('input[name="images"]');
+      await images.nth(0).fill("https://example.com/first.jpg");
+      await images.nth(1).fill("https://example.com/second.jpg");
+      await page
+        .getByRole("button", { name: "جابه‌جایی تصویر ۲ به بالا" })
+        .click();
+      assert.equal(
+        await images.nth(0).inputValue(),
+        "https://example.com/second.jpg",
+      );
+      assert.equal(
+        await images.nth(1).inputValue(),
+        "https://example.com/first.jpg",
+      );
+      await page
+        .getByRole("button", { name: "حذف تصویر ۲", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "افزودن مشخصه", exact: true })
+        .click();
+      await page.locator('input[name="attributeKey"]').fill("نوع اتصال");
+      await page.locator('input[name="attributeValue"]').fill("بلوتوث");
+    }
     await page
       .locator(`input[name="${entity === "products" ? "title" : "name"}"]`)
       .fill(`آزمایش ${entity}`);
@@ -97,6 +171,15 @@ try {
       await page
         .locator('select[name="category"]')
         .selectOption(String(category._id));
+      const brand = await db.collection("brands").findOne({});
+      const brandSelect = page.locator('select[name="brand"]');
+      assert.equal(
+        await brandSelect.evaluate(
+          (element) => element.required && element.validity.valueMissing,
+        ),
+        true,
+      );
+      await brandSelect.selectOption(String(brand._id));
     }
     const input = page.locator('input[type="file"]').first();
     assert.equal(await input.count(), 1);
@@ -127,6 +210,32 @@ try {
     const image = await context.request.get(`${base}${imageUrl}`);
     assert.equal(image.status(), 200);
     assert.deepEqual(await image.body(), png);
+    for (const width of [360, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({
+        path: `docs/admin-review/${entity}-form-approved-${width}.png`,
+        fullPage: true,
+      });
+    }
+    if (entity === "products") {
+      const brandSelect = page.locator('select[name="brand"]');
+      const selectedBrand = await brandSelect.inputValue();
+      await brandSelect.selectOption("");
+      await page.locator(".admin-product-form").evaluate((form) => {
+        form.noValidate = true;
+      });
+      await page.locator('.admin-product-form button[type="submit"]').click();
+      await page
+        .getByRole("alert")
+        .filter({ hasText: "انتخاب برند الزامی است" })
+        .waitFor();
+      assert.equal(await db.collection("products").countDocuments(), 0);
+      await brandSelect.selectOption(selectedBrand);
+      await page.locator(".admin-product-form").evaluate((form) => {
+        form.noValidate = false;
+      });
+    }
     await page.locator('.admin-product-form button[type="submit"]').click();
     await page.waitForURL(`${base}/admin/${entity}`);
     await page
@@ -134,6 +243,15 @@ try {
       .first()
       .click();
     await page.waitForURL(/\/edit$/);
+    await page.locator(".admin-editor-page h1").waitFor();
+    await page.setViewportSize({ width: 360, height: 900 });
+    assert.equal(await page.locator("h1").count(), 1);
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `${entity} edit form overflows at 360px`,
+    );
     assert.equal(
       await page
         .locator(
@@ -148,6 +266,17 @@ try {
     console.log(
       `PASS: ${entity} upload, persistent image, create/edit redirects`,
     );
+    if (entity === "products") {
+      const product = await db.collection("products").findOne({});
+      const response = await page.goto(
+        `${base}/products/${encodeURIComponent(product.slug)}`,
+      );
+      assert.equal(response.status(), 200);
+      await page
+        .getByRole("heading", { name: product.title, exact: true })
+        .waitFor();
+      console.log("PASS: admin-created product is visible in the storefront");
+    }
   }
 
   const category = await db.collection("categories").findOne({});

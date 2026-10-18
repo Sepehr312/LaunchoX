@@ -1,3 +1,4 @@
+import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import { getEnv } from "@/lib/env";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
@@ -27,8 +28,12 @@ export default async function EditProduct({
   ]);
   if (!product) notFound();
   return (
-    <section className="admin-panel">
-      <h1>ویرایش محصول</h1>
+    <AdminFormPage
+      title="ویرایش محصول"
+      description="اطلاعات، تصاویر و وضعیت انتشار محصول را مدیریت کنید."
+      listLabel="محصولات"
+      listHref="/admin/products"
+    >
       <ProductForm
         key={product.id}
         product={product}
@@ -40,6 +45,6 @@ export default async function EditProduct({
           isActive,
         }))}
       />
-    </section>
+    </AdminFormPage>
   );
 }

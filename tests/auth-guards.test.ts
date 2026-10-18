@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   redirect: vi.fn(),
   notFound: vi.fn(),
   headers: vi.fn(),
+  access: vi.fn(),
 }));
 vi.mock("next-auth", async () => {
   const { CredentialsSignin } = await import("@auth/core/errors");
@@ -15,11 +16,15 @@ vi.mock("next/navigation", () => ({
   notFound: mocks.notFound,
 }));
 vi.mock("next/headers", () => ({ headers: mocks.headers }));
-vi.mock("@/services/auth.service", () => ({ authenticateUser: vi.fn() }));
+vi.mock("@/services/auth.service", () => ({
+  authenticateUser: vi.fn(),
+  getUserAccess: mocks.access,
+}));
 import { getCurrentUser, requireUser, requireAdmin } from "@/lib/auth";
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.access.mockResolvedValue({ role: "customer", isActive: true });
   mocks.headers.mockResolvedValue(
     new Headers({ "x-launchox-path": "/account?tab=orders" }),
   );
@@ -43,5 +48,22 @@ it("conceals admin pages from customers and accepts admins", async () => {
   await expect(requireAdmin()).rejects.toThrow("not-found");
   expect(mocks.notFound).toHaveBeenCalledOnce();
   mocks.auth.mockResolvedValue({ user: { id: "456", role: "admin" } });
+  mocks.access.mockResolvedValue({ role: "admin", isActive: true });
   expect(await requireAdmin()).toEqual({ id: "456", role: "admin" });
+});
+
+it("uses current database access for promoted, demoted, disabled and deleted users", async () => {
+  mocks.auth.mockResolvedValue({ user: { id: "456", role: "admin" } });
+  for (const access of [
+    { role: "customer", isActive: true },
+    { role: "admin", isActive: false },
+    null,
+  ]) {
+    mocks.access.mockResolvedValue(access);
+    await expect(requireAdmin()).rejects.toThrow("not-found");
+  }
+  mocks.auth.mockResolvedValue({ user: { id: "456", role: "customer" } });
+  mocks.access.mockResolvedValue({ role: "admin", isActive: true });
+  expect(await requireAdmin()).toEqual({ id: "456", role: "admin" });
+  expect(mocks.access).toHaveBeenCalledWith("456");
 });

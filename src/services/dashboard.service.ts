@@ -47,10 +47,10 @@ export async function getDashboardStats() {
         "orderNumber shippingAddress.recipientName createdAt total status payment.status",
       )
       .sort({ createdAt: -1, _id: -1 })
-      .limit(10)
+      .limit(3)
       .lean(),
     Product.find({ stock: { $lt: 5 } })
-      .select("title stock isActive")
+      .select("title stock isActive images")
       .sort({ stock: 1, _id: 1 })
       .lean(),
   ]);
@@ -73,6 +73,7 @@ export async function getDashboardStats() {
       title: product.title,
       stock: product.stock,
       isActive: product.isActive,
+      image: product.images[0],
     })),
   };
 }

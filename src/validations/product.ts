@@ -42,6 +42,14 @@ export const productSchema = z
     },
   );
 
+export const adminProductSchema = productSchema.safeExtend({
+  brand: z
+    .string({ error: "انتخاب برند الزامی است" })
+    .trim()
+    .min(1, "انتخاب برند الزامی است")
+    .pipe(objectIdSchema),
+});
+
 export const productQuerySchema = paginationSchema
   .extend({
     category: optionalField(objectIdSchema),

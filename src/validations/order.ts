@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { orderStatuses } from "@/types/domain";
+import { orderStatuses, paymentStatuses } from "@/types/domain";
+import { normalizeDigits } from "@/lib/format";
 import {
   objectIdSchema,
   optionalField,
@@ -23,6 +24,19 @@ export const orderQuerySchema = paginationSchema.extend({
 export type OrderInput = z.infer<typeof orderSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 export type OrderQueryInput = z.infer<typeof orderQuerySchema>;
+
+export const adminOrderQuerySchema = orderQuerySchema.extend({
+  status: optionalField(orderStatusSchema),
+  q: z
+    .string()
+    .trim()
+    .max(100, "جستجو باید حداکثر ۱۰۰ کاراکتر باشد")
+    .transform(normalizeDigits)
+    .default(""),
+  payment: optionalField(z.enum(paymentStatuses)),
+  period: optionalField(z.enum(["7", "30", "90"])),
+});
+export type AdminOrderQuery = z.infer<typeof adminOrderQuerySchema>;
 
 export const authoritySchema = z.string().uuid("شناسهٔ پرداخت معتبر نیست");
 export const paymentReferenceSchema = z

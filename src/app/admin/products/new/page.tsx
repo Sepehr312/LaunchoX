@@ -1,3 +1,4 @@
+import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import { getEnv } from "@/lib/env";
 import { requireAdmin } from "@/lib/auth";
 import { getProductCategoryOptions } from "@/services/product.service";
@@ -14,8 +15,12 @@ export default async function NewProduct() {
     listBrands(),
   ]);
   return (
-    <section className="admin-panel">
-      <h1>محصول جدید</h1>
+    <AdminFormPage
+      title="محصول جدید"
+      description="اطلاعات، تصاویر و وضعیت انتشار محصول را مدیریت کنید."
+      listLabel="محصولات"
+      listHref="/admin/products"
+    >
       <ProductForm
         categories={categories}
         brands={brands.map(({ id, name, isActive }) => ({
@@ -24,6 +29,6 @@ export default async function NewProduct() {
           isActive,
         }))}
       />
-    </section>
+    </AdminFormPage>
   );
 }

@@ -10,7 +10,7 @@ import {
   deleteProduct,
   setProductActive,
 } from "@/services/product.service";
-import { productSchema } from "@/validations/product";
+import { adminProductSchema } from "@/validations/product";
 import { objectIdSchema, booleanSchema } from "@/validations/common";
 
 export async function productAction(
@@ -27,7 +27,7 @@ export async function productAction(
     else if (operation === "active")
       await setProductActive(id, booleanSchema.parse(form.get("isActive")));
     else {
-      const fields = productSchema.parse({
+      const input = adminProductSchema.parse({
         ...Object.fromEntries(form),
         images: form.getAll("images"),
         attributes: form.getAll("attributeKey").map((key, index) => ({
@@ -37,15 +37,6 @@ export async function productAction(
         isActive: form.has("isActive"),
         isFeatured: form.has("isFeatured"),
       });
-      const brandInput = form.has("brand")
-        ? z
-            .object({ brand: z.union([objectIdSchema, z.literal("")]) })
-            .parse({ brand: form.get("brand") })
-        : undefined;
-      const input = {
-        ...fields,
-        ...(brandInput ? { brand: brandInput.brand || null } : {}),
-      };
       const product =
         operation === "create"
           ? await createProduct(input)

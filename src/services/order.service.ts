@@ -18,6 +18,7 @@ import {
   authoritySchema,
   paymentReferenceSchema,
   orderNumberInput,
+  adminOrderQuerySchema,
 } from "@/validations/order";
 import type { OrderDTO, PaginatedResult } from "@/types/dto";
 import type { OrderStatus } from "@/types/domain";
@@ -350,8 +351,46 @@ export async function listOrdersForUser(userId: string, input: unknown = {}) {
   return listOrders({ user: objectIdSchema.parse(userId) }, input);
 }
 export async function listOrdersAdmin(input: unknown = {}) {
+  const query = adminOrderQuerySchema.parse(input);
   await expireStaleOrders();
-  return listOrders({}, input);
+  const filter: QueryFilter<IOrder> = {};
+  if (query.payment) filter["payment.status"] = query.payment;
+  if (query.period) {
+    filter.createdAt = {
+      $gte: new Date(Date.now() - Number(query.period) * 86400000),
+    };
+  }
+  if (query.q) {
+    const pattern = query.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const customers = await User.find({
+      name: { $regex: pattern, $options: "i" },
+    })
+      .select("_id")
+      .lean();
+    filter.$or = [
+      { orderNumber: { $regex: pattern, $options: "i" } },
+      { user: { $in: customers.map((customer) => customer._id) } },
+    ];
+  }
+  return listOrders(filter, query);
+}
+
+export async function getOrderStatusCountsAdmin() {
+  await connectDB();
+  const groups = await Order.aggregate<{ _id: OrderStatus; count: number }>([
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+  const counts: Record<OrderStatus, number> = {
+    pending: 0,
+    processing: 0,
+    shipped: 0,
+    delivered: 0,
+    cancelled: 0,
+  };
+  for (const group of groups) {
+    if (Object.hasOwn(counts, group._id)) counts[group._id] = group.count;
+  }
+  return counts;
 }
 
 export async function attachOrderPayment(

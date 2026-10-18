@@ -40,8 +40,8 @@ for(let i=0;i<12;i++) await db.collection('orders').insertOne({orderNumber:'LX-'
 const category=(await db.collection('categories').insertOne({name:'دسته داشبورد',slug:'dashboard-category',isActive:true,order:1})).insertedId;
 await db.collection('products').insertMany([{title:'یخچال با موجودی کم',stock:4,isActive:true},{title:'یخچال ناموجود',stock:0,isActive:false},{title:'موجودی کافی',stock:5,isActive:true}].map((product,index)=>({...product,slug:'dashboard-product-'+index,description:'Dashboard fixture',price:1000,images:['/images/preview/categories/mini.png'],category,attributes:[],isFeatured:false,soldCount:0,createdAt:new Date(),updatedAt:new Date()})));
 """)
-    page.reload(); expect(page.locator('#latest-orders').locator('..').locator('article')).to_have_count(10)
-    expect(page.locator('#low-stock').locator('..').locator('li')).to_have_count(2)
+    page.reload(); expect(page.locator('.admin-orders-table tbody tr')).to_have_count(10)
+    expect(page.locator('.admin-stock-list li')).to_have_count(2)
     expect(page.get_by_text('LX-۳۰۰۰۰۰',exact=True)).to_be_visible()
     expect(page.get_by_text('LX-۳۰۰۰۱۰',exact=True)).to_have_count(0)
     expect(page.get_by_role('navigation',name='ناوبری مدیریت').get_by_role('link',name='نمای کلی')).to_have_attribute('aria-current','page')

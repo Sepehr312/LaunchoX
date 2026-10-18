@@ -1,28 +1,22 @@
 "use client";
 import Link from "next/link";
 import { useActionState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { productAction } from "@/actions/admin/product.actions";
 export function ProductRowActions({
   id,
   title,
-  isActive,
 }: {
   id: string;
   title: string;
-  isActive: boolean;
 }) {
   const [state, action, pending] = useActionState(productAction, undefined);
   return (
-    <div className="grid gap-2">
-      <Link href={`/admin/products/${id}/edit`}>ویرایش</Link>
-      <form action={action}>
-        <input type="hidden" name="id" value={id} />
-        <input type="hidden" name="operation" value="active" />
-        <input type="hidden" name="isActive" value={String(!isActive)} />
-        <button disabled={pending}>
-          {isActive ? "غیرفعال کردن" : "فعال کردن"}
-        </button>
-      </form>
+    <div className="admin-product-row-actions">
+      <Link href={`/admin/products/${id}/edit`}>
+        <Pencil size={18} aria-hidden="true" />
+        ویرایش
+      </Link>
       <form
         action={action}
         onSubmit={(event) => {
@@ -36,8 +30,14 @@ export function ProductRowActions({
       >
         <input type="hidden" name="id" value={id} />
         <input type="hidden" name="operation" value="delete" />
-        <button disabled={pending} className="text-danger">
-          حذف محصول
+        <button
+          type="submit"
+          disabled={pending}
+          className="admin-delete-product"
+          aria-label={`حذف محصول «${title}»`}
+          title="حذف محصول"
+        >
+          <Trash2 size={18} aria-hidden="true" />
         </button>
       </form>
       {state && !state.ok && <p role="alert">{state.error}</p>}

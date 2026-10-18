@@ -20,8 +20,10 @@ it("disables inactive brands for new assignments and retains the existing inacti
   const editForm = renderToStaticMarkup(
     <ProductForm categories={[]} brands={brands} brandId="inactive" />,
   );
-  expect(editForm).toMatch(/<option value="برند غیرفعال" selected="">/);
-  expect(editForm).toContain('name="brand" value="inactive"');
+  expect(editForm).toMatch(/<option value="inactive" selected="">/);
+  expect(editForm).toMatch(
+    /<select(?=[^>]*name="brand")(?=[^>]*required="")[^>]*>/,
+  );
 });
 
 it("renders alphabetically sorted cards, logos, counts and encoded slug links", () => {

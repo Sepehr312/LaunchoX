@@ -129,6 +129,26 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The admin menu trigger is hidden at widths of 1024px and above; narrower screens use a borderless icon-only button with a Persian accessible label and a 44px touch target. Its selector overrides the shared admin button display rule.
+
+- The owner-requested user role editor is an admin-only exception to the earlier no-role-form-input rule: guarded actions validate only the target ID and the customer/admin role, preserve unrelated fields and block self-role changes. Public registration/profile forms still cannot assign roles. Admin guards recheck current database role/activity so stale JWT roles cannot retain access. Administrators sort first; email text aligns with its RTL column heading. Role fields remount on confirmed role changes while action feedback is retained, keeping the select synchronized after saves and server refreshes.
+
+- At the user's request, the admin dashboard shows the three latest orders instead of the ten specified in SPEC section 9. Desktop and mobile admin logout controls use a muted text label and outlined exit icon matching the supplied reference.
+
+- Admin order details use the approved two-column concept: products/history in the main column and explicit next-step actions, customer/shipping and payment cards beside it. Mobile shows the action first. Cancellation uses a native confirmation dialog; paid cancellations do not initiate refunds. List filters travel as validated query parameters to preserve the return destination, and history/payment timestamps use Tehran time through the shared formatter.
+
+- Admin orders reuse the approved light admin shell, status totals across all orders, and URL-backed live filters. Search matches literal order references (including Persian digits) or current customer names after a 300ms pause; payment and status changes apply immediately. Date ranges mean the last 7, 30, or 90 rolling days. Filter changes reset pagination and preserve the other selections; no apply/reset buttons are shown.
+
+- Admin product creation/editing now requires a saved brand through a shared admin-only Zod schema and the form select; legacy database products and generic seed/service input remain compatible. Catalog forms place media before their main fields and publication settings below them on narrow screens, while desktop grid areas retain the approved two-column layout.
+
+- Brand and category lists retain the table by default and add the approved responsive card view with real saved logos/images, existing edit/delete actions and shared live search. A validated browser preference remembers the view separately for each list; blocked storage falls back to an in-memory selection. Card styles use dedicated CSS modules, and missing images display an icon.
+
+- Product, brand and category create/edit forms extend step 11 with the approved form mockup: one white page panel, ice-blue section headers, full-width identity fields, a desktop media/publication column, native checkboxes and a shared save footer. The layout stacks on mobile; existing validation, image uploads and save navigation are reused.
+
+- Brand, category and user lists share the approved product-list header, table spacing and compact row actions. All four lists use a shared live search with a 300 ms typing delay, URL state, preserved input focus and a product-page reset on query changes; there are no submit/reset controls or brand status filter. Category search matches name/slug and user search matches name/email across the existing complete DTO lists. Existing edit/delete guards and self-account protection remain in place. Header create links use an accessible 44 px plus-only button below 640 px and retain their full labels on larger screens.
+
+- The approved calm admin dashboard and product-list mockups extend step 11 using the existing light ice/blue palette and live data. Recent orders and low stock share desktop columns and stack on mobile; wide tables scroll inside their own region. Product brands use the existing resolved Brand attribute (with legacy fallback), active switches stay in the status column, and search, numbered pagination, edit and confirmed deletion reuse existing actions. Preview figures are never substituted for database values.
+
 - The requested admin fixes extend step 11 without changing its presentation: selecting an existing image preview uploads PNG/JPEG/WebP/GIF files up to 5 MiB; MongoDB stores the bytes and `/api/images/[id]` serves immutable public URLs, avoiding a new storage provider or ephemeral local files. Successful product/category/brand saves return to their list, and table surfaces support native touch scrolling and mouse dragging. Category deletion also checks legacy string references and never deletes linked products. This explicitly supersedes the earlier image-upload exclusion; unused uploads are retained for now.
 
 
@@ -229,7 +249,7 @@ npm run seed -- --reset
 - ادغام سبد مهمان بعد از ورود و ثبت‌نام انجام می‌شود. شمارندهٔ هدر مجموع تعداد واحدهای قابل‌خرید است؛ اقلام نامعتبر و کاهش موجودی هنگام خواندن سبد کنترل می‌شوند.
 - سفارش روی MongoDB مستقل نیز کار می‌کند؛ رزرو موجودی اتمیک و شکست‌ها با بازگرداندن موجودی جبران می‌شوند. قفل سبد checkout تکراری را محدود می‌کند و callback تکراری دوباره موجودی یا فروش را تغییر نمی‌دهد. سفارش‌های پرداخت‌نشدهٔ منقضی هنگام ثبت سفارش و فهرست سفارش‌های ادمین بررسی می‌شوند؛ cron مستقل وجود ندارد.
 - مالکیت سفارش در proxy و مجدداً در صفحه و سرویس بررسی می‌شود. انتخاب آدرس پیش‌فرض اتمیک است؛ حذف آدرس پیش‌فرض تا انتخاب مجدد، حساب را بدون آدرس پیش‌فرض می‌گذارد.
-- پنل ادمین نقش کاربران را فقط نمایش می‌دهد و غیرفعال‌سازی حساب خود ادمین را در سرویس رد می‌کند. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
+- پنل ادمین طبق درخواست مالک، نقش کاربران دیگر را بین مشتری و ادمین تغییر می‌دهد؛ تغییر نقش و غیرفعال‌سازی حساب خود ادمین در سرویس رد می‌شود. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
 - پرداخت واقعی و OTP قابلیت فعال فعلی نیستند؛ بخش نقطه‌های توسعه، محل اتصال آیندهٔ آن‌ها را مشخص می‌کند. آپلود تصویر اکنون در فرم‌های محصول، دسته‌بندی و برند از کادر پیش‌نمایش انجام می‌شود.
 - The `/brands` directory reuses the shop shell and Brand source, exposes only public fields, and counts active products by `Product.brand`. Card links open `/brands/[slug]`, resolved to the current active Brand ID; legacy name filters remain compatible. Search uses the existing name and slug (the model has no separate English name). Inactive brands cannot receive new product assignments, but existing assignments can be retained on edits. No migration is performed; products with only legacy attributes need the existing reviewed linking workflow before appearing in brand counts.
 

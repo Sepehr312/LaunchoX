@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDate,
+  formatDateTime,
   formatPrice,
   normalizeDigits,
   toPersianDigits,
@@ -63,4 +64,11 @@ describe("formatDate", () => {
     expect(() => formatDate("invalid")).toThrow("تاریخ معتبر نیست.");
     expect(() => formatDate(new Date(NaN))).toThrow("تاریخ معتبر نیست.");
   });
+});
+
+it("formats order timestamps with Tehran time and Persian digits across midnight", () => {
+  expect(formatDateTime("2024-03-19T21:00:00Z")).toContain("۱ فروردین ۱۴۰۳");
+  expect(formatDateTime("2024-03-19T21:00:00Z")).toContain("۰:۳۰");
+  expect(formatDateTime("2024-03-20T12:00:00Z")).toContain("۱۵:۳۰");
+  expect(() => formatDateTime("invalid")).toThrow("تاریخ معتبر نیست.");
 });
