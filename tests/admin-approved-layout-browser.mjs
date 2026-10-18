@@ -106,6 +106,77 @@ try {
       updatedAt: now,
     })),
   );
+  await db.collection("brands").insertMany([
+    {
+      name: "ال‌جی",
+      slug: "lg",
+      country: "کره جنوبی",
+      order: 1,
+      isActive: true,
+      isFeatured: true,
+    },
+    {
+      name: "دوو",
+      slug: "daewoo",
+      country: "ایران",
+      order: 2,
+      isActive: true,
+      isFeatured: false,
+    },
+    {
+      name: "اسنوا",
+      slug: "snowa",
+      country: "ایران",
+      order: 3,
+      isActive: false,
+      isFeatured: false,
+    },
+  ]);
+  await db.collection("categories").insertMany([
+    {
+      name: "یخچال دوقلو",
+      slug: "twin",
+      image: "/images/preview/categories/twin.png",
+      order: 1,
+      isActive: true,
+    },
+    {
+      name: "یخچال مینی",
+      slug: "mini",
+      parent: category,
+      order: 2,
+      isActive: false,
+    },
+  ]);
+  const adminRecord = await db.collection("users").findOne({ _id: user });
+  await db.collection("users").insertMany(
+    [
+      {
+        name: "علی محمدی",
+        email: "customer@example.com",
+        role: "customer",
+        isActive: true,
+      },
+      {
+        name: "سارا حسینی",
+        email: "sara@example.com",
+        role: "customer",
+        isActive: false,
+      },
+      {
+        name: "مهدی کریمی",
+        email: "mehdi@example.com",
+        role: "customer",
+        isActive: true,
+      },
+    ].map((record) => ({
+      ...record,
+      passwordHash: adminRecord.passwordHash,
+      addresses: [],
+      createdAt: now,
+      updatedAt: now,
+    })),
+  );
   server = spawn(
     process.execPath,
     ["node_modules/next/dist/bin/next", "start", "--port", "3023"],
@@ -174,7 +245,11 @@ try {
     await page.goto(base + path);
     await page
       .locator(
-        name === "dashboard" ? ".admin-overview" : ".admin-products-page",
+        name === "dashboard"
+          ? ".admin-overview"
+          : name === "products"
+            ? ".admin-products-page"
+            : ".admin-list-page",
       )
       .waitFor();
     await page.evaluate(() => document.fonts.ready);
@@ -190,6 +265,19 @@ try {
         `${name}: page overflow at ${width}`,
       );
       assert.equal(await page.locator("html").getAttribute("dir"), "rtl");
+      const create = page.locator(".admin-create-button");
+      if (await create.count()) {
+        assert.ok(await create.getAttribute("aria-label"));
+        assert.equal(
+          await create.locator(".admin-create-label").isVisible(),
+          width >= 640,
+        );
+        if (width < 640) {
+          const bounds = await create.boundingBox();
+          assert.ok(bounds.width >= 44 && bounds.height >= 44);
+          assert.equal(bounds.width, 44);
+        }
+      }
       if (width === 1440 || width === 360)
         await page.screenshot({
           path: `docs/admin-review/${name}-approved-${width === 1440 ? "desktop" : "mobile"}.png`,
@@ -253,24 +341,29 @@ try {
   await page.getByRole("link", { name: "صفحه بعدی", exact: true }).click();
   await page.waitForURL(/page=2/);
   assert.equal(await page.locator("tbody tr").count(), 2);
+  await page.evaluate(() => {
+    window.adminLiveSearchMarker = "live";
+  });
+  await page.getByLabel("جستجوی محصول", { exact: true }).fill("یخ");
+  await delay(100);
   await page.getByLabel("جستجوی محصول", { exact: true }).fill("یخچال");
-  await page.getByRole("button", { name: "جستجو", exact: true }).click();
   await page.waitForURL(
     (url) =>
       url.searchParams.get("q") === "یخچال" && !url.searchParams.has("page"),
   );
+  assert.equal(await page.evaluate(() => window.adminLiveSearchMarker), "live");
+  assert.equal(await page.evaluate(() => document.activeElement?.name), "q");
   await page.getByRole("link", { name: "صفحه بعدی", exact: true }).click();
   await page.waitForURL((url) => url.searchParams.get("page") === "2");
   assert.equal(new URL(page.url()).searchParams.get("q"), "یخچال");
   await page.getByLabel("جستجوی محصول", { exact: true }).fill("ناموجوددرجستجو");
-  await page.getByRole("button", { name: "جستجو", exact: true }).click();
   await page
     .getByText(
       "محصولی با این عبارت جستجو پیدا نشد؛ عبارت دیگری را امتحان کنید.",
       { exact: true },
     )
     .waitFor();
-  await page.getByRole("link", { name: "پاک کردن جستجو", exact: true }).click();
+  await page.getByLabel("جستجوی محصول", { exact: true }).fill("");
   await page.waitForURL(`${base}/admin/products`);
   const deleteButton = page
     .locator("tbody tr")
@@ -290,6 +383,79 @@ try {
     await db.collection("products").findOne({ _id: products.insertedIds[0] }),
     null,
   );
+  for (const entity of ["brands", "categories", "users"]) {
+    await inspect(`/admin/${entity}`, entity);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    assert.ok((await page.locator("tbody tr").count()) > 0);
+    assert.ok(
+      (await page.locator(".admin-list-panel .admin-table-scroll").count()) > 0,
+    );
+    const field = {
+      brands: "جستجوی برند",
+      categories: "جستجوی دسته‌بندی",
+      users: "جستجوی کاربر",
+    }[entity];
+    const target = {
+      brands: "سامسونگ",
+      categories: "یخچال مینی",
+      users: "customer@example.com",
+    }[entity];
+    await page.getByLabel(field, { exact: true }).fill(target);
+    assert.equal(
+      await page.getByRole("search").locator("button, a, select").count(),
+      0,
+    );
+    await page.waitForURL((url) => url.searchParams.get("q") === target);
+    await page.waitForFunction(
+      () => document.querySelectorAll("tbody tr").length === 1,
+    );
+    if (entity === "categories")
+      assert.ok(
+        (await page.locator("tbody").textContent()).includes("سایدبای‌ساید"),
+      );
+    await page.getByLabel(field, { exact: true }).fill("");
+    await page.waitForURL(`${base}/admin/${entity}`);
+    await page.getByLabel(field, { exact: true }).fill("ناپیدا");
+    await page.locator(".admin-empty").waitFor();
+    assert.equal(await page.locator("tbody tr").count(), 0);
+    await page.goto(`${base}/admin/${entity}?q=one&q=two`);
+    await page.locator('main [role="alert"]').waitFor();
+  }
+  await page.goto(`${base}/admin/brands?status=featured`);
+  await page.locator("tbody tr").first().waitFor();
+  await page.waitForURL(`${base}/admin/brands`);
+  assert.equal(await page.locator("tbody tr").count(), 4);
+  assert.equal(await page.locator('select[name="status"]').count(), 0);
+  await page.goto(`${base}/admin/users`);
+  const self = page
+    .locator("tbody tr")
+    .filter({ hasText: "admin@example.com" });
+  assert.equal(await self.getByRole("switch").isDisabled(), true);
+  const customer = page
+    .locator("tbody tr")
+    .filter({ hasText: "customer@example.com" });
+  await customer.getByRole("switch").click();
+  await customer.getByRole("status").waitFor();
+  assert.equal(
+    await customer.getByRole("switch").getAttribute("aria-checked"),
+    "false",
+  );
+  assert.equal(
+    (await db.collection("users").findOne({ email: "customer@example.com" }))
+      .isActive,
+    false,
+  );
+  await page.reload();
+  assert.equal(
+    await customer.getByRole("switch").getAttribute("aria-checked"),
+    "false",
+  );
+  await customer.getByRole("switch").click();
+  await customer.getByRole("status").waitFor();
+  assert.equal(
+    await customer.getByRole("switch").getAttribute("aria-checked"),
+    "true",
+  );
   await db.collection("orders").deleteMany({});
   await db.collection("products").deleteMany({});
   await page.goto(`${base}/admin`);
@@ -308,7 +474,7 @@ try {
     .waitFor();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: desktop/mobile layouts at 360/768/1024/1440, ten latest orders, low stock, real/legacy/missing brands, status toggles persisted, search, pagination with search preserved, deletion confirmation, guest guard and empty states. Four screenshots saved.",
+    "PASS: five admin layouts at 360/768/1024/1440, orders/stock/brands, switches persisted, self-account protection, four live searches without buttons or document reload, focus retained, removed brand filter, invalid queries, pagination, deletion confirmation, guest guard and empty states. Ten screenshots saved.",
   );
 } catch (error) {
   console.error(output.slice(-3000));

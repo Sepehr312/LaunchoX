@@ -63,9 +63,14 @@ export default async function AdminPage() {
             نبض فروش، سفارش‌ها و موجودی؛ در یک نگاه.
           </p>
         </div>
-        <Link className="admin-primary" href="/admin/products/new">
+        <Link
+          className="admin-primary admin-create-button"
+          href="/admin/products/new"
+          aria-label="محصول جدید"
+          title="محصول جدید"
+        >
           <Plus size={20} aria-hidden="true" />
-          محصول جدید
+          <span className="admin-create-label">محصول جدید</span>
         </Link>
       </header>
       <section aria-label="آمار فروشگاه" className="admin-stats-grid">

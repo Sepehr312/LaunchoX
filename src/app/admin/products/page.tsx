@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
+import { AdminListSearch } from "@/components/admin/AdminListSearch";
 import { AdminTableScroll } from "@/components/admin/AdminTableScroll";
 import { ProductRowActions } from "@/components/admin/ProductRowActions";
 import { ProductActiveForm } from "@/components/admin/ProductActiveForm";
@@ -48,33 +49,25 @@ export default async function ProductsAdmin({
             فهرست محصولات، قیمت‌ها و موجودی فروشگاه
           </p>
         </div>
-        <Link className="admin-primary" href="/admin/products/new">
+        <Link
+          className="admin-primary admin-create-button"
+          href="/admin/products/new"
+          aria-label="محصول جدید"
+          title="محصول جدید"
+        >
           <Plus size={20} aria-hidden="true" />
-          محصول جدید
+          <span className="admin-create-label">محصول جدید</span>
         </Link>
       </header>
       <section
         className="admin-panel admin-product-list"
         aria-label="فهرست محصولات"
       >
-        <form className="admin-product-search" action="/admin/products">
-          <label htmlFor="admin-product-query">جستجوی محصول</label>
-          <div className="admin-product-search-controls">
-            <div className="admin-search-input">
-              <Search size={20} aria-hidden="true" />
-              <input
-                id="admin-product-query"
-                name="q"
-                defaultValue={parsed.data.q}
-                placeholder="نام محصول را جستجو کنید…"
-              />
-            </div>
-            <button className="admin-primary" type="submit">
-              جستجو
-            </button>
-            <Link href="/admin/products">پاک کردن جستجو</Link>
-          </div>
-        </form>
+        <AdminListSearch
+          label="جستجوی محصول"
+          placeholder="نام محصول را جستجو کنید…"
+          query={parsed.data.q ?? ""}
+        />
         <p className="admin-product-count">
           {toPersianDigits(result.total)} محصول
         </p>
