@@ -98,13 +98,25 @@ try {
         `${entity} create form overflows at ${width}px`,
       );
       const main = await page.locator(".admin-editor-main").boundingBox();
-      const aside = await page.locator(".admin-editor-aside").boundingBox();
+      const aside = await page.locator(".admin-editor-media").boundingBox();
       assert.ok(main && aside, `${entity}: form columns must be visible`);
       assert.ok(
         width >= 1200
           ? Math.abs(main.y - aside.y) < 2
-          : aside.y >= main.y + main.height,
+          : main.y >= aside.y + aside.height,
       );
+      if (entity === "products" && width < 1200) {
+        const headings = await page
+          .locator(".admin-product-form h2")
+          .allTextContents();
+        assert.deepEqual(headings, [
+          "تصاویر محصول",
+          "اطلاعات اصلی",
+          "قیمت و موجودی",
+          "مشخصات فنی",
+          "انتشار محصول",
+        ]);
+      }
     }
     const active = page.locator('input[name="isActive"]');
     await active.focus();
@@ -118,7 +130,7 @@ try {
     );
     if (entity === "products") {
       assert.equal(
-        await page.locator('.admin-editor-aside input[name="images"]').count(),
+        await page.locator('.admin-editor-media input[name="images"]').count(),
         1,
       );
       await page
@@ -159,6 +171,15 @@ try {
       await page
         .locator('select[name="category"]')
         .selectOption(String(category._id));
+      const brand = await db.collection("brands").findOne({});
+      const brandSelect = page.locator('select[name="brand"]');
+      assert.equal(
+        await brandSelect.evaluate(
+          (element) => element.required && element.validity.valueMissing,
+        ),
+        true,
+      );
+      await brandSelect.selectOption(String(brand._id));
     }
     const input = page.locator('input[type="file"]').first();
     assert.equal(await input.count(), 1);
@@ -195,6 +216,24 @@ try {
       await page.screenshot({
         path: `docs/admin-review/${entity}-form-approved-${width}.png`,
         fullPage: true,
+      });
+    }
+    if (entity === "products") {
+      const brandSelect = page.locator('select[name="brand"]');
+      const selectedBrand = await brandSelect.inputValue();
+      await brandSelect.selectOption("");
+      await page.locator(".admin-product-form").evaluate((form) => {
+        form.noValidate = true;
+      });
+      await page.locator('.admin-product-form button[type="submit"]').click();
+      await page
+        .getByRole("alert")
+        .filter({ hasText: "انتخاب برند الزامی است" })
+        .waitFor();
+      assert.equal(await db.collection("products").countDocuments(), 0);
+      await brandSelect.selectOption(selectedBrand);
+      await page.locator(".admin-product-form").evaluate((form) => {
+        form.noValidate = false;
       });
     }
     await page.locator('.admin-product-form button[type="submit"]').click();

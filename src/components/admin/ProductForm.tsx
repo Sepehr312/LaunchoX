@@ -47,8 +47,13 @@ export function ProductForm({
     sku: product?.sku ?? "",
     category: product?.category.id ?? "",
     brand:
-      brands.find((item) => item.id === brandId)?.name ??
-      product?.attributes.find((item) => item.key === "برند")?.value ??
+      brandId ??
+      brands.find(
+        (item) =>
+          item.name ===
+          product?.attributes.find((attribute) => attribute.key === "برند")
+            ?.value,
+      )?.id ??
       "",
     isActive: product?.isActive ?? true,
     isFeatured: product?.isFeatured ?? false,
@@ -113,6 +118,90 @@ export function ProductForm({
         disabled={pending || uploading}
         className="admin-form-body admin-editor-layout"
       >
+        <div className="admin-editor-media">
+          <FormSection
+            title="تصاویر محصول"
+            description="اولین تصویر، تصویر اصلی است. حداکثر هشت نشانی تصویر وارد کنید."
+          >
+            <div className="admin-span admin-image-list">
+              {images.map((url, index) => (
+                <div key={index} className="admin-image-row">
+                  <ImagePreview
+                    onUploadingChange={setUploading}
+                    onUpload={(url) =>
+                      setImages((current) =>
+                        current.map((value, i) => (i === index ? url : value)),
+                      )
+                    }
+                    src={url}
+                    alt={`تصویر ${toPersianDigits(index + 1)} محصول`}
+                  />
+                  <div className="admin-image-controls">
+                    <FormField
+                      label={
+                        index === 0
+                          ? "تصویر اصلی"
+                          : `تصویر ${toPersianDigits(index + 1)}`
+                      }
+                      name="images"
+                      dir="ltr"
+                      required
+                      value={url}
+                      onChange={(e) =>
+                        setImages(
+                          images.map((v, i) =>
+                            i === index ? e.target.value : v,
+                          ),
+                        )
+                      }
+                    />
+                    <div className="admin-actions admin-image-actions">
+                      <button
+                        type="button"
+                        aria-label={`جابه‌جایی تصویر ${toPersianDigits(index + 1)} به بالا`}
+                        disabled={index === 0}
+                        onClick={() => move(index, -1)}
+                      >
+                        <ArrowUp size={16} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`جابه‌جایی تصویر ${toPersianDigits(index + 1)} به پایین`}
+                        disabled={index === images.length - 1}
+                        onClick={() => move(index, 1)}
+                      >
+                        <ArrowDown size={16} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={images.length === 1}
+                        aria-label={`حذف تصویر ${toPersianDigits(index + 1)}`}
+                        onClick={() =>
+                          setImages(images.filter((_, i) => i !== index))
+                        }
+                      >
+                        <Trash2 size={16} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {errors?.images && (
+              <p className="admin-field-error admin-span">
+                {errors.images.join("، ")}
+              </p>
+            )}
+            <button
+              type="button"
+              disabled={images.length >= 8}
+              onClick={() => setImages([...images, ""])}
+            >
+              <Plus size={18} aria-hidden="true" />
+              افزودن تصویر
+            </button>
+          </FormSection>
+        </div>
         <div className="admin-editor-main">
           <FormSection
             title="اطلاعات اصلی"
@@ -135,18 +224,16 @@ export function ProductForm({
             </FormSelect>
             <FormSelect
               label="برند"
+              name="brand"
+              required
               error={errors?.brand}
               value={values.brand}
               onChange={(e) => setValues({ ...values, brand: e.target.value })}
             >
-              <option value="">بدون برند</option>
-              {values.brand &&
-                !brands.some((item) => item.name === values.brand) && (
-                  <option value={values.brand}>{values.brand}</option>
-                )}
+              <option value="">انتخاب برند</option>
               {brands.map((item) => (
                 <option
-                  value={item.name}
+                  value={item.id}
                   key={item.id}
                   disabled={!item.isActive && item.id !== brandId}
                 >
@@ -161,22 +248,11 @@ export function ProductForm({
               hint="خالی بگذارید تا از عنوان ساخته شود."
               {...field("slug")}
             />
-            <input
-              type="hidden"
-              name="brand"
-              value={
-                brands.find((item) => item.name === values.brand)?.id ?? ""
-              }
-            />
-            {values.brand && (
-              <>
-                <input type="hidden" name="attributeKey" value="برند" />
-                <input
-                  type="hidden"
-                  name="attributeValue"
-                  value={values.brand}
-                />
-              </>
+            {!brands.some((item) => item.isActive || item.id === brandId) && (
+              <p className="admin-error admin-span">
+                برای ذخیره محصول ابتدا{" "}
+                <Link href="/admin/brands/new">یک برند فعال بسازید</Link>.
+              </p>
             )}
             {!categories.length && (
               <p className="admin-error admin-span">
@@ -278,88 +354,6 @@ export function ProductForm({
           </FormSection>
         </div>
         <aside className="admin-editor-aside" aria-label="تنظیمات نمایش">
-          <FormSection
-            title="تصاویر محصول"
-            description="اولین تصویر، تصویر اصلی است. حداکثر هشت نشانی تصویر وارد کنید."
-          >
-            <div className="admin-span admin-image-list">
-              {images.map((url, index) => (
-                <div key={index} className="admin-image-row">
-                  <ImagePreview
-                    onUploadingChange={setUploading}
-                    onUpload={(url) =>
-                      setImages((current) =>
-                        current.map((value, i) => (i === index ? url : value)),
-                      )
-                    }
-                    src={url}
-                    alt={`تصویر ${toPersianDigits(index + 1)} محصول`}
-                  />
-                  <div className="admin-image-controls">
-                    <FormField
-                      label={
-                        index === 0
-                          ? "تصویر اصلی"
-                          : `تصویر ${toPersianDigits(index + 1)}`
-                      }
-                      name="images"
-                      dir="ltr"
-                      required
-                      value={url}
-                      onChange={(e) =>
-                        setImages(
-                          images.map((v, i) =>
-                            i === index ? e.target.value : v,
-                          ),
-                        )
-                      }
-                    />
-                    <div className="admin-actions admin-image-actions">
-                      <button
-                        type="button"
-                        aria-label={`جابه‌جایی تصویر ${toPersianDigits(index + 1)} به بالا`}
-                        disabled={index === 0}
-                        onClick={() => move(index, -1)}
-                      >
-                        <ArrowUp size={16} aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`جابه‌جایی تصویر ${toPersianDigits(index + 1)} به پایین`}
-                        disabled={index === images.length - 1}
-                        onClick={() => move(index, 1)}
-                      >
-                        <ArrowDown size={16} aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={images.length === 1}
-                        aria-label={`حذف تصویر ${toPersianDigits(index + 1)}`}
-                        onClick={() =>
-                          setImages(images.filter((_, i) => i !== index))
-                        }
-                      >
-                        <Trash2 size={16} aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {errors?.images && (
-              <p className="admin-field-error admin-span">
-                {errors.images.join("، ")}
-              </p>
-            )}
-            <button
-              type="button"
-              disabled={images.length >= 8}
-              onClick={() => setImages([...images, ""])}
-            >
-              <Plus size={18} aria-hidden="true" />
-              افزودن تصویر
-            </button>
-          </FormSection>
           <FormSection title="انتشار محصول">
             <FormToggle
               label="محصول فعال"
@@ -392,7 +386,10 @@ export function ProductForm({
           <button
             type="submit"
             className="admin-primary"
-            disabled={!categories.length}
+            disabled={
+              !categories.length ||
+              !brands.some((item) => item.isActive || item.id === brandId)
+            }
           >
             <Save size={18} aria-hidden="true" />
             {pending ? "در حال ذخیره…" : "ذخیره محصول"}

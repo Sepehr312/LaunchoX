@@ -81,6 +81,24 @@ export function CategoryForm({
         disabled={pending || uploading}
         className="admin-form-body admin-editor-layout"
       >
+        <div className="admin-editor-media">
+          <FormSection title="تصویر دسته‌بندی">
+            <ImagePreview
+              onUploadingChange={setUploading}
+              onUpload={(image) =>
+                setValues((current) => ({ ...current, image }))
+              }
+              src={values.image}
+              alt={values.name || "تصویر دسته‌بندی"}
+            />
+            <FormField
+              label="نشانی تصویر"
+              dir="ltr"
+              hint="نشانی اینترنتی یا مسیر تصویر موجود در سایت"
+              {...field("image")}
+            />
+          </FormSection>
+        </div>
         <div className="admin-editor-main">
           <FormSection
             title="اطلاعات دسته‌بندی"
@@ -122,22 +140,6 @@ export function CategoryForm({
           </FormSection>
         </div>
         <aside className="admin-editor-aside" aria-label="تنظیمات نمایش">
-          <FormSection title="تصویر دسته‌بندی">
-            <ImagePreview
-              onUploadingChange={setUploading}
-              onUpload={(image) =>
-                setValues((current) => ({ ...current, image }))
-              }
-              src={values.image}
-              alt={values.name || "تصویر دسته‌بندی"}
-            />
-            <FormField
-              label="نشانی تصویر"
-              dir="ltr"
-              hint="نشانی اینترنتی یا مسیر تصویر موجود در سایت"
-              {...field("image")}
-            />
-          </FormSection>
           <FormSection title="انتشار دسته‌بندی">
             <FormToggle
               label="دسته‌بندی فعال"

@@ -999,9 +999,43 @@
 }
 .scope :global(.admin-user-email) {
   display: block;
-  max-width: 300px;
+  direction: ltr;
+  text-align: end;
   overflow-wrap: anywhere;
   color: var(--muted);
+}
+
+.scope :global(.admin-user-role) {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+  max-width: 240px;
+}
+.scope :global(.admin-user-role form) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scope :global(.admin-user-role select) {
+  min-width: 90px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding-inline: 10px;
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+}
+.scope :global(.admin-user-role select:disabled) {
+  opacity: 1;
+  color: var(--muted);
+  background: var(--ice);
+}
+.scope :global(.admin-user-role button) {
+  padding: 6px 10px;
+  border-color: var(--border);
+  border-radius: 8px;
+  font-size: 12px;
 }
 .scope :global(.admin-inline-status) {
   display: grid;
@@ -1025,7 +1059,7 @@
 }
 .scope :global(.admin-editor-page),
 .scope :global(.admin-editor-main),
-.scope :global(.admin-editor-aside) {
+.scope :global(:is(.admin-editor-aside, .admin-editor-media)) {
   display: grid;
   gap: 24px;
   min-width: 0;
@@ -1126,29 +1160,45 @@
   gap: 8px;
   min-width: 0;
 }
-.scope :global(.admin-editor-aside .admin-form-grid) {
+.scope :global(:is(.admin-editor-aside, .admin-editor-media) .admin-form-grid) {
   grid-template-columns: minmax(0, 1fr);
   padding: 16px;
   gap: 16px;
 }
-.scope :global(.admin-editor-aside .admin-image-row) {
+.scope :global(:is(.admin-editor-aside, .admin-editor-media) .admin-image-row) {
   grid-template-columns: minmax(0, 1fr) 88px;
   grid-template-areas: "controls preview";
   gap: 12px;
   padding-block-end: 16px;
 }
-.scope :global(.admin-editor-aside .admin-image-row .admin-image-picker) {
+.scope
+  :global(
+    :is(.admin-editor-aside, .admin-editor-media)
+      .admin-image-row
+      .admin-image-picker
+  ) {
   grid-area: preview;
 }
-.scope :global(.admin-editor-aside .admin-image-row .admin-image-preview) {
+.scope
+  :global(
+    :is(.admin-editor-aside, .admin-editor-media)
+      .admin-image-row
+      .admin-image-preview
+  ) {
   width: 100%;
   height: 112px;
 }
-.scope :global(.admin-editor-aside .admin-image-controls) {
+.scope
+  :global(:is(.admin-editor-aside, .admin-editor-media) .admin-image-controls) {
   grid-area: controls;
   gap: 8px;
 }
-.scope :global(.admin-editor-aside .admin-image-controls .field-input) {
+.scope
+  :global(
+    :is(.admin-editor-aside, .admin-editor-media)
+      .admin-image-controls
+      .field-input
+  ) {
   font-size: 13px;
   padding-inline: 8px;
 }
@@ -1170,13 +1220,27 @@
 @media (min-width: 1200px) {
   .scope :global(.admin-editor-layout) {
     grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+    grid-template-areas: "main media" "main publication" "footer footer";
+    grid-template-rows: auto 1fr auto;
     align-items: start;
+  }
+  .scope :global(.admin-editor-main) {
+    grid-area: main;
+  }
+  .scope :global(.admin-editor-media) {
+    grid-area: media;
+  }
+  .scope :global(.admin-editor-aside) {
+    grid-area: publication;
+  }
+  .scope :global(.admin-editor-page .admin-form-footer) {
+    grid-area: footer;
   }
 }
 @media (max-width: 639px) {
   .scope :global(.admin-editor-page),
   .scope :global(.admin-editor-main),
-  .scope :global(.admin-editor-aside),
+  .scope :global(:is(.admin-editor-aside, .admin-editor-media)),
   .scope :global(.admin-editor-layout) {
     gap: 16px;
   }
@@ -1185,11 +1249,17 @@
     padding: 16px;
     gap: 16px;
   }
-  .scope :global(.admin-editor-aside .admin-image-row) {
+  .scope
+    :global(:is(.admin-editor-aside, .admin-editor-media) .admin-image-row) {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "preview" "controls";
   }
-  .scope :global(.admin-editor-aside .admin-image-row .admin-image-preview) {
+  .scope
+    :global(
+      :is(.admin-editor-aside, .admin-editor-media)
+        .admin-image-row
+        .admin-image-preview
+    ) {
     width: 112px;
   }
   .scope :global(.admin-editor-page .admin-form-footer > *) {

@@ -76,6 +76,30 @@ export function BrandForm({ brand }: { brand?: BrandDTO }) {
         disabled={pending || uploading}
         className="admin-form-body admin-editor-layout"
       >
+        <div className="admin-editor-media">
+          <FormSection title="لوگو و ترتیب نمایش">
+            <ImagePreview
+              src={values.logo}
+              alt={values.name || "لوگوی برند"}
+              onUploadingChange={setUploading}
+              onUpload={(logo) =>
+                setValues((current) => ({ ...current, logo }))
+              }
+            />
+            <FormField
+              label="نشانی لوگو"
+              dir="ltr"
+              hint="نشانی اینترنتی یا مسیر تصویر موجود در سایت"
+              {...field("logo")}
+            />
+            <FormField
+              label="ترتیب نمایش"
+              inputMode="numeric"
+              required
+              {...field("order")}
+            />
+          </FormSection>
+        </div>
         <div className="admin-editor-main">
           <FormSection
             title="هویت برند"
@@ -100,28 +124,6 @@ export function BrandForm({ brand }: { brand?: BrandDTO }) {
           </FormSection>
         </div>
         <aside className="admin-editor-aside" aria-label="تنظیمات نمایش">
-          <FormSection title="لوگو و ترتیب نمایش">
-            <ImagePreview
-              src={values.logo}
-              alt={values.name || "لوگوی برند"}
-              onUploadingChange={setUploading}
-              onUpload={(logo) =>
-                setValues((current) => ({ ...current, logo }))
-              }
-            />
-            <FormField
-              label="نشانی لوگو"
-              dir="ltr"
-              hint="نشانی اینترنتی یا مسیر تصویر موجود در سایت"
-              {...field("logo")}
-            />
-            <FormField
-              label="ترتیب نمایش"
-              inputMode="numeric"
-              required
-              {...field("order")}
-            />
-          </FormSection>
           <FormSection title="وضعیت برند">
             <FormToggle
               label="برند فعال"

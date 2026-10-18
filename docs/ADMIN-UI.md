@@ -82,3 +82,8 @@ The product, brand and category create/edit pages now share the approved form la
 Validation: lint, typecheck, all 459 Vitest tests and production build passed. The isolated browser check covers all three create forms at 360/768/1024/1440px, keyboard checkbox interaction, image reordering, attributes, uploads, create/edit saves, public product visibility, linked-category deletion guards and mobile table scrolling.
 
 Screenshots: [Product desktop](admin-review/products-form-approved-1440.png), [product mobile](admin-review/products-form-approved-360.png), [brand desktop](admin-review/brands-form-approved-1440.png), [brand mobile](admin-review/brands-form-approved-360.png), [category desktop](admin-review/categories-form-approved-1440.png), [category mobile](admin-review/categories-form-approved-360.png).
+
+
+Catalog form refinement: on mobile, product sections follow images, main information, pricing/stock, technical specifications and publication. Brand/category media also comes first. This is the DOM order for keyboard and screen-reader navigation; desktop uses grid areas to keep media and publication beside the main fields. Product brand selection is required in the browser and in admin create/edit actions, with Persian field errors and a create-brand link when no usable brand exists. Legacy products remain readable.
+
+Validation for this refinement: lint, typecheck, all 461 Vitest tests and build passed. Browser tests verify mobile order for all three forms, required brand selection with native validation bypassed, existing image controls and successful create/edit saves.
