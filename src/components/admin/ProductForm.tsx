@@ -29,8 +29,10 @@ export function ProductForm({
 }) {
   const [state, action, pending] = useAdminFormAction(
     productAction,
+    "/admin/products",
     product?.id,
   );
+  const [uploading, setUploading] = useState(false);
   const [values, setValues] = useState({
     title: product?.title ?? "",
     slug: product?.slug ?? "",
@@ -85,7 +87,11 @@ export function ProductForm({
     });
   }
   return (
-    <form action={action} className="admin-product-form" aria-busy={pending}>
+    <form
+      action={action}
+      className="admin-product-form"
+      aria-busy={pending || uploading}
+    >
       <input
         type="hidden"
         name="operation"
@@ -102,7 +108,7 @@ export function ProductForm({
         </Link>{" "}
         · <Link href="/admin/products">فهرست محصولات</Link>
       </FormFeedback>
-      <fieldset disabled={pending} className="admin-form-body">
+      <fieldset disabled={pending || uploading} className="admin-form-body">
         <FormSection
           title="اطلاعات اصلی"
           description="نام، دسته‌بندی و توضیحات محصول را برای مشتری مشخص کنید."
@@ -138,7 +144,11 @@ export function ProductForm({
                 <option value={values.brand}>{values.brand}</option>
               )}
             {brands.map((item) => (
-              <option value={item.name} key={item.id}>
+              <option
+                value={item.name}
+                key={item.id}
+                disabled={!item.isActive && item.id !== brandId}
+              >
                 {item.name}
                 {!item.isActive && " (غیرفعال)"}
               </option>
@@ -197,6 +207,12 @@ export function ProductForm({
             {images.map((url, index) => (
               <div key={index} className="admin-image-row">
                 <ImagePreview
+                  onUploadingChange={setUploading}
+                  onUpload={(url) =>
+                    setImages((current) =>
+                      current.map((value, i) => (i === index ? url : value)),
+                    )
+                  }
                   src={url}
                   alt={`تصویر ${toPersianDigits(index + 1)} محصول`}
                 />

@@ -5,15 +5,16 @@ import { ArcticBenefitsBar } from "@/components/preview/frostic/ArcticBenefitsBa
 import { ArcticProductCategories } from "@/components/preview/frostic/ArcticProductCategories";
 import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
 import themeStyles from "@/components/preview/frostic/frostic-theme.module.css";
+import type { CategoryDTO } from "@/types/dto";
 
-export function StoreHero() {
+export function StoreHero({ categories }: { categories: CategoryDTO[] }) {
   const { theme } = usePreviewTheme();
 
   return (
     <div className={themeStyles.theme} data-theme={theme}>
-      <FrosticHeroSlider mobileControls />
+      <FrosticHeroSlider autoPlay mobileControls />
       <ArcticBenefitsBar />
-      <ArcticProductCategories />
+      <ArcticProductCategories categories={categories} />
     </div>
   );
 }

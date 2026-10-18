@@ -1,0 +1,436 @@
+.page {
+  color: var(--foreground);
+  background:
+    radial-gradient(
+      ellipse at 15% 5%,
+      color-mix(in srgb, var(--ice) 70%, transparent),
+      transparent 36%
+    ),
+    var(--background);
+  padding-block-end: 5rem;
+}
+.page h1,
+.page h2,
+.page h3,
+.page p {
+  margin: 0;
+}
+.page h2 {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 800;
+  line-height: 1.7;
+}
+.breadcrumb {
+  display: flex;
+  gap: 0.8rem;
+  padding-block: 1.5rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.breadcrumb a:hover {
+  color: var(--primary);
+}
+.hero {
+  display: grid;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1rem 2rem;
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.hero h1 {
+  margin-block: 1rem;
+  font-size: clamp(2rem, 4.1vw, 3.7rem);
+  line-height: 1.6;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+}
+.hero h1 span {
+  color: var(--primary);
+}
+.lead {
+  color: var(--muted);
+  line-height: 2.2;
+  max-width: 36rem;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  margin-block-start: 1.8rem;
+}
+.primary,
+.secondary {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 48px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.9rem;
+  font-size: 0.87rem;
+  font-weight: 700;
+}
+.primary {
+  background: var(--primary);
+  color: var(--primary-foreground, white);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+.primary:hover {
+  filter: brightness(1.1);
+}
+.secondary {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.heroNote {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-block-start: 1.3rem !important;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.heroNote svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  min-width: 0;
+  padding-block: 1rem 2rem;
+}
+.visualGlow {
+  position: absolute;
+  z-index: -1;
+  width: 90%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--primary) 15%, var(--ice)),
+    transparent 70%
+  );
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.product {
+  border-radius: 1.5rem;
+  width: 90%;
+  height: auto;
+  max-height: 470px;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 22px #092d4724);
+}
+.visualBadge {
+  position: absolute;
+  inset-block-end: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.4rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.visualBadge svg {
+  color: var(--primary);
+}
+.visualBadge strong,
+.visualBadge small {
+  display: block;
+}
+.visualBadge strong {
+  font-size: 0.85rem;
+}
+.visualBadge small {
+  margin-block-start: 0.3rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.section {
+  padding-block: 2.5rem;
+  scroll-margin-block-start: 7rem;
+}
+.section h2,
+.faqSection h2 {
+  margin-block: 0.5rem 1.5rem;
+}
+.cards {
+  display: grid;
+  gap: 1rem;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.4rem;
+  box-shadow: 0 8px 24px #082d4505;
+}
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-block-end: 1.3rem;
+}
+.icon,
+.orderIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--ice);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  width: 52px;
+  height: 52px;
+}
+.tag {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.card h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.card p {
+  margin-block: 0.7rem 1.4rem;
+  font-size: 0.84rem;
+  line-height: 2;
+  color: var(--muted);
+}
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  min-height: 44px;
+}
+.textLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.card .textLink {
+  margin-block-start: auto;
+}
+.orderPanel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  padding: clamp(1.4rem, 3vw, 2.5rem);
+  margin-block: 1rem 2rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1.5rem;
+  background: linear-gradient(120deg, var(--ice), var(--surface));
+}
+.orderPanel h2 {
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  margin-block: 0.4rem;
+}
+.orderPanel p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 2;
+}
+.orderIcon {
+  width: 70px;
+  height: 70px;
+  background: var(--surface);
+}
+.orderActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  margin-inline-start: auto;
+}
+.guideLayout {
+  display: grid;
+  gap: 2rem;
+}
+.guideLayout .textLink {
+  margin-block-start: 1rem;
+}
+.guides,
+.faq {
+  display: grid;
+  gap: 0.8rem;
+}
+.details {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  scroll-margin-block-start: 8rem;
+  min-width: 0;
+}
+.details:target {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.details summary {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.details summary::-webkit-details-marker {
+  display: none;
+}
+.details summary > svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.plus {
+  margin-inline-start: auto;
+  color: var(--primary);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.details[open] .plus {
+  transform: rotate(45deg);
+}
+.details ul {
+  margin: 0;
+  padding-block: 0 1.5rem;
+  padding-inline: 2.5rem 1.5rem;
+  list-style: disc;
+}
+.details li,
+.details > p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 2.2;
+}
+.details li + li {
+  margin-block-start: 0.6rem;
+}
+.details > p {
+  padding: 0 1.2rem 1.2rem;
+}
+.faqSection {
+  padding-block: 2rem 3.5rem;
+  max-width: 850px;
+  margin-inline: auto;
+}
+.contact {
+  display: grid;
+  gap: 2rem;
+  padding: clamp(1.4rem, 4vw, 3rem);
+  border-radius: 1.6rem;
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(130deg, var(--ice), var(--surface));
+  scroll-margin-block-start: 7rem;
+}
+.contact h2 {
+  margin-block: 0.6rem 1rem;
+}
+.contact p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 2;
+  font-size: 0.85rem;
+}
+.contactLinks {
+  display: grid;
+  align-content: center;
+  gap: 0.8rem;
+  font-style: normal;
+  min-width: 0;
+}
+.contactLinks a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+}
+.contactLinks a > svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.contactLinks a > svg:last-child {
+  margin-inline-start: auto;
+}
+.contactLinks small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-block-end: 0.3rem;
+}
+.contactLinks bdi {
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.page a:focus-visible,
+.page summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 5px;
+}
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  .hero {
+    grid-template-columns: 1.15fr 1fr;
+    padding-block: 2rem 3rem;
+  }
+  .guideLayout {
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 4rem;
+  }
+  .contact {
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+  }
+}
+@media (min-width: 1100px) {
+  .cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .section {
+    padding-block: 3.5rem;
+  }
+}
+@media (max-width: 639px) {
+  .actions > a {
+    flex: 1 1 auto;
+  }
+  .heroCopy {
+    padding-block-start: 0.5rem;
+  }
+  .orderActions {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+  .orderActions > .primary {
+    width: 100%;
+  }
+  .orderIcon {
+    width: 54px;
+    height: 54px;
+  }
+}

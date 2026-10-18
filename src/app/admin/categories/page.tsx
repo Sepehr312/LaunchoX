@@ -1,3 +1,4 @@
+import { AdminTableScroll } from "@/components/admin/AdminTableScroll";
 import { getEnv } from "@/lib/env";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
@@ -23,12 +24,7 @@ export default async function Categories() {
         دسته‌بندی جدید
       </Link>
       {categories.length ? (
-        <div
-          className="admin-table-scroll"
-          role="region"
-          aria-label="جدول اطلاعات"
-          tabIndex={0}
-        >
+        <AdminTableScroll>
           <table className="w-full text-start">
             <thead>
               <tr>
@@ -67,7 +63,7 @@ export default async function Categories() {
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminTableScroll>
       ) : (
         <p>دسته‌بندی‌ای ثبت نشده است.</p>
       )}

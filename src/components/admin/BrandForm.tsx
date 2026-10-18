@@ -15,7 +15,12 @@ import {
 } from "@/components/admin/AdminForm";
 
 export function BrandForm({ brand }: { brand?: BrandDTO }) {
-  const [state, action, pending] = useAdminFormAction(brandAction, brand?.id);
+  const [state, action, pending] = useAdminFormAction(
+    brandAction,
+    "/admin/brands",
+    brand?.id,
+  );
+  const [uploading, setUploading] = useState(false);
   const [values, setValues] = useState({
     name: brand?.name ?? "",
     slug: brand?.slug ?? "",
@@ -45,7 +50,11 @@ export function BrandForm({ brand }: { brand?: BrandDTO }) {
     error: errors?.[name],
   });
   return (
-    <form action={action} className="admin-product-form" aria-busy={pending}>
+    <form
+      action={action}
+      className="admin-product-form"
+      aria-busy={pending || uploading}
+    >
       <input
         type="hidden"
         name="operation"
@@ -62,7 +71,7 @@ export function BrandForm({ brand }: { brand?: BrandDTO }) {
         </Link>{" "}
         · <Link href="/admin/brands">فهرست برندها</Link>
       </FormFeedback>
-      <fieldset disabled={pending} className="admin-form-body">
+      <fieldset disabled={pending || uploading} className="admin-form-body">
         <FormSection
           title="هویت برند"
           description="اطلاعات سازنده را یک‌بار ثبت و در فروشگاه مدیریت کنید."
@@ -84,7 +93,12 @@ export function BrandForm({ brand }: { brand?: BrandDTO }) {
           <FormTextarea label="توضیحات" {...field("description")} />
         </FormSection>
         <FormSection title="لوگو و ترتیب نمایش">
-          <ImagePreview src={values.logo} alt={values.name || "لوگوی برند"} />
+          <ImagePreview
+            src={values.logo}
+            alt={values.name || "لوگوی برند"}
+            onUploadingChange={setUploading}
+            onUpload={(logo) => setValues((current) => ({ ...current, logo }))}
+          />
           <FormField
             label="نشانی لوگو"
             dir="ltr"

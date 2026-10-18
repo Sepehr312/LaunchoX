@@ -1,3 +1,4 @@
+import { AdminTableScroll } from "@/components/admin/AdminTableScroll";
 import { getEnv } from "@/lib/env";
 import Link from "next/link";
 import Image from "next/image";
@@ -59,12 +60,7 @@ export default async function ProductsAdmin({
             : "محصولی در این صفحه برای نمایش وجود ندارد. برای افزودن محصول، «محصول جدید» را انتخاب کنید."}
         </p>
       ) : (
-        <div
-          className="admin-table-scroll"
-          role="region"
-          aria-label="جدول اطلاعات"
-          tabIndex={0}
-        >
+        <AdminTableScroll>
           <table className="w-full text-start">
             <thead>
               <tr>
@@ -114,7 +110,7 @@ export default async function ProductsAdmin({
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminTableScroll>
       )}
       <Pagination
         page={result.page}

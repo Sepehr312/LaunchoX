@@ -653,3 +653,16 @@
   inline-size: 100%;
   margin-block-start: 16px;
 }
+
+.page[data-brand-catalog="true"] .categories {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  max-inline-size: 100%;
+  padding-block: 4px;
+}
+.page[data-brand-catalog="true"] .categories button {
+  flex-shrink: 0;
+}
+.page[data-brand-catalog="true"] [data-arctic-product-card] {
+  color-scheme: light;
+}

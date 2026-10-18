@@ -11,6 +11,7 @@ import {
 } from "react";
 import { ImageOff } from "lucide-react";
 import { assetUrlSchema } from "@/validations/common";
+import { imageFileSchema, imageUploadResultSchema } from "@/validations/image";
 import type { ActionResult } from "@/lib/errors";
 
 export function FormSection({
@@ -179,26 +180,100 @@ export function FormFeedback({
   );
 }
 
-export function ImagePreview({ src, alt }: { src: string; alt: string }) {
+export function ImagePreview({
+  src,
+  alt,
+  onUpload,
+  onUploadingChange,
+}: {
+  src: string;
+  alt: string;
+  onUpload?: (url: string) => void;
+  onUploadingChange?: (uploading: boolean) => void;
+}) {
   const [failed, setFailed] = useState<string>();
+  const [error, setError] = useState<string>();
+  const [uploading, setUploading] = useState(false);
   const valid = assetUrlSchema.safeParse(src).success;
   return (
-    <div className="admin-image-preview">
-      {valid && failed !== src ? (
-        <Image
-          src={src}
-          alt={alt}
-          width={140}
-          height={140}
-          unoptimized
-          onError={() => setFailed(src)}
-        />
-      ) : (
-        <span>
-          <ImageOff size={28} aria-hidden="true" />
-          <small>{src ? "تصویر در دسترس نیست" : "پیش‌نمایش تصویر"}</small>
-        </span>
+    <>
+      <div className="admin-image-preview" aria-busy={uploading}>
+        {valid && failed !== src ? (
+          <Image
+            src={src}
+            alt={alt}
+            width={140}
+            height={140}
+            unoptimized
+            onError={() => setFailed(src)}
+          />
+        ) : (
+          <span>
+            <ImageOff size={28} aria-hidden="true" />
+            <small>{src ? "تصویر در دسترس نیست" : "پیش‌نمایش تصویر"}</small>
+          </span>
+        )}
+        {onUpload && (
+          <input
+            type="file"
+            className="admin-image-upload"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            aria-label={`بارگذاری یا جایگزینی ${alt}`}
+            title="برای بارگذاری تصویر انتخاب کنید"
+            disabled={uploading}
+            onChange={async (event) => {
+              const file = event.currentTarget.files?.[0];
+              event.currentTarget.value = "";
+              if (!file) return;
+              const parsed = imageFileSchema.safeParse(file);
+              if (!parsed.success) {
+                setError(parsed.error.issues[0]?.message ?? "تصویر معتبر نیست");
+                return;
+              }
+              setError(undefined);
+              setUploading(true);
+              onUploadingChange?.(true);
+              try {
+                const form = new FormData();
+                form.set("image", file);
+                const response = await fetch("/api/admin/images", {
+                  method: "POST",
+                  body: form,
+                });
+                const body: unknown = await response.json();
+                const result = imageUploadResultSchema.safeParse(body);
+                if (!response.ok || !result.success) {
+                  setError(
+                    typeof body === "object" &&
+                      body !== null &&
+                      "error" in body &&
+                      typeof body.error === "string"
+                      ? body.error
+                      : "بارگذاری تصویر انجام نشد؛ دوباره تلاش کنید",
+                  );
+                  return;
+                }
+                onUpload(result.data.data.url);
+              } catch {
+                setError("بارگذاری تصویر انجام نشد؛ دوباره تلاش کنید");
+              } finally {
+                setUploading(false);
+                onUploadingChange?.(false);
+              }
+            }}
+          />
+        )}
+      </div>
+      {uploading && (
+        <p role="status" className="admin-hint">
+          در حال بارگذاری تصویر…
+        </p>
       )}
-    </div>
+      {error && (
+        <p role="alert" className="admin-field-error">
+          {error}
+        </p>
+      )}
+    </>
   );
 }

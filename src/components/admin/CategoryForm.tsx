@@ -24,8 +24,10 @@ export function CategoryForm({
 }) {
   const [state, action, pending] = useAdminFormAction(
     categoryAction,
+    "/admin/categories",
     category?.id,
   );
+  const [uploading, setUploading] = useState(false);
   const [values, setValues] = useState({
     name: category?.name ?? "",
     slug: category?.slug ?? "",
@@ -54,7 +56,11 @@ export function CategoryForm({
     error: errors?.[name],
   });
   return (
-    <form action={action} className="admin-product-form" aria-busy={pending}>
+    <form
+      action={action}
+      className="admin-product-form"
+      aria-busy={pending || uploading}
+    >
       <input
         type="hidden"
         name="operation"
@@ -70,7 +76,7 @@ export function CategoryForm({
           ویرایش دسته‌بندی
         </Link>
       </FormFeedback>
-      <fieldset disabled={pending} className="admin-form-body">
+      <fieldset disabled={pending || uploading} className="admin-form-body">
         <FormSection
           title="اطلاعات دسته‌بندی"
           description="محصولات فروشگاه را در دسته‌های روشن و قابل‌فهم مرتب کنید."
@@ -105,6 +111,10 @@ export function CategoryForm({
         </FormSection>
         <FormSection title="تصویر و نمایش">
           <ImagePreview
+            onUploadingChange={setUploading}
+            onUpload={(image) =>
+              setValues((current) => ({ ...current, image }))
+            }
             src={values.image}
             alt={values.name || "تصویر دسته‌بندی"}
           />

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetails } from "@/components/store/ProductDetails";
 import { getCurrentCart } from "@/actions/cart.actions";
-import { slugSchema } from "@/validations/common";
+import { routeSlugSchema } from "@/validations/common";
 import {
   getProductBySlug,
   getRelatedProducts,
@@ -15,7 +15,7 @@ export const revalidate = 300;
 export const dynamicParams = true;
 
 const loadProduct = cache(async (slug: string) => {
-  const parsed = slugSchema.safeParse(slug);
+  const parsed = routeSlugSchema.safeParse(slug);
   if (!parsed.success) notFound();
   const product = await getProductBySlug(parsed.data);
   if (!product) notFound();
