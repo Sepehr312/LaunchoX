@@ -99,6 +99,7 @@ export default async function OrdersAdmin({
     parsed.data.payment ||
     parsed.data.period,
   );
+  const listQuery = pageHref(result.page).slice("/admin/orders".length);
   return (
     <div className={cn("admin-list-page", styles.page)}>
       <AdminListHeader
@@ -152,7 +153,7 @@ export default async function OrdersAdmin({
                     <td>
                       <Link
                         className="admin-order-link"
-                        href={`/admin/orders/${order.id}`}
+                        href={`/admin/orders/${order.id}${listQuery}`}
                       >
                         <bdi>{toPersianDigits(order.orderNumber)}</bdi>
                         <ArrowUpLeft size={14} aria-hidden="true" />
@@ -197,7 +198,7 @@ export default async function OrdersAdmin({
                     <td>
                       <Link
                         className={styles.review}
-                        href={`/admin/orders/${order.id}`}
+                        href={`/admin/orders/${order.id}${listQuery}`}
                         aria-label={`بررسی سفارش ${toPersianDigits(order.orderNumber)}`}
                       >
                         بررسی

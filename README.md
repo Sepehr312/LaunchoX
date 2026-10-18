@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Admin order details use the approved two-column concept: products/history in the main column and explicit next-step actions, customer/shipping and payment cards beside it. Mobile shows the action first. Cancellation uses a native confirmation dialog; paid cancellations do not initiate refunds. List filters travel as validated query parameters to preserve the return destination, and history/payment timestamps use Tehran time through the shared formatter.
+
 - Admin orders reuse the approved light admin shell, status totals across all orders, and URL-backed live filters. Search matches literal order references (including Persian digits) or current customer names after a 300ms pause; payment and status changes apply immediately. Date ranges mean the last 7, 30, or 90 rolling days. Filter changes reset pagination and preserve the other selections; no apply/reset buttons are shown.
 
 - Admin product creation/editing now requires a saved brand through a shared admin-only Zod schema and the form select; legacy database products and generic seed/service input remain compatible. Catalog forms place media before their main fields and publication settings below them on narrow screens, while desktop grid areas retain the approved two-column layout.

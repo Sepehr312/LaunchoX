@@ -4,26 +4,39 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import {
+  ArrowRight,
+  Ban,
+  Check,
+  Clock3,
+  CreditCard,
+  Package,
+  UserRound,
+} from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import {
   getOrderAdmin,
   getOrderCustomersAdmin,
 } from "@/services/order.service";
 import { objectIdSchema } from "@/validations/common";
+import { adminOrderQuerySchema } from "@/validations/order";
 import { AppError } from "@/lib/errors";
-import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
+import { formatDateTime, formatPrice, toPersianDigits } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { orderLabels, paymentLabels } from "@/types/order-labels";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
+import { CopyValue } from "@/components/admin/CopyValue";
+import styles from "@/components/admin/OrderDetail.module.css";
+
 export const dynamic = "force-dynamic";
 const loadOrder = cache(async (id: string) => {
   await requireAdmin();
   const parsed = objectIdSchema.safeParse(id);
   if (!parsed.success) notFound();
-  const order = await getOrderAdmin(parsed.data).catch((error: unknown) => {
+  return getOrderAdmin(parsed.data).catch((error: unknown) => {
     if (error instanceof AppError && error.code === "NOT_FOUND") notFound();
     throw error;
   });
-  return order;
 });
 
 export async function generateMetadata({
@@ -40,11 +53,28 @@ export async function generateMetadata({
 
 export default async function OrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await requireAdmin();
   const order = await loadOrder((await params).id);
+  const listQuery = adminOrderQuerySchema.safeParse(await searchParams);
+  const returnParams = new URLSearchParams();
+  if (listQuery.success) {
+    for (const [key, value] of Object.entries(listQuery.data)) {
+      if (
+        value !== undefined &&
+        value !== "" &&
+        !(key === "page" && value === 1) &&
+        !(key === "limit" && value === 12)
+      ) {
+        returnParams.set(key, String(value));
+      }
+    }
+  }
+  const returnHref = `/admin/orders${returnParams.size ? `?${returnParams}` : ""}`;
   const people = new Map(
     (
       await getOrderCustomersAdmin([
@@ -57,135 +87,318 @@ export default async function OrderPage({
   );
   const customer = people.get(order.user);
   const address = order.shippingAddress;
+  const fullAddress = `${address.province}، ${address.city}، ${address.addressLine}`;
+  const progress = ["pending", "processing", "shipped", "delivered"] as const;
+  const step = progress.findIndex((status) => status === order.status);
+  const history = [...order.statusHistory].sort(
+    (a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime(),
+  );
+  const cancelledAt = history.find(
+    (entry) => entry.status === "cancelled",
+  )?.changedAt;
+  const events = history.map((entry) => ({
+    label: orderLabels[entry.status],
+    changedAt: entry.changedAt,
+    actor: entry.changedBy
+      ? (people.get(entry.changedBy)?.name ?? "کاربر حذف‌شده")
+      : "سیستم",
+  }));
+  if (order.payment.paidAt) {
+    events.push({
+      label: "پرداخت تأیید شد",
+      changedAt: order.payment.paidAt,
+      actor: "سیستم",
+    });
+  }
+  events.sort(
+    (a, b) => new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime(),
+  );
+  const paymentClass =
+    order.payment.status === "paid"
+      ? "admin-badge-success"
+      : order.payment.status === "failed"
+        ? "admin-badge-danger"
+        : order.payment.status === "unpaid"
+          ? "admin-badge-warning"
+          : undefined;
   return (
-    <div className="grid min-w-0 gap-6">
-      <Link href="/admin/orders">بازگشت به سفارش‌ها</Link>
-      <section className="admin-panel grid gap-3 break-words">
-        <h2>مشتری</h2>
-        <p>{customer?.name ?? "مشتری حذف‌شده"}</p>
-        {customer && (
-          <p className="break-all">
-            ایمیل: <bdi>{customer.email}</bdi>
+    <div className={styles.page}>
+      <header className={cn("admin-panel", styles.header)}>
+        <div>
+          <p className="admin-eyebrow">پنل مدیریت / سفارش‌ها / جزئیات سفارش</p>
+          <h1 className={styles.title}>
+            سفارش <bdi>{toPersianDigits(order.orderNumber)}</bdi>
+            <CopyValue value={order.orderNumber} label="شماره سفارش" />
+          </h1>
+          <p className={styles.hint}>
+            ثبت در{" "}
+            <time dateTime={order.createdAt}>
+              {formatDateTime(order.createdAt)}
+            </time>
           </p>
-        )}
-        {customer?.mobile && <p>موبایل: {toPersianDigits(customer.mobile)}</p>}
-      </section>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">
-          سفارش {toPersianDigits(order.orderNumber)}
-        </h1>
-        <span className="text-primary">{orderLabels[order.status]}</span>
-      </div>
-      <p className="text-sm text-muted">ثبت در {formatDate(order.createdAt)}</p>
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <section className="admin-panel">
-          <h2 className="mb-6 text-xl font-bold">اقلام سفارش</h2>
-          <div className="grid gap-5">
-            {order.items.map((item) => (
-              <article
-                key={item.product}
-                className="flex min-w-0 gap-4 border-b border-border pb-5"
-              >
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  width={64}
-                  height={80}
-                  className="h-20 w-16 shrink-0 object-contain"
-                />
-                <div className="min-w-0">
-                  <p className="font-semibold">{item.title}</p>
-                  <p className="mt-2 text-sm text-muted">
-                    {toPersianDigits(item.quantity)} عدد ·{" "}
-                    {formatPrice(item.price)}
-                  </p>
-                </div>
-              </article>
-            ))}
+          <div className={styles.badges}>
+            <span
+              className={cn(
+                "admin-badge",
+                order.status === "cancelled" && "admin-badge-danger",
+                order.status === "delivered" && "admin-badge-success",
+              )}
+            >
+              {orderLabels[order.status]}
+            </span>
+            <span className={cn("admin-badge", paymentClass)}>
+              {paymentLabels[order.payment.status]}
+            </span>
           </div>
-          <dl className="mt-6 grid gap-4">
-            {[
-              ["جمع اقلام", order.subtotal],
-              ["هزینهٔ ارسال", order.shippingFee],
-              ["مبلغ کل", order.total],
-            ].map(([label, amount]) => (
-              <div key={label} className="flex flex-wrap justify-between gap-2">
-                <dt>{label}</dt>
-                <dd>{formatPrice(Number(amount))}</dd>
-              </div>
+        </div>
+        <Link href={returnHref} className={styles.back}>
+          <ArrowRight size={18} aria-hidden="true" />
+          بازگشت به سفارش‌ها
+        </Link>
+      </header>
+      <section
+        className={cn("admin-panel", styles.progressPanel)}
+        aria-label="مراحل سفارش"
+      >
+        {order.status === "cancelled" ? (
+          <p className={styles.cancelled}>
+            <Ban size={22} aria-hidden="true" />
+            این سفارش لغو شده است.
+            {cancelledAt && (
+              <time dateTime={cancelledAt}>{formatDateTime(cancelledAt)}</time>
+            )}
+          </p>
+        ) : (
+          <ol className={styles.progress}>
+            {progress.map((status, index) => (
+              <li
+                key={status}
+                className={cn(
+                  index < step && styles.completed,
+                  index === step && styles.current,
+                )}
+                aria-current={index === step ? "step" : undefined}
+              >
+                <span className={styles.dot}>
+                  {index < step ? (
+                    <Check size={16} aria-hidden="true" />
+                  ) : index === step ? (
+                    <span />
+                  ) : null}
+                </span>
+                <span>
+                  {["ثبت سفارش", "آماده‌سازی", "ارسال", "تحویل"][index]}
+                </span>
+              </li>
             ))}
-          </dl>
-          <p className="mt-5">
-            وضعیت پرداخت: {paymentLabels[order.payment.status]}
-          </p>
-          <p className="mt-3 break-all">
-            ارائه‌دهندهٔ پرداخت:{" "}
-            {order.payment.provider === "fake"
-              ? "آزمایشی"
-              : (order.payment.provider ?? "ثبت نشده")}
-          </p>
-          {order.payment.authority && (
-            <p className="mt-3 break-all">
-              شناسهٔ درخواست پرداخت: {toPersianDigits(order.payment.authority)}
-            </p>
-          )}
-          {order.payment.refId && (
-            <p className="mt-3 break-all">
-              شناسهٔ پرداخت: {toPersianDigits(order.payment.refId)}
-            </p>
-          )}
-          {order.payment.paidAt && (
-            <p className="mt-3">
-              تاریخ پرداخت: {formatDate(order.payment.paidAt)}
-            </p>
-          )}
-        </section>
-        <div className="grid gap-6">
-          <section className="admin-panel">
-            <h2 className="mb-5 text-xl font-bold">نشانی ارسال</h2>
-            <p>{address.recipientName}</p>
-            <p className="mt-3 leading-8 break-words">
-              {address.province}، {address.city}،{" "}
-              {toPersianDigits(address.addressLine)}
-            </p>
-            <p className="mt-3">
-              کد پستی: {toPersianDigits(address.postalCode)}
-            </p>
-            <p className="mt-3">موبایل: {toPersianDigits(address.mobile)}</p>
-            {order.note && (
-              <p className="mt-5 break-words">یادداشت: {order.note}</p>
+          </ol>
+        )}
+      </section>
+      <div className={styles.columns}>
+        <div className={styles.main}>
+          <section
+            className={cn("admin-panel", styles.items)}
+            aria-labelledby="order-items-heading"
+          >
+            <h2 id="order-items-heading">
+              <Package size={22} aria-hidden="true" />
+              اقلام سفارش
+            </h2>
+            {order.items.length ? (
+              <div className={styles.itemList}>
+                <div className={styles.itemHead} aria-hidden="true">
+                  <span>محصول</span>
+                  <span>تعداد</span>
+                  <span>قیمت واحد</span>
+                </div>
+                {order.items.map((item, index) => (
+                  <article
+                    key={`${item.product}-${index}`}
+                    className={styles.item}
+                  >
+                    <div className={styles.product}>
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt=""
+                          width={64}
+                          height={80}
+                          className={styles.productImage}
+                        />
+                      ) : (
+                        <Package size={32} aria-hidden="true" />
+                      )}
+                      <h3>{item.title}</h3>
+                    </div>
+                    <p>
+                      <span className={styles.mobileLabel}>تعداد: </span>
+                      {toPersianDigits(item.quantity)}
+                    </p>
+                    <p>
+                      <span className={styles.mobileLabel}>قیمت واحد: </span>
+                      {formatPrice(item.price)}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="admin-empty">اقلامی برای این سفارش ثبت نشده است.</p>
+            )}
+            <dl className={styles.totals}>
+              {[
+                { label: "جمع اقلام", value: order.subtotal },
+                { label: "هزینه ارسال", value: order.shippingFee },
+                { label: "مبلغ کل", value: order.total },
+              ].map(({ label, value }) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>{formatPrice(value)}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          <section
+            className={cn("admin-panel", styles.history)}
+            aria-labelledby="order-history-heading"
+          >
+            <h2 id="order-history-heading">
+              <Clock3 size={22} aria-hidden="true" />
+              تاریخچه سفارش
+            </h2>
+            {events.length ? (
+              <ol className={styles.timeline}>
+                {events.map((entry, index) => (
+                  <li key={`${entry.changedAt}-${index}`}>
+                    <strong>{entry.label}</strong>
+                    <p>
+                      <time dateTime={entry.changedAt}>
+                        {formatDateTime(entry.changedAt)}
+                      </time>
+                      <span> · {entry.actor}</span>
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="admin-empty">
+                تاریخچه‌ای برای این سفارش ثبت نشده است.
+              </p>
             )}
           </section>
-          <section className="admin-panel">
-            <h3 className="mb-5 text-xl font-bold">تاریخچهٔ سفارش</h3>
-            <ol className="grid gap-4">
-              {order.statusHistory.map((entry, index) => (
-                <li
-                  key={index}
-                  className="flex flex-wrap justify-between gap-2 border-b border-border pb-3"
-                >
-                  <span>
-                    {orderLabels[entry.status]} ·{" "}
-                    {entry.changedBy
-                      ? (people.get(entry.changedBy)?.name ?? "کاربر حذف‌شده")
-                      : "سیستم"}
-                  </span>
-                  <time
-                    dateTime={entry.changedAt}
-                    className="text-sm text-muted"
-                  >
-                    {formatDate(entry.changedAt)}
-                  </time>
-                </li>
-              ))}
-            </ol>
-          </section>
+        </div>
+        <aside className={styles.side} aria-label="اقدامات و اطلاعات سفارش">
           <OrderStatusForm
             id={order.id}
             status={order.status}
             payment={order.payment.status}
           />
-        </div>
+          <section
+            className={cn("admin-panel", styles.customer)}
+            aria-labelledby="order-customer-heading"
+          >
+            <h2 id="order-customer-heading">
+              <UserRound size={22} aria-hidden="true" />
+              مشتری و نشانی ارسال
+            </h2>
+            <p className={styles.customerName}>
+              {customer?.name ?? "مشتری حذف‌شده"}
+            </p>
+            {customer && (
+              <p className={styles.contact}>
+                <bdi>{customer.email}</bdi>
+                <CopyValue value={customer.email} label="ایمیل مشتری" />
+              </p>
+            )}
+            <div className={styles.address}>
+              <p>گیرنده: {address.recipientName}</p>
+              <p className={styles.contact}>
+                <a href={`tel:${address.mobile}`}>
+                  <bdi>{toPersianDigits(address.mobile)}</bdi>
+                </a>
+                <CopyValue value={address.mobile} label="شماره تماس گیرنده" />
+              </p>
+              <p className={styles.contact}>
+                <span>{toPersianDigits(fullAddress)}</span>
+                <CopyValue value={fullAddress} label="نشانی ارسال" />
+              </p>
+              <p className={styles.contact}>
+                <span>
+                  کد پستی: <bdi>{toPersianDigits(address.postalCode)}</bdi>
+                </span>
+                <CopyValue value={address.postalCode} label="کد پستی" />
+              </p>
+            </div>
+            {order.note && (
+              <div className={styles.note}>
+                <strong>یادداشت مشتری:</strong>
+                <p>{order.note}</p>
+              </div>
+            )}
+          </section>
+          <section
+            className={cn("admin-panel", styles.payment)}
+            aria-labelledby="order-payment-heading"
+          >
+            <h2 id="order-payment-heading">
+              <CreditCard size={22} aria-hidden="true" />
+              اطلاعات پرداخت
+            </h2>
+            <span className={cn("admin-badge", paymentClass)}>
+              {paymentLabels[order.payment.status]}
+            </span>
+            <dl className={styles.paymentFields}>
+              <div>
+                <dt>مبلغ کل</dt>
+                <dd>{formatPrice(order.total)}</dd>
+              </div>
+              <div>
+                <dt>درگاه پرداخت</dt>
+                <dd>
+                  {order.payment.provider === "fake"
+                    ? "درگاه آزمایشی"
+                    : order.payment.provider === "zarinpal"
+                      ? "زرین‌پال"
+                      : "ثبت نشده"}
+                </dd>
+              </div>
+              {order.payment.paidAt && (
+                <div>
+                  <dt>تاریخ پرداخت</dt>
+                  <dd>
+                    <time dateTime={order.payment.paidAt}>
+                      {formatDateTime(order.payment.paidAt)}
+                    </time>
+                  </dd>
+                </div>
+              )}
+            </dl>
+            {(order.payment.authority || order.payment.refId) && (
+              <details className={styles.paymentDetails}>
+                <summary>نمایش شناسه‌های پرداخت</summary>
+                {order.payment.authority && (
+                  <p>
+                    شناسه درخواست پرداخت:{" "}
+                    <bdi>{toPersianDigits(order.payment.authority)}</bdi>
+                    <CopyValue
+                      value={order.payment.authority}
+                      label="شناسه درخواست پرداخت"
+                    />
+                  </p>
+                )}
+                {order.payment.refId && (
+                  <p>
+                    شناسه پرداخت:{" "}
+                    <bdi>{toPersianDigits(order.payment.refId)}</bdi>
+                    <CopyValue
+                      value={order.payment.refId}
+                      label="شناسه پرداخت"
+                    />
+                  </p>
+                )}
+              </details>
+            )}
+          </section>
+        </aside>
       </div>
     </div>
   );

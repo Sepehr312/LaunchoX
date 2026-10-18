@@ -33,3 +33,13 @@ export function formatDate(value: Date | string | number): string {
   }
   return dateFormatter.format(date);
 }
+
+export function formatDateTime(value: Date | string | number): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) throw new RangeError("تاریخ معتبر نیست.");
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Tehran",
+  }).format(date);
+}
