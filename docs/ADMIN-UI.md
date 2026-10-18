@@ -73,3 +73,12 @@
 - زیر عرض ۶۴۰ پیکسل، دکمه‌های افزودنِ سربرگ داشبورد، محصولات، برندها و دسته‌بندی‌ها فقط آیکون «+» دارند؛ نام فارسی دسترس‌پذیر، راهنمای دکمه و محدودهٔ لمس ۴۴ در ۴۴ پیکسل حفظ شده است.
 - `lint`، `typecheck`، هر ۴۵۹ تست و `build` موفق بودند. تست مرورگر پنج صفحه را در عرض‌های ۳۶۰، ۷۶۸، ۱۰۲۴ و ۱۴۴۰، جستجوی بدون بارگذاری کامل، حفظ فوکوس، برگشت نتایج پس از خالی‌کردن ورودی، حذف فیلتر برند، اعتبارسنجی query و کلید کاربران بررسی کرد. تست مرورگر قبلی نیز ساخت/ویرایش/آپلود و محدودیت حذف دستهٔ دارای محصول و اسکرول لمسی/ماوس را تأیید کرد. هر دو از دیتابیس‌های جداگانهٔ موقت استفاده کردند.
 - تصاویر جدید: [برندها دسکتاپ](admin-review/brands-approved-desktop.png)، [برندها موبایل](admin-review/brands-approved-mobile.png)، [دسته‌بندی‌ها دسکتاپ](admin-review/categories-approved-desktop.png)، [دسته‌بندی‌ها موبایل](admin-review/categories-approved-mobile.png)، [کاربران دسکتاپ](admin-review/users-approved-desktop.png)، [کاربران موبایل](admin-review/users-approved-mobile.png).
+
+
+## Approved catalog forms
+
+The product, brand and category create/edit pages now share the approved form layout: one white panel, ice-blue section headers, full-width title/name and slug fields, a desktop media/publication column and native checkboxes. Product images are grouped in that column with accessible reorder/delete buttons. Forms stack below 1200px and remain within a 360px viewport. Existing upload, validation and save/redirect behavior is preserved.
+
+Validation: lint, typecheck, all 459 Vitest tests and production build passed. The isolated browser check covers all three create forms at 360/768/1024/1440px, keyboard checkbox interaction, image reordering, attributes, uploads, create/edit saves, public product visibility, linked-category deletion guards and mobile table scrolling.
+
+Screenshots: [Product desktop](admin-review/products-form-approved-1440.png), [product mobile](admin-review/products-form-approved-360.png), [brand desktop](admin-review/brands-form-approved-1440.png), [brand mobile](admin-review/brands-form-approved-360.png), [category desktop](admin-review/categories-form-approved-1440.png), [category mobile](admin-review/categories-form-approved-360.png).

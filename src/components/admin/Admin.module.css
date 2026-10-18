@@ -1023,6 +1023,180 @@
   font-size: 11px;
   color: var(--muted);
 }
+.scope :global(.admin-editor-page),
+.scope :global(.admin-editor-main),
+.scope :global(.admin-editor-aside) {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+  align-content: start;
+}
+.scope :global(.admin-editor-header) {
+  margin: 0;
+  align-items: start;
+}
+.scope :global(.admin-editor-page .admin-product-form) {
+  margin: 0;
+  min-width: 0;
+}
+.scope :global(.admin-editor-layout) {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.scope :global(.admin-editor-back) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--primary);
+  font-size: 14px;
+}
+.scope :global(.admin-editor-back svg) {
+  flex-shrink: 0;
+}
+.scope :global(.admin-editor-page .admin-form-section) {
+  min-width: 0;
+  background: var(--surface);
+}
+.scope :global(.admin-form-section > header) {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+}
+.scope :global(.admin-editor-page .admin-form-section > header) {
+  padding: 16px 20px;
+}
+.scope :global(.admin-editor-page .admin-form-grid) {
+  gap: 20px;
+  padding: 20px;
+}
+.scope :global(.admin-editor-page .admin-field label) {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.scope :global(.admin-editor-page .admin-required) {
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--ice);
+  color: var(--muted);
+  font-size: 10px;
+}
+.scope :global(.admin-editor-page .field-input) {
+  margin: 0;
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+.scope :global(.admin-editor-page .field-input[aria-invalid="true"]) {
+  border-color: var(--color-danger);
+}
+.scope :global(.admin-editor-page .admin-hint) {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.scope :global(.admin-toggle) {
+  justify-content: space-between;
+  min-width: 0;
+}
+.scope :global(.admin-toggle input) {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+.scope :global(.admin-toggle:has(input:disabled)) {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.scope :global(.admin-upload-hint) {
+  display: flex;
+  align-items: start;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.scope :global(.admin-upload-hint svg) {
+  flex-shrink: 0;
+  margin-block-start: 4px;
+}
+.scope :global(.admin-image-picker) {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.scope :global(.admin-editor-aside .admin-form-grid) {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 16px;
+  gap: 16px;
+}
+.scope :global(.admin-editor-aside .admin-image-row) {
+  grid-template-columns: minmax(0, 1fr) 88px;
+  grid-template-areas: "controls preview";
+  gap: 12px;
+  padding-block-end: 16px;
+}
+.scope :global(.admin-editor-aside .admin-image-row .admin-image-picker) {
+  grid-area: preview;
+}
+.scope :global(.admin-editor-aside .admin-image-row .admin-image-preview) {
+  width: 100%;
+  height: 112px;
+}
+.scope :global(.admin-editor-aside .admin-image-controls) {
+  grid-area: controls;
+  gap: 8px;
+}
+.scope :global(.admin-editor-aside .admin-image-controls .field-input) {
+  font-size: 13px;
+  padding-inline: 8px;
+}
+.scope :global(.admin-image-actions) {
+  gap: 8px;
+}
+.scope :global(.admin-image-actions button) {
+  width: 44px;
+  padding: 8px;
+}
+.scope :global(.admin-image-actions button:last-child) {
+  color: var(--color-danger);
+}
+.scope :global(.admin-editor-page .admin-form-footer) {
+  grid-column: 1 / -1;
+  padding-block-start: 20px;
+  border-block-start: 1px solid var(--border);
+}
+@media (min-width: 1200px) {
+  .scope :global(.admin-editor-layout) {
+    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+    align-items: start;
+  }
+}
+@media (max-width: 639px) {
+  .scope :global(.admin-editor-page),
+  .scope :global(.admin-editor-main),
+  .scope :global(.admin-editor-aside),
+  .scope :global(.admin-editor-layout) {
+    gap: 16px;
+  }
+  .scope :global(.admin-editor-page .admin-form-grid),
+  .scope :global(.admin-editor-page .admin-form-section > header) {
+    padding: 16px;
+    gap: 16px;
+  }
+  .scope :global(.admin-editor-aside .admin-image-row) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "preview" "controls";
+  }
+  .scope :global(.admin-editor-aside .admin-image-row .admin-image-preview) {
+    width: 112px;
+  }
+  .scope :global(.admin-editor-page .admin-form-footer > *) {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
 @media (max-width: 639px) {
   .scope :global(.admin-approved-header:has(.admin-create-button)) {
     display: grid;
