@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The approved calm admin dashboard and product-list mockups extend step 11 using the existing light ice/blue palette and live data. Recent orders and low stock share desktop columns and stack on mobile; wide tables scroll inside their own region. Product brands use the existing resolved Brand attribute (with legacy fallback), active switches stay in the status column, and search, numbered pagination, edit and confirmed deletion reuse existing actions. Preview figures are never substituted for database values.
+
 - The requested admin fixes extend step 11 without changing its presentation: selecting an existing image preview uploads PNG/JPEG/WebP/GIF files up to 5 MiB; MongoDB stores the bytes and `/api/images/[id]` serves immutable public URLs, avoiding a new storage provider or ephemeral local files. Successful product/category/brand saves return to their list, and table surfaces support native touch scrolling and mouse dragging. Category deletion also checks legacy string references and never deletes linked products. This explicitly supersedes the earlier image-upload exclusion; unused uploads are retained for now.
 
 
