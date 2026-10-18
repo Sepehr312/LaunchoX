@@ -290,6 +290,25 @@ describe("catalog management services", () => {
       expect(await getCategoryAdmin(category.id)).not.toBeNull();
     }
   });
+  it("rejects deleting categories referenced by legacy string IDs", async () => {
+    const category = await createCategory({
+      name: "Legacy",
+      order: 0,
+      isActive: true,
+    });
+    const collection = mongoose.connection.db!.collection("products");
+    const product = await collection.insertOne({
+      category: category.id,
+      isActive: false,
+    });
+    await expect(deleteCategory(category.id)).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+    expect(await getCategoryAdmin(category.id)).not.toBeNull();
+    expect(
+      await collection.findOne({ _id: product.insertedId }),
+    ).not.toBeNull();
+  });
   it("creates category trees and prevents deleting non-empty categories", async () => {
     const parent = await createCategory({
       name: "خانگی",
