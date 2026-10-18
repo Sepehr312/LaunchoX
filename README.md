@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- The admin menu trigger is hidden at widths of 1024px and above; narrower screens use a borderless icon-only button with a Persian accessible label and a 44px touch target. Its selector overrides the shared admin button display rule.
+
 - The owner-requested user role editor is an admin-only exception to the earlier no-role-form-input rule: guarded actions validate only the target ID and the customer/admin role, preserve unrelated fields and block self-role changes. Public registration/profile forms still cannot assign roles. Admin guards recheck current database role/activity so stale JWT roles cannot retain access. Administrators sort first; email text aligns with its RTL column heading. Role fields remount on confirmed role changes while action feedback is retained, keeping the select synchronized after saves and server refreshes.
 
 - At the user's request, the admin dashboard shows the three latest orders instead of the ten specified in SPEC section 9. Desktop and mobile admin logout controls use a muted text label and outlined exit icon matching the supplied reference.

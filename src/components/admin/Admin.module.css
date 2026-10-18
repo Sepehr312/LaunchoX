@@ -530,8 +530,14 @@
 .scope :global(.admin-drawer .admin-store-link) {
   margin-block-start: 32px;
 }
-.scope :global(.admin-menu-trigger) {
+.scope button:global(.admin-menu-trigger) {
   display: none;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 .scope :is(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--primary);
@@ -563,7 +569,7 @@
   .scope :global(.admin-sidebar-footer) {
     display: none;
   }
-  .scope :global(.admin-menu-trigger) {
+  .scope button:global(.admin-menu-trigger) {
     display: inline-flex;
   }
 }
@@ -584,10 +590,6 @@
   }
   .scope :global(.admin-logo) svg {
     width: 24px;
-  }
-  .scope :global(.admin-menu-trigger) {
-    font-size: 12px;
-    padding-inline: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
