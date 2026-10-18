@@ -1,3 +1,4 @@
+import { OrderDelivery } from "@/components/customer/OrderDelivery";
 import { OrderProgress } from "@/components/customer/OrderProgress";
 import { CopyOrderNumber } from "@/components/customer/CopyOrderNumber";
 import Link from "next/link";
@@ -64,11 +65,10 @@ export default async function OrderPage({
       <section className="checkout-panel">
         <h3 className="mb-3 font-bold">زمان تحویل سفارش</h3>
         <p className="text-sm leading-7 text-muted">
-          {order.status === "delivered"
-            ? "سفارش شما تحویل داده شده است."
-            : order.status === "cancelled"
-              ? "این سفارش لغو شده است."
-              : `زمان تقریبی تحویل: حدود ${toPersianDigits(1)} هفته. وضعیت ارسال در همین صفحه به‌روز می‌شود.`}
+          <OrderDelivery
+            status={order.status}
+            paymentStatus={order.payment.status}
+          />
         </p>
       </section>
       <div className="grid items-start gap-6 lg:grid-cols-2">

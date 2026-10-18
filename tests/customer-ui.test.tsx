@@ -1,3 +1,4 @@
+import { OrderDelivery } from "@/components/customer/OrderDelivery";
 import { OrderProgress } from "@/components/customer/OrderProgress";
 import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { describe, expect, it, vi } from "vitest";
@@ -8,6 +9,7 @@ import { CustomerEmpty } from "@/components/customer/CustomerEmpty";
 import { CartForm } from "@/components/store/CartForm";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import type { AddressDTO, OrderDTO } from "@/types/dto";
+vi.mock("next/navigation", () => ({ usePathname: () => "/account" }));
 vi.mock("@/actions/auth.actions", () => ({
   loginAction: vi.fn(),
   registerAction: vi.fn(),
@@ -44,7 +46,7 @@ describe("customer forms and purchase states", () => {
     expect(login).toContain('type="password"');
     expect(login).toContain('autoComplete="current-password"');
     expect(login).toContain('name="callbackUrl"');
-    expect(login).toContain("مرا به خاطر بسپار");
+    expect(login).toContain("ایمیل را تا بسته‌شدن این تب نگه دار");
     expect(login).not.toContain('name="confirmPassword"');
     const register = renderToStaticMarkup(
       <AuthForm mode="register" callbackUrl="/checkout" />,
@@ -132,7 +134,7 @@ vi.mock("@/lib/env", () => ({
 vi.mock("@/actions/account.actions", () => ({ accountAction: vi.fn() }));
 vi.mock("@/services/user.service", () => ({
   getProfile: async () => ({
-    name: "مشتری نمونه",
+    name: "نام تازهٔ مشتری",
     email: "customer@example.com",
     mobile: "09123456789",
   }),
@@ -193,6 +195,15 @@ vi.mock("@/services/order.service", () => ({
   }),
 }));
 describe("customer page composition", () => {
+  it("greets customers using their current profile rather than the original session name", async () => {
+    const { default: AccountLayout } =
+      await import("@/app/(shop)/account/layout");
+    const html = renderToStaticMarkup(
+      await AccountLayout({ children: <p>محتوای حساب</p> }),
+    );
+    expect(html).toContain("نام تازهٔ مشتری، خوش آمدید");
+    expect(html).not.toContain("مشتری نمونه، خوش آمدید");
+  });
   it("renders profile, address management and order details with their existing actions", async () => {
     const { default: Profile } = await import("@/app/(shop)/account/page");
     const profile = renderToStaticMarkup(await Profile());
@@ -209,8 +220,8 @@ describe("customer page composition", () => {
     const list = renderToStaticMarkup(
       await Orders({ searchParams: Promise.resolve({}) }),
     );
-    expect(list).toContain("زمان تقریبی تحویل");
-    expect(list).toContain("حدود ۱ هفته");
+    expect(list).toContain("زمان تحویل پس از پرداخت موفق مشخص می‌شود");
+    expect(list).not.toContain("حدود ۱ هفته");
     const { default: Details } =
       await import("@/app/(shop)/account/orders/[id]/page");
     const details = renderToStaticMarkup(
@@ -273,5 +284,47 @@ describe("customer interaction cues", () => {
       <PasswordGuidance password="" confirmation="" />,
     );
     expect(empty).not.toContain("text-success");
+  });
+});
+
+describe("order delivery messages", () => {
+  it.each(["unpaid", "failed", "refunded"] as const)(
+    "does not estimate delivery for %s payments",
+    (paymentStatus) => {
+      const html = renderToStaticMarkup(
+        <OrderDelivery status="pending" paymentStatus={paymentStatus} />,
+      );
+      expect(html).toContain("پس از پرداخت موفق");
+      expect(html).not.toContain("هفته");
+    },
+  );
+  it.each(["pending", "processing", "shipped"] as const)(
+    "estimates delivery for paid %s orders",
+    (status) => {
+      expect(
+        renderToStaticMarkup(
+          <OrderDelivery status={status} paymentStatus="paid" />,
+        ),
+      ).toContain("حدود ۱ هفته");
+    },
+  );
+  it("shows terminal states without an estimate", () => {
+    expect(
+      renderToStaticMarkup(
+        <OrderDelivery status="delivered" paymentStatus="paid" />,
+      ),
+    ).toContain("تحویل داده شده");
+    for (const paymentStatus of [
+      "paid",
+      "unpaid",
+      "failed",
+      "refunded",
+    ] as const) {
+      const html = renderToStaticMarkup(
+        <OrderDelivery status="cancelled" paymentStatus={paymentStatus} />,
+      );
+      expect(html).toContain("لغو شده");
+      expect(html).not.toContain("هفته");
+    }
   });
 });

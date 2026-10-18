@@ -16,7 +16,7 @@ export function CopyOrderNumber({ number }: { number: string }) {
       <button
         type="button"
         aria-label="کپی شماره سفارش"
-        className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-primary focus-visible:outline-2 focus-visible:outline-primary"
+        className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-border text-primary focus-visible:outline-2 focus-visible:outline-primary"
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(number);

@@ -1,0 +1,21 @@
+{
+  "passed": [
+    "email preference updates immediately and survives only this tab",
+    "failed registration preserves the login email preference",
+    "server rejection preserves profile drafts",
+    "saved profile updates the sidebar immediately and after reload",
+    "reopened address editor keeps saved values and cannot revert them",
+    "successful address addition still resets all controlled fields",
+    "server-rejected address addition preserves controlled fields",
+    "long address stays inside the mobile viewport",
+    "copy target is at least 44px",
+    "password form resets only after successful update",
+    "customer pages fit design breakpoints with long content"
+  ],
+  "viewports": [
+    360,
+    768,
+    1024,
+    1440
+  ]
+}

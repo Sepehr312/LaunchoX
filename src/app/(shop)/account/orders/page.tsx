@@ -1,3 +1,4 @@
+import { OrderDelivery } from "@/components/customer/OrderDelivery";
 import { CopyOrderNumber } from "@/components/customer/CopyOrderNumber";
 import { CustomerEmpty } from "@/components/customer/CustomerEmpty";
 import { OrderBadge } from "@/components/customer/OrderBadge";
@@ -7,7 +8,7 @@ import Link from "next/link";
 import { requireUser } from "@/actions/auth.actions";
 import { listOrdersForUser } from "@/services/order.service";
 import { orderQuerySchema } from "@/validations/order";
-import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
+import { formatDate, formatPrice } from "@/lib/format";
 export const metadata: Metadata = {
   title: `سفارش‌های من | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
 };
@@ -47,12 +48,10 @@ export default async function OrdersPage({
             <span>{formatPrice(order.total)}</span>
             <OrderBadge status={order.status} />
             <span className="text-xs leading-6 text-muted">
-              زمان تقریبی تحویل:{" "}
-              {order.status === "delivered"
-                ? "تحویل داده شده"
-                : order.status === "cancelled"
-                  ? "سفارش لغو شده"
-                  : `حدود ${toPersianDigits(1)} هفته`}
+              <OrderDelivery
+                status={order.status}
+                paymentStatus={order.payment.status}
+              />
             </span>
             <Link
               href={`/account/orders/${order.id}`}
