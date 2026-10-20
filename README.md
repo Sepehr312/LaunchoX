@@ -196,7 +196,7 @@ npm run seed -- --reset
 
  
 
-- Login and registration default to `/account` for customers; administrators reaching this default destination are redirected by the proxy to `/admin` before the customer page renders. Authenticated administrators visiting `/login` or `/register` also go to `/admin`; explicitly requested safe destinations such as checkout and admin subpages remain intact.
+- JWTs identify users, while `getCurrentUser()` reads current role and activity from the database for server guards and navigation. The proxy performs only session-presence checks for authentication; role redirects run in the auth layout and account index page. Active administrators go to `/admin`, demoted administrators retain `/account` access with the same JWT, and inactive or deleted accounts can reach the login form without redirect loops. Explicit checkout and account subpage destinations remain intact.
 
 - Customer interaction cues use existing order statuses and validation rules. Clipboard copies the original order reference while displayed digits remain Persian. Address editing closes only after a successful existing action; selected-address and cart-saving cues do not change backend behavior.
 

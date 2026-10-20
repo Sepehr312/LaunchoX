@@ -1,6 +1,7 @@
 import { getEnv } from "@/lib/env";
 import { toPersianDigits } from "@/lib/format";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/actions/auth.actions";
 import { getProfile } from "@/services/user.service";
 import { AccountForm } from "@/components/account/AccountForm";
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 };
 export default async function AccountPage() {
   const session = await requireUser();
+  if (session.role === "admin") redirect("/admin");
   const user = await getProfile(session.id);
   return (
     <div className={styles.profile}>

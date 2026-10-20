@@ -100,15 +100,6 @@ it.each(["/admin", "/admin/users", "/checkout", "/account/addresses"])(
     expect(response?.headers.get("location")).toContain("/login?callbackUrl=");
   },
 );
-it.each(["/login", "/register"])(
-  "redirects authenticated visitors from %s",
-  async (path) => {
-    const response = await proxy(request(path, true), event);
-    expect(response?.headers.get("location")).toBe(
-      "http://localhost:3000/account",
-    );
-  },
-);
 it("passes authenticated requests and overwrites spoofed current-path headers", async () => {
   await proxy(request("/account?tab=orders", true), event);
   expect(
@@ -122,11 +113,18 @@ it.each([
   "/account",
   "/account/",
   "/account?tab=orders",
-])("redirects administrators from %s to the admin dashboard", async (path) => {
-  const response = await proxy(request(path, true, "admin"), event);
-  expect(response?.headers.get("location")).toBe("http://localhost:3000/admin");
-  expect(mocks.next).not.toHaveBeenCalled();
-});
+])(
+  "defers role decisions on %s to the server regardless of JWT role",
+  async (path) => {
+    for (const role of ["admin", "customer"] as const) {
+      const response = await proxy(request(path, true, role), event);
+      expect(response?.headers.get("location")).toBeNull();
+      expect(response?.status).toBe(200);
+    }
+    expect(mocks.order).not.toHaveBeenCalled();
+    expect(mocks.product).not.toHaveBeenCalled();
+  },
+);
 
 it.each(["/account", "/account/", "/checkout", "/admin/products"])(
   "preserves customer account access and explicit destinations on %s",
