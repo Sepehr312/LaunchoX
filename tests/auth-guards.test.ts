@@ -52,18 +52,31 @@ it("conceals admin pages from customers and accepts admins", async () => {
   expect(await requireAdmin()).toEqual({ id: "456", role: "admin" });
 });
 
-it("uses current database access for promoted, demoted, disabled and deleted users", async () => {
+it("uses current database access for promoted and demoted users", async () => {
   mocks.auth.mockResolvedValue({ user: { id: "456", role: "admin" } });
-  for (const access of [
-    { role: "customer", isActive: true },
-    { role: "admin", isActive: false },
-    null,
-  ]) {
-    mocks.access.mockResolvedValue(access);
-    await expect(requireAdmin()).rejects.toThrow("not-found");
-  }
+  mocks.access.mockResolvedValue({ role: "customer", isActive: true });
+  expect(await requireUser()).toEqual({ id: "456", role: "customer" });
+  await expect(requireAdmin()).rejects.toThrow("not-found");
   mocks.auth.mockResolvedValue({ user: { id: "456", role: "customer" } });
   mocks.access.mockResolvedValue({ role: "admin", isActive: true });
   expect(await requireAdmin()).toEqual({ id: "456", role: "admin" });
   expect(mocks.access).toHaveBeenCalledWith("456");
+});
+
+it.each([{ role: "admin", isActive: false }, null])(
+  "rejects inactive or deleted accounts despite a valid JWT: %s",
+  async (access) => {
+    mocks.auth.mockResolvedValue({ user: { id: "456", role: "admin" } });
+    mocks.access.mockResolvedValue(access);
+    expect(await getCurrentUser()).toBeNull();
+    await expect(requireUser()).rejects.toThrow("redirect");
+    await expect(requireAdmin()).rejects.toThrow("redirect");
+    expect(mocks.notFound).not.toHaveBeenCalled();
+  },
+);
+
+it("propagates database failures instead of trusting the JWT role", async () => {
+  mocks.auth.mockResolvedValue({ user: { id: "456", role: "admin" } });
+  mocks.access.mockRejectedValue(new Error("Database unavailable"));
+  await expect(requireAdmin()).rejects.toThrow("Database unavailable");
 });

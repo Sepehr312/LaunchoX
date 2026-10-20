@@ -40,7 +40,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
 }));
 
 export async function getCurrentUser() {
-  return (await auth())?.user ?? null;
+  const user = (await auth())?.user;
+  if (!user) return null;
+  // The JWT identifies the user; its role may predate access changes.
+  const access = await getUserAccess(user.id);
+  if (!access?.isActive) return null;
+  return { ...user, role: access.role };
 }
 
 export async function consumeCurrentAuthAttempt(scope: "login" | "register") {
@@ -60,8 +65,6 @@ export async function requireUser() {
 
 export async function requireAdmin() {
   const user = await requireUser();
-  // JWT roles can predate an administrator's role or activity changes.
-  const access = await getUserAccess(user.id);
-  if (!access?.isActive || access.role !== "admin") notFound();
-  return { ...user, role: access.role };
+  if (user.role !== "admin") notFound();
+  return user;
 }

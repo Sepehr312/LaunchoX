@@ -23,20 +23,7 @@ const handleRequest: (
     url.searchParams.set("callbackUrl", pathname + search);
     return NextResponse.redirect(url);
   }
-  if (
-    request.auth?.user &&
-    (pathname === "/login" || pathname === "/register")
-  ) {
-    const destination =
-      request.auth.user.role === "admin" ? "/admin" : "/account";
-    return NextResponse.redirect(new URL(destination, request.nextUrl));
-  }
-  if (
-    request.auth?.user.role === "admin" &&
-    (pathname === "/account" || pathname === "/account/")
-  ) {
-    return NextResponse.redirect(new URL("/admin", request.nextUrl));
-  }
+  // Role-based redirects run on the server with current database access.
   // Resolve ownership before React streams loading boundaries and commits HTTP 200.
   const orderPath = /^\/account\/orders\/([^/]+)\/?$/.exec(pathname);
   if (orderPath && request.auth?.user) {
