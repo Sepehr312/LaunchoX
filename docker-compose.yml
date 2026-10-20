@@ -3,6 +3,19 @@ services:
     image: mongo:7
     container_name: launchox-mongo
     restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          'try { rs.status().ok } catch (e) { rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]}); }',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     ports:
       - "27017:27017"
     volumes:

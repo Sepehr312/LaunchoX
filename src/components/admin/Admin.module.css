@@ -1031,11 +1031,6 @@
   min-width: 180px;
   max-width: 240px;
 }
-.scope :global(.admin-user-role form) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 .scope :global(.admin-user-role select) {
   min-width: 90px;
   min-height: 44px;
@@ -1056,6 +1051,11 @@
   border-color: var(--border);
   border-radius: 8px;
   font-size: 12px;
+}
+.scope :global(.admin-user-role .admin-role-save:not(:disabled)) {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--color-primary-foreground);
 }
 .scope :global(.admin-inline-status) {
   display: grid;

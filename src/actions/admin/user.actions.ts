@@ -16,6 +16,7 @@ export async function userActiveAction(
     const input = userActiveSchema.parse({
       id: form.get("id"),
       isActive: form.get("isActive"),
+      confirmationPassword: form.get("confirmationPassword") ?? undefined,
     });
     const data = await setUserActive(input);
     revalidatePath("/admin", "layout");
@@ -42,6 +43,7 @@ export async function userRoleAction(
     const input = userRoleSchema.parse({
       id: form.get("id"),
       role: form.get("role"),
+      confirmationPassword: form.get("confirmationPassword") ?? undefined,
     });
     const data = await setUserRole(input);
     revalidatePath("/admin", "layout");
