@@ -110,6 +110,33 @@ async function createFixtureCatalog() {
 }
 
 describe("public catalog queries", () => {
+  it("reads product details once and reflects deletion without a stale service cache", async () => {
+    const { products } = await createFixtureCatalog();
+    const lookup = vi.spyOn(Product, "findOne");
+    try {
+      const product = await getProductBySlug(products[0].slug);
+      expect(product).toMatchObject({
+        id: String(products[0]._id),
+        category: { slug: "refrigerators" },
+      });
+      expect(JSON.parse(JSON.stringify(product))).toEqual(product);
+      expect(lookup).toHaveBeenCalledTimes(1);
+      expect(lookup).toHaveBeenCalledWith({
+        slug: products[0].slug,
+        isActive: true,
+      });
+      await deleteProduct(String(products[0]._id));
+      expect(await getProductBySlug(products[0].slug)).toBeNull();
+      expect(await getProductBySlug("never-existed")).toBeNull();
+      expect(await getProductBySlug(products[2].slug)).toBeNull();
+      expect(await getProductBySlug(products[1].slug)).toMatchObject({
+        stock: 0,
+      });
+    } finally {
+      lookup.mockRestore();
+    }
+  });
+
   it("lists active categories with only active product counts and includes empty categories", async () => {
     const { refrigerators, freezers } = await createFixtureCatalog();
     await Category.create({
