@@ -119,6 +119,32 @@ it("handles capacity boundaries, Persian and Arabic digits, thousands separators
   expect((await query({ capacity: "all" })).total).toBe(7);
 });
 
+it.each(["price_asc", "price_desc"])(
+  "paginates combined filters using %s without duplicates or missing products",
+  async (sort) => {
+    const category = await Category.findOne().orFail();
+    const filters = {
+      category: category.id as string,
+      brands: ["ال‌جی", "سامسونگ"],
+      energies: ["A+", "B"],
+      inStock: "true",
+      minPrice: "2000",
+      maxPrice: "2500",
+      sort,
+      limit: "2",
+    };
+    const first = await query({ ...filters, page: "1" });
+    const second = await query({ ...filters, page: "۲" });
+    expect(first).toMatchObject({ page: 1, total: 4, totalPages: 2 });
+    expect(second).toMatchObject({ page: 2, total: 4, totalPages: 2 });
+    const expected = ["fridge-2", "fridge-3", "fridge-4", "fridge-5"];
+    if (sort === "price_desc") expected.reverse();
+    expect([...first.items, ...second.items].map((item) => item.slug)).toEqual(
+      expected,
+    );
+  },
+);
+
 it("filters discounts and sorts by percentage rather than absolute savings across pages", async () => {
   const first = await query({
     discounted: "true",

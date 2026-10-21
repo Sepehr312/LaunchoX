@@ -15,7 +15,7 @@ export function parseProductQuery(
     return typeof value === "string" ? [value] : value;
   };
   return productQuerySchema.safeParse({
-    page: stringValue("page"),
+    page: searchParams.page,
     limit: stringValue("limit"),
     category: overrides.category ?? stringValue("category"),
     brandSlug: stringValue("brandSlug"),
