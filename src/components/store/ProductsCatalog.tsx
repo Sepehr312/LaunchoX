@@ -407,7 +407,6 @@ export function ProductsCatalog({
   useEffect(() => {
     const restore = () => {
       const params = new URLSearchParams(window.location.search);
-      params.delete("page");
       if (!params.has("limit"))
         params.set("limit", String(initialResult.limit));
       void load(params, false);

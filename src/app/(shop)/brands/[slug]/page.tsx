@@ -35,16 +35,22 @@ export default async function BrandPage({ params, searchParams }: Props) {
     brandSlug: undefined,
     brands: undefined,
   });
+  if (
+    !parsed.success &&
+    parsed.error.issues.some((issue) => issue.path[0] === "page")
+  ) {
+    notFound();
+  }
   const query = parsed.success
     ? parsed.data
     : { page: 1, limit: 9, sort: "newest" as const };
   query.limit = values.limit ? query.limit : 9;
-  query.page = 1;
   const [result, categories, options] = await Promise.all([
     listProducts(query, brand.id),
     getBrandCategories(brand.id),
     getProductFilterOptions(brand.id),
   ]);
+  if (query.page > Math.max(1, result.totalPages)) notFound();
   const slug = brand.slug;
   async function loadProducts(next: Record<string, string | string[]>) {
     "use server";

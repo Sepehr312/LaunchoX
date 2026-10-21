@@ -44,16 +44,22 @@ export default async function CategoryPage({
   const [{ slug }, values] = await Promise.all([params, searchParams]);
   const category = await resolveCategory(slug);
   const parsed = parseProductQuery(values, { category: category.id });
+  if (
+    !parsed.success &&
+    parsed.error.issues.some((issue) => issue.path[0] === "page")
+  ) {
+    notFound();
+  }
   const query = parsed.success
     ? parsed.data
     : { page: 1, limit: 9, sort: "newest" as const, category: category.id };
   query.limit = values.limit ? query.limit : 9;
-  query.page = 1;
   const [categories, result, options] = await Promise.all([
     listCategories(),
     listProducts(query),
     getProductFilterOptions(),
   ]);
+  if (query.page > Math.max(1, result.totalPages)) notFound();
   const routeSlug = category.slug;
   async function loadProducts(next: StoreSearchParams) {
     "use server";
