@@ -43,6 +43,8 @@ const categorySchema = new Schema<ICategory>(
   modelOptions,
 );
 
+categorySchema.index({ image: 1 });
+
 export const Category: Model<ICategory> =
   (models.Category as Model<ICategory> | undefined) ??
   model<ICategory>("Category", categorySchema);

@@ -1,4 +1,5 @@
 import "server-only";
+import { withImageReferences } from "@/services/image-lifecycle.service";
 
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
@@ -104,7 +105,9 @@ export async function createBrand(rawInput: unknown): Promise<BrandDTO> {
       Brand.exists({ slug: candidate }).then(Boolean),
     ));
   try {
-    const brand = await Brand.create({ ...input, slug });
+    const brand = await withImageReferences([input.logo], (session) =>
+      new Brand({ ...input, slug }).save({ session }),
+    );
     return toDTO(brand.toObject());
   } catch (error: unknown) {
     rethrowBrandError(error);
@@ -125,24 +128,26 @@ export async function updateBrand(
     ));
   const optionalFields = ["logo", "description", "country", "website"] as const;
   try {
-    const brand = await Brand.findByIdAndUpdate(
-      id,
-      {
-        $set: Object.fromEntries(
-          Object.entries({ ...input, slug }).filter(
-            ([, value]) => value !== undefined,
+    const brand = await withImageReferences([input.logo], (session) =>
+      Brand.findByIdAndUpdate(
+        id,
+        {
+          $set: Object.fromEntries(
+            Object.entries({ ...input, slug }).filter(
+              ([, value]) => value !== undefined,
+            ),
           ),
-        ),
-        $unset: Object.fromEntries(
-          optionalFields
-            .filter((field) => input[field] === undefined)
-            .map((field) => [field, 1]),
-        ),
-      },
-      { returnDocument: "after", runValidators: true },
-    )
-      .lean()
-      .orFail(() => new AppError("برند پیدا نشد", "NOT_FOUND"));
+          $unset: Object.fromEntries(
+            optionalFields
+              .filter((field) => input[field] === undefined)
+              .map((field) => [field, 1]),
+          ),
+        },
+        { session, returnDocument: "after", runValidators: true },
+      )
+        .lean()
+        .orFail(() => new AppError("برند پیدا نشد", "NOT_FOUND")),
+    );
     return toDTO(brand);
   } catch (error: unknown) {
     rethrowBrandError(error);

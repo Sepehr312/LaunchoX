@@ -92,6 +92,8 @@ npm run seed -- --reset
 
 اسکریپت‌های پذیرش مرورگری در `tests/*-browser.py` موجودند و به Python، Playwright و مرورگر Edge نیاز دارند؛ این ابزارها وابستگی npm برنامه نیستند. پیش‌نیازها و تنظیمات هر اسکریپت را پیش از اجرای آن بخوانید؛ آزمون‌های دارای fixture و reset باید روی دیتابیس مستقل خود اجرا شوند.
 
+تست تصاویر در `tests/admin-catalog-fixes-browser.mjs` با Node.js 24 و Edge اجرا می‌شود. Playwright را با `npm install --prefix <temporary-tools-directory> playwright` بیرون پروژه نصب و متغیر `LAUNCHO_PLAYWRIGHT_PATH` را روی مسیر `node_modules/playwright` همان پوشه تنظیم کنید. پس از build، دستور `node --import tsx tests/admin-catalog-fixes-browser.mjs` را اجرا کنید. تست از PNG معتبر تولیدشده با Sharp، MongoDB replica set ایزوله و کانتینر موقت جایگزین استفاده می‌کند؛ به دیتابیس برنامه متصل نمی‌شود و screenshotها را در پوشهٔ موقت سیستم می‌نویسد. آپلود، جایگزینی، reload، بایت‌های تصویر و نمایش محصول در فروشگاه بررسی می‌شوند.
+
 ## ساختار پوشه‌های اصلی
 
 | مسیر | مسئولیت |
@@ -125,9 +127,50 @@ npm run seed -- --reset
 
 ### آپلود تصویر
 
-با انتخاب کادر پیش‌نمایش در فرم محصول، دسته‌بندی یا برند می‌توان تصویر بارگذاری کرد. مسیر `/api/admin/images` دسترسی ادمین، نوع، اندازه و امضای فایل را بررسی می‌کند؛ فایل‌های PNG، JPEG، WebP و GIF تا ۵ مگابایت در MongoDB نگه‌داری و از `/api/images/[id]` نمایش داده می‌شوند. نشانی تصویر همچنان در فیلدهای فعلی محصول، دسته‌بندی یا برند ذخیره می‌شود. برای انتقال آینده به فضای ذخیره‌سازی مستقل، سرویس `src/services/image.service.ts` نقطهٔ اتصال است.
+PNG متحرک (APNG) حتی با یک فریم پشتیبانی نمی‌شود. پیش از Sharp، chunkهای PNG با طول و مرزبندی واقعی خوانده می‌شوند؛ وجود `acTL`، `fcTL` یا `fdAT` در محل chunk رد می‌شود و رشتهٔ مشابه داخل دادهٔ معمولی باعث ردشدن نمی‌شود. PNG ناقص نیز رد می‌شود. عبارت «همهٔ فریم‌ها» در ادامه فقط دربارهٔ قالب‌های پشتیبانی‌شدهٔ GIF و WebP است.
+
+نشانی نسبی `/api/images/{id}` داخلی است. نشانی مطلق فقط وقتی داخلی است که origin آن (پروتکل، دامنه و پورت) با `NEXT_PUBLIC_SITE_URL` یا فهرست صریح `IMAGE_INTERNAL_ORIGINS` مطابقت داشته باشد. برای دامنه‌های تاریخی، مثلاً `IMAGE_INTERNAL_ORIGINS=https://old.example.com,http://legacy.example.com:8080` تنظیم کنید؛ مسیر، wildcard و اطلاعات کاربری مجاز نیستند. این تنظیم از Zod عبور می‌کند و Host Header استفاده نمی‌شود. URL خارجی با مسیر مشابه قابل ذخیره است و سند محلی لازم ندارد. هنگام پاک‌سازی، origin تاریخی ناشناخته یا دادهٔ خراب مرتبط با همان شناسه، `ambiguous` گزارش می‌شود و مانع حذف است؛ alias را پس از بررسی اپراتور به تنظیم اضافه کنید.
+
+آپلود از کادر پیش‌نمایش فرم محصول، دسته‌بندی و برند قابلیت تأییدشدهٔ پنل است. ظاهر و قرارداد `POST /api/admin/images` (یک فیلد multipart به نام `image`، پاسخ `{ data: { url } }`) حفظ شده است. ورود دستی نشانی داخلی یا اینترنتی نیز موجود است؛ عبارت قدیمی «تصاویر فقط URL هستند» صرفاً شکل ارجاع موجودیت‌ها را توصیف می‌کند، نه محل نگه‌داری باینری.
+
+فایل PNG، JPEG، WebP یا GIF حداکثر ۵ MiB پذیرفته می‌شود. حداکثر بدنهٔ multipart برابر ۶ MiB است تا فضای سربار باقی بماند. `src/validations/image-policy.ts` مرجع مشترک محدودیت‌های کلاینت و سرور است. پیش از پارس multipart، بایت‌های واقعی جریان تا سقف تعیین‌شده خوانده می‌شوند؛ Content-Length صرفاً رد اولیه است. فایل بزرگ پاسخ ۴۱۳ و دادهٔ خراب پاسخ ۴۰۰ می‌گیرد. فقط یک فیلد تصویر مجاز است. این روش parser اختصاصی تازه‌ای اضافه نمی‌کند و حافظهٔ بدنه را محدود نگه می‌دارد، اما چند کپی محدود هنگام پارس و تبدیل فایل وجود دارد.
+
+امضای فایل، نوع واقعی و decode کامل همهٔ فریم‌ها بررسی می‌شوند. ضلع تصویر حداکثر ۸۱۹۲، مجموع پیکسل‌های همهٔ فریم‌ها حداکثر ۱۶ میلیون، تعداد فریم‌ها حداکثر ۶۰ و مهلت پردازش تصویر ۱۰ ثانیه است. SVG، فایل اجرایی با پسوند تصویر و فایل ناقص رد می‌شوند. نام فایل ذخیره نمی‌شود؛ MongoDB شناسهٔ ObjectId تولید می‌کند. ذخیره تنها پس از اعتبارسنجی انجام می‌شود و یک درج اتمیک است. باینری در مجموعهٔ `uploadedimages` با `data: select false` نگه‌داری می‌شود. محصول (`images`)، دسته (`image`)، برند (`logo`) و تصویر تاریخی سفارش (`items.image`) نشانی را نگه می‌دارند. `GET /api/images/[id]` عمومی است و بایت‌های اصلی را با نوع ثابت تصویر، nosniff، CSP sandbox و کش immutable یک‌ساله برمی‌گرداند؛ محتوای URL موجود تغییر نمی‌کند. تصاویر عمومی را محرمانه فرض نکنید؛ حذف دیتابیس کش مرورگر/CDN را باطل نمی‌کند.
+
+### پاک‌سازی تصاویر بلااستفاده
+
+پاک‌سازی خودکار هنگام ذخیره یا حذف محصول انجام نمی‌شود؛ حذف/جایگزینی ارجاع، تصویر قبلی را برای بررسی بعدی سرویس آزاد می‌کند. اپراتور سرور می‌تواند job را زمان‌بندی کند. هیچ job یا حذف واقعی در این اصلاح اجرا نشده است.
+
+```sh
+npm run images:cleanup -- --limit 50
+```
+
+این دستور فقط پیش‌نمایش می‌دهد. پس از بررسی گزارش، حذف همان دسته با کنترل دوبارهٔ ارجاع‌ها:
+
+```sh
+npm run images:cleanup -- --apply --limit 50
+```
+
+حداکثر اندازهٔ دسته ۱۰۰ است. گزارش JSON شامل `scanned`، نتیجهٔ هر شناسه (`orphan`، `referenced`، `deleted`، `missing` یا `failed`) و `nextAfter` است. اگر `nextAfter` مقدار داشت، برای ادامهٔ مرور همان مقدار را با `--after <id>` بدهید؛ این cursor از توقف روی تصاویر استفاده‌شده جلوگیری می‌کند. خطای حذف گزارش می‌شود، exit code ناموفق است و در اجرای بعد قابل تکرار است. رکوردهای بدون createdAt معتبر حذف نمی‌شوند و نیازمند بررسی دستی هستند.
+
+فقط تصاویر قدیمی‌تر از ۲۴ ساعت بررسی می‌شوند. تمام محصولات حتی غیرفعال، دسته‌ها، برندها و سفارش‌های تاریخی محافظت می‌شوند؛ URLهای مطلق، query و مسیرهای کدشده نیز محافظه‌کارانه بررسی می‌شوند. اشتراک تصویر میان موجودیت‌ها مانع حذف آن است. فرم بازِ بیش از مهلت تضمین نگه‌داری ندارد؛ اگر پاک‌سازی زودتر انجام شود، ذخیرهٔ تصویر حذف‌شده رد می‌شود و باید دوباره بارگذاری شود.
+
+ذخیرهٔ ارجاع تصویر و حذف آن در تراکنش snapshot/majority روی همان سند تصویر write انجام می‌دهند؛ رقابت با retry تراکنش حل می‌شود و ارجاع به تصویر حذف‌شده ثبت نمی‌شود. **MongoDB replica set (از جمله Atlas) الزامی است**؛ standalone برای اتصال تصاویر آپلودشده یا حذف واقعی پشتیبانی نمی‌شود. تصاویر URL دستی قبلی به تراکنش تصویر نیاز ندارند. همهٔ نویسندگان جدید باید از `withImageReferences` با همان session استفاده کنند. seed/ویرایش مستقیم دیتابیس فقط در زمان توقف job مجاز است. افزودن محل جدید استفاده از تصویر باید با گسترش بررسی ارجاع‌ها همراه باشد. CLI فقط برای اپراتور دارای دسترسی سرور/دیتابیس است؛ مسیر عمومی برای حذف اضافه نشده است.
+
+### ملاحظات اجرای آپلود
+
+این Route Handler روی Node.js اجرا می‌شود؛ محدودیت `serverActions.bodySizeLimit` مربوط به آن نیست. مسیر آپلود در matcher فعلی `proxy.ts` قرار ندارد، بنابراین clone بدنهٔ Proxy روی این مسیر اجرا نمی‌شود. [مستندات Next.js دربارهٔ بافر بدنهٔ Proxy](https://nextjs.org/docs/app/api-reference/config/next-config-js/proxyClientMaxBodySize) نشان می‌دهد این تنظیم جای کنترل واقعی جریان را نمی‌گیرد. در reverse proxy/میزبان سقف درخواست ۶ MiB، timeout دریافت و محدودیت اتصال‌های هم‌زمان متناسب با حافظه تنظیم کنید؛ سقف میزبان اگر کمتر باشد پیش از رسیدن به برنامه درخواست را رد می‌کند. محدودیت‌های اپلیکیشن مصرف تجمعی چند آپلود هم‌زمان یا بافر زیرساخت بالادستی را کنترل نمی‌کنند.
+
+بررسی ارجاع‌ها دیگر از distinct استفاده نمی‌کند. ابتدا وجود URL نسبی استاندارد با Query هدفمند روی ایندکس‌های `Product.images`، `Category.image`، `Brand.logo` و `Order.items.image` بررسی می‌شود. برای URL مطلق/قدیمی/کدشده، Query فقط رکوردهای حاوی شناسهٔ همان کاندید را انتخاب و فیلدهای تصویر را با cursor و batch برابر ۱۶ می‌خواند؛ خواندن پس از یافتن ارجاع معتبر متوقف می‌شود. timeout هر Query برابر ۱۰ ثانیه است؛ شکست خواندن مانع حذف و در گزارش ثبت می‌شود. این مسیر حافظهٔ URLهای یکتای کل مجموعه را مصرف نمی‌کند، اما regex ارجاع‌های قدیمی ممکن است روی ایندکس اسکن کند؛ هزینهٔ آن در کاتالوگ بزرگ باید پایش شود. تعریف ایندکس‌ها روی مدل‌هاست؛ بارگذاری معمول برنامه با autoIndex فعال ممکن است آن‌ها را خودکار ایجاد کند. برای Production زمان ایجاد ایندکس‌ها را با اپراتور هماهنگ کنید. خود اسکریپت Cleanup ایجاد خودکار collection و index را غیرفعال می‌کند؛ وجود ایندکس‌ها در اتصال فعلی به‌صورت فقط‌خواندنی تأیید شده است.
+
+در خروجی Cleanup علاوه بر نتیجهٔ هر شناسه، `counts` تعداد هر وضعیت از جمله `ambiguous` و `failed` را نشان می‌دهد. تراکنش و write مشترک روی سند تصویر حفظ شده‌اند و اجرای هم‌زمان دو job به حذف دوباره منجر نمی‌شود. استفاده از `find` و cursor محدودیت `distinct` روی مجموعهٔ sharded را حذف می‌کند؛ بااین‌حال محیط sharded در این پروژه آزمایش عملی نشده است. پیش از اجرای آن، تراکنش cross-shard، دسترسی‌ها، ایندکس‌های هر shard و timeoutها در staging بررسی شوند؛ replica set بدون sharding محیط تست فعلی است. برای انتقال باینری به S3، `image.service.ts` نقطهٔ اتصال آینده است.
 
 ## Decisions
+
+- APNG is rejected by structural PNG chunk boundaries before decoding; static PNG and bounded GIF/WebP remain supported. Absolute uploaded-image references trust only the configured site origin and explicit IMAGE_INTERNAL_ORIGINS aliases. Cleanup uses indexed canonical existence queries and bounded per-ID legacy cursors, conservatively retaining ambiguous historical references; no data migration is performed.
+
+- Owner-approved image uploads remain in MongoDB with existing URL fields and API/UI contracts. Central policy keeps 5 MiB files / 6 MiB multipart requests, 24-hour grace and at most 100 cleanup candidates. Cleanup defaults to preview and preserves product/category/brand/order references; per-image transactional writes serialize attachment and deletion. Replica sets are required for these mutations, while existing external/static images retain their previous path.
+- Sharp is declared directly (it was already Next.js's transitive image dependency) to fully decode untrusted raster pixels and bound dimensions/frames using its existing native decoder, avoiding handwritten image parsers. See [Sharp input safety options](https://sharp.pixelplumbing.com/api-constructor/). Original validated bytes are retained for compatibility; metadata is not rewritten.
 
 - Product details require database product and related-product DTOs and use the server cart exclusively. Product-specific values come from saved fields and attributes; missing optional information is stated explicitly. Preview fixtures, synthetic colors/specifications, and review/question UI are removed from the production component. Generic store labels and buying guidance remain static.
 
@@ -263,7 +306,7 @@ npm run seed -- --reset
 - رمزها با bcrypt و cost 12 ذخیره می‌شوند. رمز ثبت‌نام حداکثر ۷۲ بایت است و trim یا نرمال‌سازی نمی‌شود. نقش و مبلغ و مالک سفارش از ورودی فرم پذیرفته نمی‌شوند.
 - محدودیت ورود و ثبت‌نام برای هر IP پنج درخواست در پانزده دقیقه و در حافظهٔ همان سرور است. اجرای چند نمونهٔ سرور نیازمند store مشترک است؛ هدرهای IP باید توسط reverse proxy معتبر بازنویسی شوند.
 - ادغام سبد مهمان بعد از ورود و ثبت‌نام انجام می‌شود. شمارندهٔ هدر مجموع تعداد واحدهای قابل‌خرید است؛ اقلام نامعتبر و کاهش موجودی هنگام خواندن سبد کنترل می‌شوند.
-- سفارش روی MongoDB مستقل نیز کار می‌کند؛ رزرو موجودی اتمیک و شکست‌ها با بازگرداندن موجودی جبران می‌شوند. قفل سبد checkout تکراری را محدود می‌کند و callback تکراری دوباره موجودی یا فروش را تغییر نمی‌دهد. سفارش‌های پرداخت‌نشدهٔ منقضی هنگام ثبت سفارش و فهرست سفارش‌های ادمین بررسی می‌شوند؛ cron مستقل وجود ندارد.
+- سفارش با تصاویر URL دستی روی MongoDB مستقل نیز کار می‌کند؛ اتصال تصویر آپلودشده به replica set نیاز دارد. رزرو موجودی اتمیک و شکست‌ها با بازگرداندن موجودی جبران می‌شوند. قفل سبد checkout تکراری را محدود می‌کند و callback تکراری دوباره موجودی یا فروش را تغییر نمی‌دهد. سفارش‌های پرداخت‌نشدهٔ منقضی هنگام ثبت سفارش و فهرست سفارش‌های ادمین بررسی می‌شوند؛ cron مستقل وجود ندارد.
 - مالکیت سفارش در proxy و مجدداً در صفحه و سرویس بررسی می‌شود. انتخاب آدرس پیش‌فرض اتمیک است؛ حذف آدرس پیش‌فرض تا انتخاب مجدد، حساب را بدون آدرس پیش‌فرض می‌گذارد.
 - پنل ادمین طبق درخواست مالک، نقش کاربران دیگر را بین مشتری و ادمین تغییر می‌دهد؛ تغییر نقش و غیرفعال‌سازی حساب خود ادمین در سرویس رد می‌شود. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
 - پرداخت واقعی و OTP قابلیت فعال فعلی نیستند؛ بخش نقطه‌های توسعه، محل اتصال آیندهٔ آن‌ها را مشخص می‌کند. آپلود تصویر اکنون در فرم‌های محصول، دسته‌بندی و برند از کادر پیش‌نمایش انجام می‌شود.

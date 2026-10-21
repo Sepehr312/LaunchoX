@@ -1,4 +1,5 @@
 import "server-only";
+import { withImageReferences } from "@/services/image-lifecycle.service";
 
 import { Types, type PipelineStage } from "mongoose";
 import { connectDB } from "@/lib/db";
@@ -504,11 +505,11 @@ export async function createProduct(
       Product.exists({ slug: candidate }).then(Boolean),
     ));
   try {
-    const product = await Product.create({
-      ...input,
-      slug,
-      brand: input.brand || undefined,
-    });
+    const product = await withImageReferences(input.images, (session) =>
+      new Product({ ...input, slug, brand: input.brand || undefined }).save({
+        session,
+      }),
+    );
     return (await withCategories([product.toObject()]))[0];
   } catch (error) {
     if (
@@ -537,19 +538,23 @@ export async function updateProduct(
   const validationDocument = new Product({ ...input, slug });
   await validationDocument.validate();
   try {
-    const product = await Product.findByIdAndUpdate(
-      id,
-      {
-        $set: { ...input, slug },
-        $unset: {
-          ...(input.sku === undefined ? { sku: 1 } : {}),
-          ...(input.compareAtPrice === undefined ? { compareAtPrice: 1 } : {}),
+    const product = await withImageReferences(input.images, (session) =>
+      Product.findByIdAndUpdate(
+        id,
+        {
+          $set: { ...input, slug },
+          $unset: {
+            ...(input.sku === undefined ? { sku: 1 } : {}),
+            ...(input.compareAtPrice === undefined
+              ? { compareAtPrice: 1 }
+              : {}),
+          },
         },
-      },
-      { returnDocument: "after" },
-    )
-      .lean()
-      .orFail(() => new AppError("محصول پیدا نشد", "NOT_FOUND"));
+        { session, returnDocument: "after" },
+      )
+        .lean()
+        .orFail(() => new AppError("محصول پیدا نشد", "NOT_FOUND")),
+    );
     return (await withCategories([product]))[0];
   } catch (error) {
     if (error instanceof AppError) throw error;

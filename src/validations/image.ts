@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { IMAGE_POLICY, imageSizeMessage } from "@/validations/image-policy";
 
 export const imageFileSchema = z
   .file()
   .min(1, "فایل تصویر خالی است")
-  .max(5 * 1024 * 1024, "حجم تصویر باید حداکثر ۵ مگابایت باشد")
+  .max(IMAGE_POLICY.maxFileBytes, imageSizeMessage)
   .mime(
-    ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    [...IMAGE_POLICY.mimeTypes],
     "تصویر باید از نوع PNG، JPEG، WebP یا GIF باشد",
   );
 

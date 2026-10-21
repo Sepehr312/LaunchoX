@@ -16,6 +16,21 @@ const money = requiredText
   .transform(Number)
   .refine(Number.isSafeInteger, "مبلغ خارج از محدودهٔ مجاز است");
 
+const imageOrigin = httpUrl
+  .refine((value) => {
+    if (!URL.canParse(value)) return false;
+    const url = new URL(value);
+    return (
+      !url.hostname.includes("*") &&
+      url.pathname === "/" &&
+      !url.search &&
+      !url.hash &&
+      !url.username &&
+      !url.password
+    );
+  }, "مبدأ تصویر باید فقط شامل پروتکل، دامنه و پورت باشد")
+  .transform((value) => new URL(value).origin);
+
 export const envSchema = z
   .object({
     NODE_ENV: z
@@ -28,6 +43,16 @@ export const envSchema = z
     AUTH_SECRET: requiredText,
     AUTH_URL: httpUrl.optional(),
     NEXT_PUBLIC_SITE_URL: httpUrl,
+    IMAGE_INTERNAL_ORIGINS: z
+      .string()
+      .default("")
+      .transform((value) =>
+        value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(imageOrigin)),
     NEXT_PUBLIC_SITE_NAME: requiredText,
     PAYMENT_PROVIDER: z.literal("fake", { error: "درگاه پرداخت معتبر نیست" }),
     SEED_ADMIN_EMAIL: z.email({ error: "ایمیل ادمین معتبر نیست" }).optional(),

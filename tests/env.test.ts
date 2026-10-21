@@ -16,6 +16,26 @@ const valid = {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("environment validation", () => {
+  it("validates explicit image origins and normalizes default ports", () => {
+    expect(
+      envSchema.parse({
+        ...valid,
+        IMAGE_INTERNAL_ORIGINS: "https://old.test:443, http://legacy.test:8080",
+      }).IMAGE_INTERNAL_ORIGINS,
+    ).toEqual(["https://old.test", "http://legacy.test:8080"]);
+    for (const origin of [
+      "https://old.test/path",
+      "https://*.test",
+      "https://user:pass@old.test",
+      "https://old.test?v=1",
+      "invalid",
+    ]) {
+      expect(
+        envSchema.safeParse({ ...valid, IMAGE_INTERNAL_ORIGINS: origin })
+          .success,
+      ).toBe(false);
+    }
+  });
   it("parses integer fees and allows omitted seed credentials", () => {
     const result = envSchema.parse(valid);
     expect(result.SHIPPING_FLAT_FEE).toBe(50000);

@@ -5,6 +5,11 @@ import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import sharp from "sharp";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { startTestMongo } from "./mongo-server.ts";
 
 // Use an existing external Playwright installation without adding an app dependency.
 const require = createRequire(import.meta.url);
@@ -12,17 +17,22 @@ const { chromium } = require(
   process.env.LAUNCHO_PLAYWRIGHT_PATH || "playwright",
 );
 const databaseName = `launchox_admin_fixes_${randomUUID().replaceAll("-", "")}`;
-const uri = `mongodb://127.0.0.1:27017/${databaseName}`;
-const base = "http://localhost:3022";
-const png = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
-  "base64",
+const mongo = await startTestMongo(true);
+const uri = mongo.uri;
+const outputDirectory = await mkdtemp(
+  join(tmpdir(), "launchox-image-browser-"),
 );
+const base = "http://localhost:3022";
+const png = await sharp({
+  create: { width: 2, height: 2, channels: 4, background: "white" },
+})
+  .png()
+  .toBuffer();
 let server;
 let browser;
 let output = "";
 try {
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, { dbName: databaseName });
   const db = mongoose.connection.db;
   await db.collection("users").insertOne({
     name: "Browser admin",
@@ -39,7 +49,7 @@ try {
       env: {
         ...process.env,
         NODE_ENV: "production",
-        MONGODB_URI: uri,
+        MONGODB_URI: uri.replace("/?", `/${databaseName}?`),
         AUTH_SECRET: randomUUID(),
         AUTH_URL: base,
         NEXT_PUBLIC_SITE_URL: base,
@@ -66,8 +76,7 @@ try {
     await delay(1000);
   }
   browser = await chromium.launch({
-    executablePath:
-      "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    channel: "msedge",
     headless: true,
   });
   const context = await browser.newContext({
@@ -214,7 +223,7 @@ try {
       await page.setViewportSize({ width, height: 1000 });
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.screenshot({
-        path: `docs/admin-review/${entity}-form-approved-${width}.png`,
+        path: join(outputDirectory, `${entity}-form-approved-${width}.png`),
         fullPage: true,
       });
     }
@@ -261,10 +270,45 @@ try {
         .inputValue(),
       imageUrl,
     );
+    const replacement = await sharp(png).negate().png().toBuffer();
+    const replacing = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/admin/images") &&
+        response.request().method() === "POST",
+    );
+    await page
+      .locator('input[type="file"]')
+      .first()
+      .setInputFiles({
+        name: "replacement.png",
+        mimeType: "image/png",
+        buffer: replacement,
+      });
+    const replaced = await replacing;
+    assert.equal(replaced.status(), 201);
+    const replacementUrl = (await replaced.json()).data.url;
+    await page.waitForFunction(
+      (url) =>
+        Array.from(document.querySelectorAll("input")).some(
+          (input) => input.value === url,
+        ),
+      replacementUrl,
+    );
+    const editUrl = page.url();
     await page.locator('.admin-product-form button[type="submit"]').click();
     await page.waitForURL(`${base}/admin/${entity}`);
+    await page.goto(editUrl);
+    const imageName =
+      entity === "products" ? "images" : entity === "brands" ? "logo" : "image";
+    assert.equal(
+      await page.locator(`input[name="${imageName}"]`).first().inputValue(),
+      replacementUrl,
+    );
+    const reloadedImage = await context.request.get(`${base}${replacementUrl}`);
+    assert.equal(reloadedImage.status(), 200);
+    assert.deepEqual(await reloadedImage.body(), replacement);
     console.log(
-      `PASS: ${entity} upload, persistent image, create/edit redirects`,
+      `PASS: ${entity} upload, replacement, reload, persistent bytes and create/edit redirects`,
     );
     if (entity === "products") {
       const product = await db.collection("products").findOne({});
@@ -380,6 +424,6 @@ try {
   await browser?.close();
   server?.kill();
   // The randomly named database is created exclusively by this test.
-  await mongoose.connection.dropDatabase();
   await mongoose.disconnect();
+  await mongo.stop();
 }
