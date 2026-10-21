@@ -54,6 +54,16 @@ function render(overrides: Partial<StoreProductDTO> = {}, quantity = 0) {
   );
 }
 
+it("uses the current encoded category slug and removes inactive category links", () => {
+  const category = { ...product.category, slug: "دسته-تازه", isActive: true };
+  expect(render({ category })).toContain(
+    `/categories/${encodeURIComponent(category.slug)}`,
+  );
+  expect(render({ category: { ...category, isActive: false } })).not.toContain(
+    "/categories/",
+  );
+});
+
 it("renders registered product fields and omits preview content and feedback UI", () => {
   const markup = render();
   for (const value of [

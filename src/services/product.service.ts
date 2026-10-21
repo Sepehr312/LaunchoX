@@ -11,6 +11,7 @@ import { Category } from "@/models/category";
 import { Product } from "@/models/product";
 import { Brand } from "@/models/brand";
 import { brandIdSchema } from "@/validations/brand";
+import { getCategoryBySlug } from "@/services/category.service";
 import { getStoreBrandBySlug } from "@/services/brand.service";
 import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
 import type {
@@ -95,7 +96,9 @@ function escapedRegex(value: string) {
 async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
   const products = records.map((record) => toDTO(record) as ProductDTO);
   const ids = [...new Set(products.map((product) => product.category))];
-  const categories = await Category.find({ _id: { $in: ids } }).lean();
+  const categories = await Category.find({ _id: { $in: ids } })
+    .select("name slug isActive")
+    .lean();
   const brandIds = records.flatMap((record) =>
     "brand" in record &&
     record.brand &&
@@ -114,7 +117,12 @@ async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
       const category = toDTO(record);
       return [
         category.id,
-        { id: category.id, name: category.name, slug: category.slug },
+        {
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+          isActive: category.isActive,
+        },
       ];
     }),
   );
@@ -373,6 +381,17 @@ export async function listProducts(
 ): Promise<PaginatedResult<StoreProductDTO>> {
   await connectDB();
   const filter = storefrontFilter(input);
+  if (
+    input.category &&
+    !(await Category.exists({ _id: input.category, isActive: true }))
+  )
+    return {
+      items: [],
+      page: input.page,
+      limit: input.limit,
+      total: 0,
+      totalPages: 0,
+    };
   if (scopeBrandId) {
     filter.brand = new Types.ObjectId(brandIdSchema.parse(scopeBrandId));
   } else if (input.brandSlug) {
@@ -422,6 +441,21 @@ export async function listBrandProducts(
       "VALIDATION",
     );
   return listProducts(parsed.data, brand.id);
+}
+
+export async function listCategoryProducts(
+  slug: unknown,
+  values: StoreSearchParams,
+) {
+  const category = await getCategoryBySlug(slug);
+  if (!category) throw new AppError("دسته‌بندی پیدا نشد", "NOT_FOUND");
+  const parsed = parseProductQuery(values, { category: category.id });
+  if (!parsed.success)
+    throw new AppError(
+      parsed.error.issues[0]?.message ?? "ورودی معتبر نیست",
+      "VALIDATION",
+    );
+  return listProducts(parsed.data);
 }
 
 export async function getBrandCategories(brandId: string) {

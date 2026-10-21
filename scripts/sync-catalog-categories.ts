@@ -3,7 +3,7 @@ import { Product } from "@/models/product";
 import {
   catalogCategories,
   splitRefrigeratorCategory,
-} from "@/lib/catalog-categories";
+} from "./catalog-categories";
 
 export async function syncCatalogCategories() {
   const combined = await Category.findOne({ slug: "home-kitchen" }).lean();

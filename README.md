@@ -167,6 +167,9 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Task 8: Category is the only runtime source for category names, slugs, images, descriptions, activity and ordering. Inactive categories leave public directories and routes, and explicit category filters return no products. Their active products remain available in general/brand catalogs and detail pages; category breadcrumbs become plain text. Product.category ObjectId references, Brand behavior and transactional image writes are preserved.
+- Category routes and incremental loads resolve the current active slug; old or deleted slugs return 404 (or a failed incremental request) without redirect history. Category lists are memoized only within the React server render, and existing admin layout invalidation remains in place. No migration is executed for this change.
+
 - APNG is rejected by structural PNG chunk boundaries before decoding; static PNG and bounded GIF/WebP remain supported. Absolute uploaded-image references trust only the configured site origin and explicit IMAGE_INTERNAL_ORIGINS aliases. Cleanup uses indexed canonical existence queries and bounded per-ID legacy cursors, conservatively retaining ambiguous historical references; no data migration is performed.
 
 - Owner-approved image uploads remain in MongoDB with existing URL fields and API/UI contracts. Central policy keeps 5 MiB files / 6 MiB multipart requests, 24-hour grace and at most 100 cleanup candidates. Cleanup defaults to preview and preserves product/category/brand/order references; per-image transactional writes serialize attachment and deletion. Replica sets are required for these mutations, while existing external/static images retain their previous path.
@@ -226,7 +229,7 @@ npm run images:cleanup -- --apply --limit 50
 
 - Category product pages hide the category switcher on desktop and mobile; the general and brand catalogs retain their category filters, while sorting and other filters stay available within a selected category.
 
-- The shared desktop and mobile header links to `/categories` between brands and comparison. This directory reuses the brands page visual style, lists active database categories with active product counts (including out-of-stock products), uses the existing catalog illustrations, and links to the existing filtered category pages. Buying guides only link to categories present in the directory.
+- The shared desktop and mobile header links to `/categories` between brands and comparison. This directory reuses the brands page visual style, lists active database categories with active product counts (including out-of-stock products), uses admin-saved category images with a neutral icon when absent, and links to the existing filtered category pages. Buying guides link to the full product catalog because Category has no buying-guide mapping field.
 
 - The `/services` page extends the step 7 storefront with static buying, delivery, authorized installation and warranty guides, native expandable FAQs, order-account links and the existing footer contact details. No unverified service hours, installation commitments or request form are introduced; the shared header and after-sales footer link point to this page.
 
@@ -259,7 +262,7 @@ npm run images:cleanup -- --apply --limit 50
 - Product details use the shared ProductDetails component with real active product data, category peers, existing cart actions, current cart quantity, and the stock/ten-item cap. Missing attributes and feedback remain empty; registered images are preserved. Product URLs validate slugs and return 404 for missing/inactive products, including products created after a build.
 
 
-- Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The eight homepage types share one definition; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
+- Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The historical sample definitions live in scripts/catalog-categories.ts and are used only by seed/migration scripts; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
 
 
 - The approved Arctic footer is shared by the storefront and `/test`; informational destinations use accessible local dialogs, the storefront buying guide links to the homepage section.
@@ -279,7 +282,7 @@ npm run images:cleanup -- --apply --limit 50
 
 - Storefront product grids reuse the approved Arctic preview card layout with real product attributes, links, stock, discounts, and cart actions; the homepage glass panel shows four active products ordered by soldCount. Product likes are stored in this browser, shared across cards and tabs, without an account favorites page or backend.
 
-- The homepage Arctic carousel reads active categories from the database in admin-defined order, using their current names and slugs. Category images prefer the admin-saved image, then the existing illustration by slug, then a neutral icon. The fixed catalog list supplies only fallback artwork; deletion, activation, creation and edits use the existing admin cache invalidation. Empty and single-category layouts are supported.
+- The homepage Arctic carousel reads active categories from the database in admin-defined order, using their current names and slugs. Category images use only the admin-saved image, with a neutral icon when absent; no runtime slug-to-artwork list remains; deletion, activation, creation and edits use the existing admin cache invalidation. Empty and single-category layouts are supported.
 
 - Preview category rows size cards to show a whole number of items at rest and snap to complete cards after scrolling; glass edge buttons advance by one visible group. Touch, trackpad, and mouse wheel remain supported, and vertical wheel input scrolls the page again at the row boundaries.
 

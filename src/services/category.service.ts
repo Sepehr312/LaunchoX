@@ -1,4 +1,6 @@
 import "server-only";
+import { cache } from "react";
+import { routeSlugSchema, slugSchema } from "@/validations/common";
 import { withImageReferences } from "@/services/image-lifecycle.service";
 
 import { Types } from "mongoose";
@@ -55,16 +57,22 @@ export async function getCategoryAdmin(
   return record ? asCategoryDTO(record) : null;
 }
 
-export async function listCategories(): Promise<CategoryDTO[]> {
+export const listCategories = cache(async (): Promise<CategoryDTO[]> => {
   await connectDB();
   const records = await Category.find({ isActive: true })
-    .sort({ order: 1, name: 1 })
+    .select(
+      "name slug parent description image order isActive createdAt updatedAt",
+    )
+    .sort({ order: 1, name: 1, _id: 1 })
     .lean();
-  return records.map(asCategoryDTO);
-}
+  return records
+    .filter((record) => slugSchema.safeParse(record.slug).success)
+    .map(asCategoryDTO);
+});
 
 export async function listStoreCategories(): Promise<StoreCategoryDTO[]> {
   const categories = await listCategories();
+  if (!categories.length) return [];
   const counts = await Product.aggregate<{
     _id: Types.ObjectId;
     count: number;
@@ -106,10 +114,16 @@ export async function getCategoryTree(): Promise<CategoryTreeDTO[]> {
 }
 
 export async function getCategoryBySlug(
-  slug: string,
+  input: unknown,
 ): Promise<CategoryDTO | null> {
+  const parsed = routeSlugSchema.safeParse(input);
+  if (!parsed.success) return null;
   await connectDB();
-  const record = await Category.findOne({ slug, isActive: true }).lean();
+  const record = await Category.findOne({ slug: parsed.data, isActive: true })
+    .select(
+      "name slug parent description image order isActive createdAt updatedAt",
+    )
+    .lean();
   return record ? asCategoryDTO(record) : null;
 }
 

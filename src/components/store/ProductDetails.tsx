@@ -292,9 +292,15 @@ export function ProductDetails({
           <ChevronLeft size={14} />
           <Link href="/products">محصولات</Link>
           <ChevronLeft size={14} />
-          <Link href={`/categories/${product.category.slug}`}>
-            {toPersianDigits(product.category.name)}
-          </Link>
+          {product.category.isActive === false ? (
+            <span>{toPersianDigits(product.category.name)}</span>
+          ) : (
+            <Link
+              href={`/categories/${encodeURIComponent(product.category.slug)}`}
+            >
+              {toPersianDigits(product.category.name)}
+            </Link>
+          )}
         </nav>
         <section className={styles.hero} aria-labelledby="product-title">
           <div className={styles.galleryPanel}>

@@ -296,7 +296,7 @@ export function ProductsCatalog({
   const basePath = brand
     ? `/brands/${encodeURIComponent(brand.slug)}`
     : selectedCategory
-      ? `/categories/${selectedCategory.slug}`
+      ? `/categories/${encodeURIComponent(selectedCategory.slug)}`
       : "/products";
   const propsKey = JSON.stringify(initialQuery);
   const [catalog, setCatalog] = useState({

@@ -71,6 +71,7 @@ export interface ProductDTO extends EntityDTO {
   soldCount: number;
 }
 export interface ProductCategoryDTO {
+  isActive?: boolean;
   id: string;
   name: string;
   slug: string;
