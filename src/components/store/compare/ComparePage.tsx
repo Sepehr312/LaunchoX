@@ -34,7 +34,7 @@ import {
   readComparisonSelection,
   writeComparisonSelection,
 } from "./comparison-selection";
-import { parseCompareIds } from "@/validations/compare";
+import { COMPARE_PRODUCT_LIMIT, parseCompareIds } from "@/validations/compare";
 
 export function ComparePage({
   initialProducts,
@@ -111,7 +111,7 @@ export function ComparePage({
   }
   function add(product: CompareProductDTO) {
     if (products.some((item) => item.id === product.id)) return;
-    if (products.length === 4) {
+    if (products.length >= COMPARE_PRODUCT_LIMIT) {
       setMessage(
         "حداکثر چهار محصول را می‌توان مقایسه کرد؛ ابتدا یک محصول را حذف کن.",
       );
@@ -132,7 +132,7 @@ export function ComparePage({
       setMessage("برای اشتراک‌گذاری، نشانی این صفحه را از نوار آدرس کپی کن.");
     }
   }
-  const slots = Math.min(4, products.length + 1);
+  const slots = Math.min(COMPARE_PRODUCT_LIMIT, products.length + 1);
   const variables = {
     "--slots": slots,
     "--site-header-height": `${headerHeight}px`,
@@ -211,7 +211,10 @@ export function ComparePage({
                 مشاهده محصولات
               </Link>
             </div>
-            <small>تا {toPersianDigits(4)} محصول را کنار هم مقایسه کن.</small>
+            <small>
+              تا {toPersianDigits(COMPARE_PRODUCT_LIMIT)} محصول را کنار هم
+              مقایسه کن.
+            </small>
           </section>
         ) : (
           <>
@@ -220,7 +223,7 @@ export function ComparePage({
                 برای دیدن تفاوت‌ها، محصول دوم را به مقایسه اضافه کن.
               </p>
             )}
-            {products.length === 4 && (
+            {products.length >= COMPARE_PRODUCT_LIMIT && (
               <p className={styles.hint}>
                 ظرفیت مقایسه تکمیل است؛ برای افزودن محصول جدید یکی از انتخاب‌ها
                 را حذف کن.
@@ -299,7 +302,7 @@ export function ComparePage({
                       </button>
                     </div>
                   ))}
-                  {products.length < 4 && (
+                  {products.length < COMPARE_PRODUCT_LIMIT && (
                     <button
                       className={styles.miniAdd}
                       onClick={() => setPicker(true)}

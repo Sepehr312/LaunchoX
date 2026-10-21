@@ -34,7 +34,11 @@ describe("comparison input and quantities", () => {
     expect(parseCompareIds("$ne:1")).toEqual([]);
     expect(parseCompareIds(["000000000000000000000001"])).toEqual([]);
     expect(
-      parseCompareIds(Array(5).fill("000000000000000000000001").join(",")),
+      parseCompareIds(
+        Array.from({ length: 5 }, (_, i) =>
+          String(i + 1).padStart(24, "0"),
+        ).join(","),
+      ),
     ).toEqual([]);
     expect(
       parseCompareIds("000000000000000000000001,000000000000000000000001"),

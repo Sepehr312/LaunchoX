@@ -235,6 +235,8 @@ npm run images:cleanup -- --apply --limit 50
 
 - `/compare` is the approved live comparison page under the shared shop layout, with entry links on product cards, product details, and desktop/mobile navigation. Validated browser storage remembers selections across product pages; an explicit `products` URL, including an empty selection, takes priority. Database errors use the normal retry boundary. The picker scrollbar is hidden while scrolling stays enabled.
 
+- Comparison remains public and read-only: its only Server Action searches active products and never writes account or database data. Shared validation bounds raw selections at 32 IDs (64 characters each), trims and lowercases ObjectIds, removes duplicates in selection order, then enforces the existing four-product limit. Invalid URL/storage selections become empty; invalid action/service input is rejected before database access. The picker retains 12 products per page and caps browsing at 100 pages (1,200 products, maximum skip 1,188), with search available to narrow larger catalogs; pages beyond the current result count return empty without fetching product records. Other catalog pagination is unchanged.
+
 
 - The public `/about` page reuses the shop layout, existing light tokens, product assets, section heading and navigation styles; desktop and mobile header links point to it. Its specification CTA opens `/products`; contact links to the existing footer contact section. Scroll reveals honor reduced motion and keep content visible by default.
 

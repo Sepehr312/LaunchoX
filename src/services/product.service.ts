@@ -26,7 +26,12 @@ import {
   type ProductInput,
   type ProductQueryInput,
 } from "@/validations/product";
-import { compareIdsSchema, compareSearchSchema } from "@/validations/compare";
+import {
+  compareIdsSchema,
+  compareSearchSchema,
+  COMPARE_PAGE_LIMIT,
+  COMPARE_PAGE_SIZE,
+} from "@/validations/compare";
 
 const comparisonFields =
   "title slug price compareAtPrice stock sku images category brand attributes createdAt updatedAt";
@@ -67,18 +72,21 @@ export async function searchComparisonProducts(
         }
       : {}),
   };
-  const [records, total] = await Promise.all([
-    Product.find(filter)
-      .select(comparisonFields)
-      .sort({ createdAt: -1, _id: 1 })
-      .skip((page - 1) * 12)
-      .limit(12)
-      .lean(),
-    Product.countDocuments(filter),
-  ]);
+  const total = await Product.countDocuments(filter);
+  const totalPages = Math.min(
+    COMPARE_PAGE_LIMIT,
+    Math.ceil(total / COMPARE_PAGE_SIZE),
+  );
+  if (page > totalPages) return { items: [], totalPages };
+  const records = await Product.find(filter)
+    .select(comparisonFields)
+    .sort({ createdAt: -1, _id: 1 })
+    .skip((page - 1) * COMPARE_PAGE_SIZE)
+    .limit(COMPARE_PAGE_SIZE)
+    .lean();
   return {
     items: await withCategories(records),
-    totalPages: Math.ceil(total / 12),
+    totalPages,
   };
 }
 
