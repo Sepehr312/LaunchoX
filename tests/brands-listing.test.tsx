@@ -5,6 +5,10 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import { brandSearchSchema } from "@/validations/brand";
 import { parseProductQuery } from "@/lib/product-query";
 import BrandsPage, { metadata } from "@/app/(shop)/brands/page";
+import { getProductPricing } from "@/lib/product-pricing";
+
+vi.mock("server-only", () => ({}));
+
 import type { StoreProductDTO } from "@/types/dto";
 
 const mocks = vi.hoisted(() => ({ list: vi.fn() }));
@@ -19,6 +23,7 @@ it("initializes the brand only from its reference and excludes historical brand 
     slug: "product",
     description: "توضیح",
     price: 100,
+    pricing: getProductPricing({ price: 100 }),
     stock: 1,
     images: ["/image.png"],
     category: { id: "category", name: "دسته", slug: "category" },

@@ -6,6 +6,10 @@ import { Types, type PipelineStage } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { toDTO } from "@/lib/model-shared";
+import {
+  getProductPricing,
+  productDiscountRatioExpression,
+} from "@/lib/product-pricing";
 import { createUniqueSlug } from "@/lib/slug";
 import { Category } from "@/models/category";
 import { Product } from "@/models/product";
@@ -145,7 +149,9 @@ async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
       ];
     }
     const category = categoryMap.get(product.category);
-    return category ? [{ ...product, category }] : [];
+    return category
+      ? [{ ...product, category, pricing: getProductPricing(product) }]
+      : [];
   });
 }
 
@@ -280,18 +286,7 @@ async function queryProductRecords(
   if (input.sort === "discount") {
     pipeline.push({
       $set: {
-        _catalogDiscount: {
-          $cond: [
-            {
-              $and: [
-                { $gt: ["$compareAtPrice", "$price"] },
-                { $gt: ["$compareAtPrice", 0] },
-              ],
-            },
-            { $subtract: [1, { $divide: ["$price", "$compareAtPrice"] }] },
-            0,
-          ],
-        },
+        _catalogDiscount: productDiscountRatioExpression(),
       },
     });
   }

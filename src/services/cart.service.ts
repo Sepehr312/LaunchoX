@@ -3,6 +3,7 @@ import { z } from "zod";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { toDTO } from "@/lib/model-shared";
+import { getProductPricing } from "@/lib/product-pricing";
 import { Cart } from "@/models/cart";
 import { Product } from "@/models/product";
 import { calculateCartTotals } from "@/services/order.service";
@@ -49,7 +50,7 @@ export async function getCart(owner: CartOwner): Promise<CartView> {
   // Reads reflect current availability without overwriting concurrent cart mutations.
   const totals = calculateCartTotals(
     items.map((item) => ({
-      price: item.product.price,
+      price: getProductPricing(item.product).finalPrice,
       quantity: item.quantity,
     })),
   );

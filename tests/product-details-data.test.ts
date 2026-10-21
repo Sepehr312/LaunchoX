@@ -1,7 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { getProductDetailsData } from "@/components/store/product-details-data";
+import { getProductPricing } from "@/lib/product-pricing";
+vi.mock("server-only", () => ({}));
 const productFixture = {
   price: 112600000,
+  pricing: getProductPricing({ price: 112600000, compareAtPrice: 128000000 }),
   compareAtPrice: 128000000,
   images: ["/images/product.png"],
   category: { id: "category-1", name: "ساید بای ساید", slug: "side-by-side" },
@@ -49,23 +52,16 @@ describe("product detail data mapping", () => {
     expect(data.shipping).toBeUndefined();
   });
 
-  it("does not manufacture a discount when a previous price is absent or invalid", () => {
-    expect(
-      getProductDetailsData({ ...productFixture, compareAtPrice: undefined })
-        .discountPercent,
-    ).toBe(0);
-    expect(
-      getProductDetailsData({
-        ...productFixture,
-        compareAtPrice: productFixture.price,
-      }).discountPercent,
-    ).toBe(0);
-    expect(
-      getProductDetailsData({
-        ...productFixture,
-        price: 35400000,
-        compareAtPrice: 36900000,
-      }).discountPercent,
-    ).toBe(4);
+  it("uses server pricing for discounted and undiscounted products", () => {
+    for (const input of [
+      { price: 0 },
+      { price: 112600000 },
+      { price: 35400000, compareAtPrice: 36900000 },
+    ]) {
+      const pricing = getProductPricing(input);
+      expect(
+        getProductDetailsData({ ...productFixture, pricing }).discountPercent,
+      ).toBe(pricing.discountPercent);
+    }
   });
 });

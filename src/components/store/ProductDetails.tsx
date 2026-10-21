@@ -429,16 +429,15 @@ export function ProductDetails({
               </span>
             </div>
             <div className={styles.price}>
-              {product.compareAtPrice &&
-                product.compareAtPrice > product.price && (
-                  <div>
-                    <span className={styles.discount}>
-                      {toPersianDigits(discountPercent)}٪
-                    </span>
-                    <del>{formatPrice(product.compareAtPrice)}</del>
-                  </div>
-                )}
-              <strong>{formatPrice(product.price)}</strong>
+              {product.pricing.hasDiscount && (
+                <div>
+                  <span className={styles.discount}>
+                    {toPersianDigits(discountPercent)}٪
+                  </span>
+                  <del>{formatPrice(product.pricing.originalPrice)}</del>
+                </div>
+              )}
+              <strong>{formatPrice(product.pricing.finalPrice)}</strong>
             </div>
             {purchaseControl()}
           </aside>
@@ -529,7 +528,7 @@ export function ProductDetails({
       <div className={styles.mobileBuy} aria-label="خرید سریع">
         <div>
           <small>قیمت محصول</small>
-          <strong>{formatPrice(product.price)}</strong>
+          <strong>{formatPrice(product.pricing.finalPrice)}</strong>
         </div>
         {purchaseControl()}
       </div>

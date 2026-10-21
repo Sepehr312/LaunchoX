@@ -2,6 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it, vi } from "vitest";
 import { ProductDetails } from "@/components/store/ProductDetails";
 import { formatPrice } from "@/lib/format";
+import { getProductPricing } from "@/lib/product-pricing";
+
+vi.mock("server-only", () => ({}));
+
 import type { StoreProductDTO } from "@/types/dto";
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +24,7 @@ const product: StoreProductDTO = {
   slug: "registered-fridge",
   description: "توضیحات ثبت‌شده برای محصول فروشگاه",
   price: 35400000,
+  pricing: getProductPricing({ price: 35400000, compareAtPrice: 36900000 }),
   compareAtPrice: 36900000,
   stock: 3,
   sku: "SKU-1",
@@ -103,6 +108,7 @@ it("shows missing optional data honestly and renders the related-product empty s
     attributes: [],
     sku: undefined,
     compareAtPrice: undefined,
+    pricing: getProductPricing({ price: product.price }),
   });
   for (const value of [
     "برند نامشخص",

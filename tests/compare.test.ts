@@ -6,6 +6,9 @@ import {
   buildCompareGroups,
 } from "@/components/store/compare/compare-data";
 import { parseCompareIds } from "@/validations/compare";
+import { vi } from "vitest";
+import { getProductPricing } from "@/lib/product-pricing";
+vi.mock("server-only", () => ({}));
 import type { CompareProductDTO } from "@/types/dto";
 
 const comparisonFixtures: CompareProductDTO[] = ["600 لیتر", "520 لیتر"].map(
@@ -14,6 +17,7 @@ const comparisonFixtures: CompareProductDTO[] = ["600 لیتر", "520 لیتر"]
     title: "محصول نمونهٔ آزمون",
     slug: `comparison-test-${index + 1}`,
     price: 100000,
+    pricing: getProductPricing({ price: 100000 }),
     stock: 1,
     images: ["/images/products/side-by-side.png"],
     category: {

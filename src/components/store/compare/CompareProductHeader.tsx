@@ -49,15 +49,15 @@ export function CompareProductHeader({
             <p className={styles.brand}>{details.brand ?? "برند ثبت نشده"}</p>
             <h2>{toPersianDigits(product.title)}</h2>
             <div className={styles.priceHistory}>
-              {details.discountPercent > 0 && product.compareAtPrice && (
+              {details.discountPercent > 0 && product.pricing.hasDiscount && (
                 <>
-                  <del>{formatPrice(product.compareAtPrice)}</del>
+                  <del>{formatPrice(product.pricing.originalPrice)}</del>
                   <span>{toPersianDigits(details.discountPercent)}٪</span>
                 </>
               )}
             </div>
             <strong className={styles.price}>
-              {formatPrice(product.price)}
+              {formatPrice(product.pricing.finalPrice)}
             </strong>
             <p className={styles.stock}>
               {product.stock > 0 ? "موجود در فروشگاه" : "ناموجود"}

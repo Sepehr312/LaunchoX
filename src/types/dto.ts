@@ -5,6 +5,7 @@ import type {
   ProductAttribute,
   UserRole,
 } from "@/types/domain";
+import type { ProductPricingDTO } from "@/types/pricing";
 
 export interface TimestampsDTO {
   createdAt: string;
@@ -78,6 +79,7 @@ export interface ProductCategoryDTO {
 }
 export interface StoreProductDTO extends Omit<ProductDTO, "category"> {
   category: ProductCategoryDTO;
+  pricing: ProductPricingDTO;
 }
 export type CompareProductDTO = Pick<
   StoreProductDTO,
@@ -86,6 +88,7 @@ export type CompareProductDTO = Pick<
   | "slug"
   | "price"
   | "compareAtPrice"
+  | "pricing"
   | "stock"
   | "sku"
   | "images"
