@@ -1,4 +1,5 @@
 "use client";
+import { isBrandAttribute } from "@/validations/brand-text";
 import { Save } from "lucide-react";
 import { useAdminFormAction } from "@/components/admin/use-admin-form-action";
 import Link from "next/link";
@@ -46,15 +47,7 @@ export function ProductForm({
     stock: toPersianDigits(product?.stock ?? 0),
     sku: product?.sku ?? "",
     category: product?.category.id ?? "",
-    brand:
-      brandId ??
-      brands.find(
-        (item) =>
-          item.name ===
-          product?.attributes.find((attribute) => attribute.key === "برند")
-            ?.value,
-      )?.id ??
-      "",
+    brand: brandId ?? "",
     isActive: product?.isActive ?? true,
     isFeatured: product?.isFeatured ?? false,
   });
@@ -63,7 +56,7 @@ export function ProductForm({
   );
   const [attributes, setAttributes] = useState<
     { key: string; value: string }[]
-  >(product?.attributes.filter((item) => item.key !== "برند") ?? []);
+  >(product?.attributes.filter((item) => !isBrandAttribute(item.key)) ?? []);
   const errors = state && !state.ok ? state.fieldErrors : undefined;
   const field = (
     name:

@@ -176,7 +176,7 @@ it("ignores hostile brand selectors and applies price, category, stock, energy a
   ).rejects.toMatchObject({ code: "VALIDATION" });
 });
 
-it("uses current reference names after rename while retaining unassigned legacy filtering", async () => {
+it("uses current reference names after rename and excludes unassigned legacy filtering", async () => {
   const brand = await getStoreBrandBySlug("samsung");
   await updateBrand(brand!.id, { name: "نام جدید", slug: "samsung" });
   const result = await listProducts(
@@ -201,7 +201,7 @@ it("uses current reference names after rename while retaining unassigned legacy 
     (
       await listProducts(productQuerySchema.parse({ brands: ["قدیمی"] }))
     ).items.map((product) => product.slug),
-  ).toEqual(["legacy"]);
+  ).toEqual([]);
   expect((await listBrandProducts("samsung", {})).total).toBe(3);
 });
 

@@ -1,4 +1,5 @@
 import "server-only";
+import { isBrandAttribute } from "@/validations/brand-text";
 import { withImageReferences } from "@/services/image-lifecycle.service";
 
 import { Types, type PipelineStage } from "mongoose";
@@ -19,7 +20,11 @@ import type {
   ProductFilterOptionsDTO,
   CompareProductDTO,
 } from "@/types/dto";
-import type { ProductInput, ProductQueryInput } from "@/validations/product";
+import {
+  productSchema,
+  type ProductInput,
+  type ProductQueryInput,
+} from "@/validations/product";
 import { compareIdsSchema, compareSearchSchema } from "@/validations/compare";
 
 const comparisonFields =
@@ -57,7 +62,6 @@ export async function searchComparisonProducts(
           $or: [
             { title: pattern },
             { brand: { $in: brands.map((brand) => brand._id) } },
-            { attributes: { $elemMatch: { key: "برند", value: pattern } } },
           ],
         }
       : {}),
@@ -93,7 +97,11 @@ async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
   const ids = [...new Set(products.map((product) => product.category))];
   const categories = await Category.find({ _id: { $in: ids } }).lean();
   const brandIds = records.flatMap((record) =>
-    "brand" in record && record.brand ? [String(record.brand)] : [],
+    "brand" in record &&
+    record.brand &&
+    Types.ObjectId.isValid(String(record.brand))
+      ? [String(record.brand)]
+      : [],
   );
   const brands = await Brand.find({ _id: { $in: brandIds } })
     .select("name")
@@ -114,9 +122,12 @@ async function withCategories(records: object[]): Promise<StoreProductDTO[]> {
     const record = records[index];
     const name =
       "brand" in record ? brandNames.get(String(record.brand)) : undefined;
+    product.attributes = product.attributes.filter(
+      (attribute) => !isBrandAttribute(attribute.key),
+    );
     if (name) {
       product.attributes = [
-        ...product.attributes.filter((attribute) => attribute.key !== "برند"),
+        ...product.attributes,
         {
           key: "برند",
           value: name,
@@ -320,10 +331,7 @@ export async function getProductFilterOptions(
           { $unwind: "$attributes" },
           {
             $match: {
-              $or: [
-                { "attributes.key": "رده انرژی" },
-                { "attributes.key": "برند", brand: null },
-              ],
+              "attributes.key": "رده انرژی",
             },
           },
           {
@@ -351,9 +359,9 @@ export async function getProductFilterOptions(
   return {
     brands: brandId
       ? []
-      : [
-          ...new Set([...brands.map((brand) => brand.name), ...values("برند")]),
-        ].sort((a, b) => a.localeCompare(b, "fa")),
+      : brands
+          .map((brand) => brand.name)
+          .sort((a, b) => a.localeCompare(b, "fa")),
     energies: values("رده انرژی"),
     maxPrice: result?.price[0]?.max ?? 0,
   };
@@ -392,13 +400,7 @@ async function applyBrandNames(filter: ProductStoreFilter, names: string[]) {
   filter.$and = [
     ...(filter.$and ?? []),
     {
-      $or: [
-        { brand: { $in: brands.map((brand) => brand._id) } },
-        {
-          brand: null,
-          attributes: { $elemMatch: { key: "برند", value: { $in: names } } },
-        },
-      ],
+      brand: { $in: brands.map((brand) => brand._id) },
     },
   ];
 }
@@ -496,6 +498,7 @@ async function ensureBrand(
 export async function createProduct(
   input: ProductInput & { brand?: string | null },
 ): Promise<StoreProductDTO> {
+  input = { ...productSchema.parse(input), brand: input.brand };
   await connectDB();
   await ensureCategory(input.category);
   await ensureBrand(input.brand);
@@ -527,6 +530,7 @@ export async function updateProduct(
   id: string,
   input: ProductInput & { brand?: string | null },
 ): Promise<StoreProductDTO> {
+  input = { ...productSchema.parse(input), brand: input.brand };
   await connectDB();
   await ensureCategory(input.category);
   await ensureBrand(input.brand, id);
@@ -535,14 +539,26 @@ export async function updateProduct(
     (await createUniqueSlug(input.title, (candidate) =>
       Product.exists({ slug: candidate, _id: { $ne: id } }).then(Boolean),
     ));
-  const validationDocument = new Product({ ...input, slug });
+  const existing = await Product.findById(id).select("attributes").lean();
+  if (!existing) throw new AppError("محصول پیدا نشد", "NOT_FOUND");
+  const storedAttributes = [
+    ...input.attributes,
+    ...existing.attributes.filter((attribute) =>
+      isBrandAttribute(attribute.key),
+    ),
+  ];
+  const validationDocument = new Product({
+    ...input,
+    slug,
+    attributes: storedAttributes,
+  });
   await validationDocument.validate();
   try {
     const product = await withImageReferences(input.images, (session) =>
       Product.findByIdAndUpdate(
         id,
         {
-          $set: { ...input, slug },
+          $set: { ...input, slug, attributes: storedAttributes },
           $unset: {
             ...(input.sku === undefined ? { sku: 1 } : {}),
             ...(input.compareAtPrice === undefined

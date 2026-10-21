@@ -100,6 +100,7 @@ productSchema.index({ category: 1, isActive: 1, createdAt: -1 });
 productSchema.index({ isFeatured: 1, isActive: 1 });
 
 productSchema.index({ images: 1 });
+productSchema.index({ brand: 1, isActive: 1, createdAt: -1 });
 
 export const Product: Model<IProduct> =
   (models.Product as Model<IProduct> | undefined) ??

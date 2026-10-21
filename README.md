@@ -237,7 +237,7 @@ npm run images:cleanup -- --apply --limit 50
 
 
 
-- Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference while retaining the legacy brand attribute for catalog filters. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
+- Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference without persisting independent brand attributes; existing historical attributes remain audit data. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
 
 
 
@@ -274,7 +274,7 @@ npm run images:cleanup -- --apply --limit 50
 
 - Catalog and seed images reuse the approved category PNG assets; top-freezer, bottom-freezer, and twin products use their matching images within the combined refrigerator category. The image-only migration in `scripts/update-catalog-images.ts` defaults to a dry run, backs up the catalog before `--apply`, and verifies that other fields remain unchanged.
 
-- The `/products` showroom uses real server-paginated data with URL filters for category, price, stock, brands, capacity in liters, energy, and discounts. Brand and energy options come from active product attributes; capacity accepts Persian, Arabic, and ASCII digits. Discount order uses the percentage derived from price and compareAtPrice.
+- The `/products` showroom uses real server-paginated data with URL filters for category, price, stock, brands, capacity in liters, energy, and discounts. Brand options come from active Brand references on active products, and energy options come from active product attributes; capacity accepts Persian, Arabic, and ASCII digits. Discount order uses the percentage derived from price and compareAtPrice.
 
 
 - Storefront product grids reuse the approved Arctic preview card layout with real product attributes, links, stock, discounts, and cart actions; the homepage glass panel shows four active products ordered by soldCount. Product likes are stored in this browser, shared across cards and tabs, without an account favorites page or backend.
@@ -285,9 +285,9 @@ npm run images:cleanup -- --apply --limit 50
 
 
 
-- Catalog seed data includes 11 sample brands and links all 24 sample products through `Product.brand` while preserving legacy brand attributes. Repeated seeding preserves existing brand identities and settings; `seed -- --reset` also deletes and recreates brands.
+- Catalog seed data includes 11 sample brands and links all 24 sample products through `Product.brand` without adding independent legacy brand attributes. Repeated seeding preserves existing brand identities and settings; `seed -- --reset` also deletes and recreates brands.
 
-- For an existing local development catalog, `npx tsx --conditions=react-server --env-file=.env.local scripts/link-product-brands.ts` previews missing brand links from legacy attributes; add `--apply` to back up the catalog and brands, create missing brands, and fill only unassigned `Product.brand` references. Existing product fields and assigned brands are preserved.
+- Existing catalogs use the dry-run-first migration in [docs/BRAND-MIGRATION.md](docs/BRAND-MIGRATION.md). The historical linking command delegates to this migration and never creates brands.
 
 - Brand administration follows category full-form edits: omitted optional text fields are cleared, omitted slugs are generated from the name, and the management list includes inactive brands sorted by order and name. Linked products prevent deletion, while deactivation remains available without changing product visibility.
 
@@ -310,9 +310,9 @@ npm run images:cleanup -- --apply --limit 50
 - مالکیت سفارش در proxy و مجدداً در صفحه و سرویس بررسی می‌شود. انتخاب آدرس پیش‌فرض اتمیک است؛ حذف آدرس پیش‌فرض تا انتخاب مجدد، حساب را بدون آدرس پیش‌فرض می‌گذارد.
 - پنل ادمین طبق درخواست مالک، نقش کاربران دیگر را بین مشتری و ادمین تغییر می‌دهد؛ تغییر نقش و غیرفعال‌سازی حساب خود ادمین در سرویس رد می‌شود. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
 - پرداخت واقعی و OTP قابلیت فعال فعلی نیستند؛ بخش نقطه‌های توسعه، محل اتصال آیندهٔ آن‌ها را مشخص می‌کند. آپلود تصویر اکنون در فرم‌های محصول، دسته‌بندی و برند از کادر پیش‌نمایش انجام می‌شود.
-- The `/brands` directory reuses the shop shell and Brand source, exposes only public fields, and counts active products by `Product.brand`. Card links open `/brands/[slug]`, resolved to the current active Brand ID; legacy name filters remain compatible. Search uses the existing name and slug (the model has no separate English name). Inactive brands cannot receive new product assignments, but existing assignments can be retained on edits. No migration is performed; products with only legacy attributes need the existing reviewed linking workflow before appearing in brand counts.
+- The `/brands` directory reuses the shop shell and Brand source, exposes only public fields, and counts active products by `Product.brand`. Card links open `/brands/[slug]`, resolved to the current active Brand ID; name filters resolve current Brand references only. Search uses the existing name and slug (the model has no separate English name). Inactive brands cannot receive new product assignments, but existing assignments can be retained on edits. Products with only legacy attributes require the reviewed migration before the reference-only version is deployed.
 
-- `/brands/[slug]` reuses ProductsCatalog and its incremental loading through a server action whose route slug is captured by Next.js; query brand selectors are ignored and the active Brand is revalidated for each load. Categories, prices, energy options and counts use real linked products. The Brand model has no English-name field, so no English name is inferred. Reference-backed brand names override legacy attributes in storefront DTOs and filters; unassigned legacy products retain text filtering until the existing opt-in linking workflow is approved. No migration is run.
+- `/brands/[slug]` reuses ProductsCatalog and its incremental loading through a server action whose route slug is captured by Next.js; query brand selectors are ignored and the active Brand is revalidated for each load. Categories, prices, energy options and counts use real linked products. The Brand model has no English-name field, so no English name is inferred. Reference-backed brand names override legacy attributes in storefront DTOs and filters; unassigned legacy products require migration before deployment. No migration is run against the current database.
 
 - The approved brand directory and brand product pages are published at `/brands` and `/brands/[slug]`, with shared desktop/mobile header navigation, production card and breadcrumb links, and indexable metadata. Data access and filtering use the existing services; the former preview routes have been removed.
 
@@ -321,3 +321,5 @@ npm run images:cleanup -- --apply --limit 50
 - Standard storefront product cards place a compact icon-only comparison link below the like button, retaining a Persian accessible label and tooltip; compact cards and product-detail comparison links retain their existing presentation.
 
 - Product details place the icon-only comparison link between like and share in the gallery toolbar, matching the adjacent controls and retaining its Persian accessible label.
+
+- Product.brand is the sole brand source for storefront display, comparison, search and filters. Historical brand attributes are retained only as audit data; new writes reject independent brand attributes. Admin forms still require a brand, while service-level unbranded products remain supported. The old linking command now uses the safe migration without creating brands. See [brand migration and required deployment order](docs/BRAND-MIGRATION.md); complete the migration and data review before deploying the reference-only readers.

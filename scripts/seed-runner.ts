@@ -179,7 +179,6 @@ export async function seedDatabase(
         category: category._id,
         brand: brandIds.get(product.brand),
         attributes: [
-          { key: "برند", value: product.brand },
           { key: "ظرفیت", value: product.capacity },
           { key: "رده انرژی", value: product.energy },
           { key: "فناوری", value: product.technology },

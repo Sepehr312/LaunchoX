@@ -7,6 +7,7 @@ vi.mock("@/lib/db", () => ({ connectDB: vi.fn(async () => mongoose) }));
 
 import { Category } from "@/models/category";
 import { Product } from "@/models/product";
+import { Brand } from "@/models/brand";
 import {
   getProductFilterOptions,
   listProducts,
@@ -22,7 +23,15 @@ beforeAll(async () => {
   await Promise.all([Category.init(), Product.init()]);
 }, 180000);
 beforeEach(async () => {
-  await Promise.all([Product.deleteMany({}), Category.deleteMany({})]);
+  await Promise.all([
+    Product.deleteMany({}),
+    Category.deleteMany({}),
+    Brand.deleteMany({}),
+  ]);
+  const brands = await Brand.create([
+    { name: "ال‌جی", slug: "lg" },
+    { name: "سامسونگ", slug: "samsung" },
+  ]);
   const category = await Category.create({ name: "یخچال", slug: "fridges" });
   const capacities = [
     "۳۹۹ لیتر",
@@ -46,6 +55,7 @@ beforeEach(async () => {
           ? { compareAtPrice: 3000 }
           : {}),
       category: category._id,
+      brand: brands[index % 2]._id,
       stock: index === 1 ? 0 : 3,
       images: ["/test.jpg"],
       isActive: index !== 7,

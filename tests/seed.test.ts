@@ -78,9 +78,9 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
   for (const product of products) {
     const brand = brands.find((entry) => entry._id.equals(product.brand));
     expect(brand).toBeDefined();
-    expect(brand?.name).toBe(
-      product.attributes.find((attribute) => attribute.key === "برند")?.value,
-    );
+    expect(
+      product.attributes.some((attribute) => attribute.key === "برند"),
+    ).toBe(false);
   }
   expect(products.filter((product) => product.isFeatured)).toHaveLength(6);
   expect(

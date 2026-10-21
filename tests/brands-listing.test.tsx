@@ -5,11 +5,50 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import { brandSearchSchema } from "@/validations/brand";
 import { parseProductQuery } from "@/lib/product-query";
 import BrandsPage, { metadata } from "@/app/(shop)/brands/page";
+import type { StoreProductDTO } from "@/types/dto";
 
 const mocks = vi.hoisted(() => ({ list: vi.fn() }));
 vi.mock("@/services/brand.service", () => ({ listStoreBrands: mocks.list }));
 vi.mock("@/actions/admin/product.actions", () => ({ productAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
+
+it("initializes the brand only from its reference and excludes historical brand inputs", () => {
+  const product: StoreProductDTO = {
+    id: "product",
+    title: "محصول",
+    slug: "product",
+    description: "توضیح",
+    price: 100,
+    stock: 1,
+    images: ["/image.png"],
+    category: { id: "category", name: "دسته", slug: "category" },
+    attributes: [{ key: "برند", value: "قدیمی", createdAt: "", updatedAt: "" }],
+    isActive: true,
+    isFeatured: false,
+    soldCount: 0,
+    createdAt: "2026-01-01",
+    updatedAt: "2026-01-01",
+  };
+  const brands = [
+    { id: "old", name: "قدیمی", isActive: true },
+    { id: "current", name: "فعلی", isActive: true },
+  ];
+  const markup = renderToStaticMarkup(
+    <ProductForm
+      product={product}
+      categories={[]}
+      brands={brands}
+      brandId="current"
+    />,
+  );
+  expect(markup).toContain('<option value="current" selected="">');
+  expect(markup).not.toContain('name="attributeKey"');
+  const unassigned = renderToStaticMarkup(
+    <ProductForm product={product} categories={[]} brands={brands} />,
+  );
+  expect(unassigned).not.toContain('<option value="old" selected="">');
+  expect(unassigned).toContain('<option value="" selected="">');
+});
 
 it("disables inactive brands for new assignments and retains the existing inactive selection", () => {
   const brands = [{ id: "inactive", name: "برند غیرفعال", isActive: false }];
