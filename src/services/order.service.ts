@@ -1,4 +1,5 @@
 import "server-only";
+import { withImageReferences } from "@/services/image-lifecycle.service";
 import { getEnv } from "@/lib/env";
 import { randomUUID } from "node:crypto";
 import { Types, type QueryFilter } from "mongoose";
@@ -82,7 +83,8 @@ export async function createOrderFromCart(
   const reserved: { product: Types.ObjectId; quantity: number }[] = [];
   let createdId: Types.ObjectId | undefined;
   try {
-    const items = [];
+    const items: Omit<IOrder["items"][number], "createdAt" | "updatedAt">[] =
+      [];
     for (const item of cart.items) {
       const product = await Product.findOneAndUpdate(
         { _id: item.product, isActive: true, stock: { $gte: item.quantity } },
@@ -130,21 +132,29 @@ export async function createOrderFromCart(
       .orFail();
     const { _id: addressId, ...shippingAddress } = address;
     void addressId;
-    const order = await Order.create({
-      user,
-      orderNumber: `LX-${counter.seq}`,
-      items,
-      subtotal: totals.subtotal,
-      shippingFee: totals.shippingFee,
-      total: totals.total,
-      shippingAddress,
-      note: data.note,
-      status: "pending",
-      payment: { status: "unpaid" },
-      statusHistory: [
-        { status: "pending", changedAt: new Date(), changedBy: user },
-      ],
-    });
+    const order = await withImageReferences(
+      items.map((item) => item.image),
+      (session) => {
+        const fields = {
+          user,
+          orderNumber: `LX-${counter.seq}`,
+          items,
+          subtotal: totals.subtotal,
+          shippingFee: totals.shippingFee,
+          total: totals.total,
+          shippingAddress,
+          note: data.note,
+          status: "pending" as const,
+          payment: { status: "unpaid" as const },
+          statusHistory: [
+            { status: "pending" as const, changedAt: new Date(), changedBy: user },
+          ],
+        };
+        return session
+          ? new Order(fields).save({ session })
+          : Order.create(fields);
+      },
+    );
     createdId = order._id;
     // A cart edit during checkout must not be silently discarded.
     const cleared = await Cart.updateOne(

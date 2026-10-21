@@ -1,4 +1,5 @@
 import "server-only";
+import { withImageReferences } from "@/services/image-lifecycle.service";
 
 import { Types } from "mongoose";
 import { connectDB } from "@/lib/db";
@@ -123,7 +124,9 @@ export async function createCategory(
       Category.exists({ slug: candidate }).then(Boolean),
     ));
   try {
-    const category = await Category.create({ ...input, slug });
+    const category = await withImageReferences([input.image], (session) =>
+      new Category({ ...input, slug }).save({ session }),
+    );
     return asCategoryDTO(category.toObject());
   } catch (error) {
     if (
@@ -149,20 +152,22 @@ export async function updateCategory(
       Category.exists({ slug: candidate, _id: { $ne: id } }).then(Boolean),
     ));
   try {
-    const category = await Category.findByIdAndUpdate(
-      id,
-      {
-        $set: { ...input, slug },
-        $unset: Object.fromEntries(
-          (["parent", "description", "image"] as const)
-            .filter((field) => input[field] === undefined)
-            .map((field) => [field, 1]),
-        ),
-      },
-      { returnDocument: "after", runValidators: true },
-    )
-      .lean()
-      .orFail(() => new AppError("دسته‌بندی پیدا نشد", "NOT_FOUND"));
+    const category = await withImageReferences([input.image], (session) =>
+      Category.findByIdAndUpdate(
+        id,
+        {
+          $set: { ...input, slug },
+          $unset: Object.fromEntries(
+            (["parent", "description", "image"] as const)
+              .filter((field) => input[field] === undefined)
+              .map((field) => [field, 1]),
+          ),
+        },
+        { session, returnDocument: "after", runValidators: true },
+      )
+        .lean()
+        .orFail(() => new AppError("دسته‌بندی پیدا نشد", "NOT_FOUND")),
+    );
     return asCategoryDTO(category);
   } catch (error) {
     if (error instanceof AppError) throw error;

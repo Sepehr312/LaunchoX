@@ -15,6 +15,7 @@
     "test": "vitest run",
     "seed": "tsx --conditions=react-server --env-file=.env.local scripts/seed.ts",
     "owner": "tsx --conditions=react-server --env-file=.env.local scripts/owner.ts",
+    "images:cleanup": "tsx --conditions=react-server --env-file=.env.local scripts/cleanup-images.ts",
     "db:up": "docker compose up -d"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.5"
   },

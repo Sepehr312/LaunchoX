@@ -1,6 +1,8 @@
 import { objectIdSchema } from "@/validations/common";
 import { getImage } from "@/services/image.service";
 
+export const runtime = "nodejs";
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -17,6 +19,7 @@ export async function GET(
       "Content-Length": String(image.data.byteLength),
       "Cache-Control": "public, max-age=31536000, immutable",
       "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'; sandbox",
     },
   });
 }

@@ -164,6 +164,8 @@ orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({ "payment.authority": 1 });
 
+orderSchema.index({ "items.image": 1 });
+
 export const Order: Model<IOrder> =
   (models.Order as Model<IOrder> | undefined) ??
   model<IOrder>("Order", orderSchema);
