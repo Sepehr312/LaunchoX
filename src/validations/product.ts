@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isBrandAttribute } from "@/validations/brand-text";
 import {
   assetUrlSchema,
   booleanSchema,
@@ -28,7 +29,15 @@ export const productSchema = z
       .max(8, "حداکثر ۸ تصویر مجاز است"),
     category: objectIdSchema,
     attributes: z
-      .array(z.object({ key: requiredString, value: requiredString }))
+      .array(
+        z.object({
+          key: requiredString.refine(
+            (key) => !isBrandAttribute(key),
+            "برند را فقط از فهرست برند انتخاب کنید",
+          ),
+          value: requiredString,
+        }),
+      )
       .default([]),
     isActive: booleanSchema.default(true),
     isFeatured: booleanSchema.default(false),

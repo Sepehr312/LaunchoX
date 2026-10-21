@@ -3,7 +3,7 @@ import type { StoreProductDTO } from "@/types/dto";
 export function getProductDetailsData(
   product: Pick<
     StoreProductDTO,
-    "attributes" | "price" | "compareAtPrice" | "images" | "category" | "sku"
+    "attributes" | "pricing" | "images" | "category" | "sku"
   >,
 ) {
   function attribute(...keys: string[]) {
@@ -16,10 +16,7 @@ export function getProductDetailsData(
     color: attribute("رنگ"),
     warranty: attribute("گارانتی", "ضمانت"),
     shipping: attribute("ارسال", "زمان ارسال"),
-    discountPercent:
-      product.compareAtPrice && product.compareAtPrice > product.price
-        ? Math.round((1 - product.price / product.compareAtPrice) * 100)
-        : 0,
+    discountPercent: product.pricing.discountPercent,
     galleryViews: product.images.map((src, index) => ({
       src,
       label: product.images.length === 1 ? "تصویر محصول" : `تصویر ${index + 1}`,

@@ -292,9 +292,15 @@ export function ProductDetails({
           <ChevronLeft size={14} />
           <Link href="/products">محصولات</Link>
           <ChevronLeft size={14} />
-          <Link href={`/categories/${product.category.slug}`}>
-            {toPersianDigits(product.category.name)}
-          </Link>
+          {product.category.isActive === false ? (
+            <span>{toPersianDigits(product.category.name)}</span>
+          ) : (
+            <Link
+              href={`/categories/${encodeURIComponent(product.category.slug)}`}
+            >
+              {toPersianDigits(product.category.name)}
+            </Link>
+          )}
         </nav>
         <section className={styles.hero} aria-labelledby="product-title">
           <div className={styles.galleryPanel}>
@@ -423,16 +429,15 @@ export function ProductDetails({
               </span>
             </div>
             <div className={styles.price}>
-              {product.compareAtPrice &&
-                product.compareAtPrice > product.price && (
-                  <div>
-                    <span className={styles.discount}>
-                      {toPersianDigits(discountPercent)}٪
-                    </span>
-                    <del>{formatPrice(product.compareAtPrice)}</del>
-                  </div>
-                )}
-              <strong>{formatPrice(product.price)}</strong>
+              {product.pricing.hasDiscount && (
+                <div>
+                  <span className={styles.discount}>
+                    {toPersianDigits(discountPercent)}٪
+                  </span>
+                  <del>{formatPrice(product.pricing.originalPrice)}</del>
+                </div>
+              )}
+              <strong>{formatPrice(product.pricing.finalPrice)}</strong>
             </div>
             {purchaseControl()}
           </aside>
@@ -523,7 +528,7 @@ export function ProductDetails({
       <div className={styles.mobileBuy} aria-label="خرید سریع">
         <div>
           <small>قیمت محصول</small>
-          <strong>{formatPrice(product.price)}</strong>
+          <strong>{formatPrice(product.pricing.finalPrice)}</strong>
         </div>
         {purchaseControl()}
       </div>

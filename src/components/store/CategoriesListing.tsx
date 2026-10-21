@@ -1,39 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, Grid2X2, Snowflake } from "lucide-react";
-import { catalogCategories } from "@/lib/catalog-categories";
 import { toPersianDigits } from "@/lib/format";
 import type { StoreCategoryDTO } from "@/types/dto";
 import shared from "./BrandsListing.module.css";
 import styles from "./CategoriesListing.module.css";
-
-const descriptions: Record<string, string> = {
-  twin: "فضای مستقل برای نگهداری و انجماد مواد غذایی",
-  clothing: "درب‌های عریض و دسترسی راحت به مواد غذایی",
-  "top-freezer": "چیدمان آشنا با فریزر در بخش بالا",
-  "bottom-freezer": "دسترسی آسان‌تر به خوراکی‌های روزمره",
-  digital: "یخچال و فریزر کنار هم، برای خریدهای خانوادگی",
-  "home-kitchen": "یخچال و فریزر در یک بدنه برای استفادهٔ روزمره",
-  books: "انتخابی جمع‌وجور برای اتاق و فضاهای کوچک",
-  "sports-travel": "نگهداری و نمایش محصولات در فضای کسب‌وکار",
-};
 
 const guides = [
   {
     title: "آشپزخانهٔ کوچک",
     description:
       "ابعاد محل نصب را اندازه بگیرید؛ از مدل‌های جمع‌وجور شروع کنید.",
-    slugs: ["books", "home-kitchen"],
   },
   {
     title: "خانوادهٔ پرجمعیت",
     description: "ظرفیت و چیدمان قفسه‌ها را با حجم خریدهای خانواده بسنجید.",
-    slugs: ["digital", "clothing"],
   },
   {
     title: "فضای فریزر بیشتر",
     description: "گنجایش واقعی فریزر را در مشخصات هر مدل بررسی کنید.",
-    slugs: ["twin", "bottom-freezer"],
   },
 ];
 
@@ -79,12 +64,7 @@ export function CategoriesListing({
           {categories.length ? (
             <div className={shared.grid}>
               {categories.map((category) => {
-                const visual = catalogCategories.find(
-                  (item) => item.slug === category.slug,
-                );
-                const image = visual
-                  ? `/images/preview/categories/${visual.image}.png`
-                  : category.image;
+                const image = category.image;
                 return (
                   <Link
                     key={category.id}
@@ -110,8 +90,7 @@ export function CategoriesListing({
                     </div>
                     <h3>{category.name}</h3>
                     <p className={styles.description}>
-                      {descriptions[category.slug] ??
-                        category.description ??
+                      {category.description ??
                         "مدل‌های این دسته را ببینید و مشخصاتشان را مقایسه کنید."}
                     </p>
                     <span className={styles.count}>
@@ -141,30 +120,15 @@ export function CategoriesListing({
             <h2 id="category-guide">هنوز نمی‌دونی کدوم نوع مناسبته؟</h2>
             <div className={styles.guideGrid}>
               {guides.map((guide) => {
-                const matches = categories.filter((category) =>
-                  guide.slugs.includes(category.slug),
-                );
                 return (
                   <article key={guide.title}>
                     <h3>{guide.title}</h3>
                     <p>{guide.description}</p>
                     <div className={styles.guideLinks}>
-                      {matches.length ? (
-                        matches.map((category) => (
-                          <Link
-                            key={category.id}
-                            href={`/categories/${encodeURIComponent(category.slug)}`}
-                          >
-                            {category.name}
-                            <ArrowLeft size={14} aria-hidden="true" />
-                          </Link>
-                        ))
-                      ) : (
-                        <Link href="/products">
-                          بررسی همهٔ مدل‌ها{" "}
-                          <ArrowLeft size={14} aria-hidden="true" />
-                        </Link>
-                      )}
+                      <Link href="/products">
+                        بررسی همهٔ مدل‌ها{" "}
+                        <ArrowLeft size={14} aria-hidden="true" />
+                      </Link>
                     </div>
                   </article>
                 );

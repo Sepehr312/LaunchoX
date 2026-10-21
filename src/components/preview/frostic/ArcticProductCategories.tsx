@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Snowflake } from "lucide-react";
-import { catalogCategories } from "@/lib/catalog-categories";
 import type { CategoryDTO } from "@/types/dto";
 import styles from "./ArcticProductCategories.module.css";
 
@@ -177,14 +176,7 @@ export function ArcticProductCategories({
             ) : (
               <ul className={styles.list}>
                 {displayedCategories.map((category) => {
-                  const visual = catalogCategories.find(
-                    (item) => item.slug === category.slug,
-                  );
-                  const image =
-                    category.image ??
-                    (visual
-                      ? `/images/preview/categories/${visual.image}.png`
-                      : undefined);
+                  const image = category.image;
                   const content = (
                     <>
                       <div className={styles.image}>

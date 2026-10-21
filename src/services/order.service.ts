@@ -6,12 +6,13 @@ import { Types, type QueryFilter } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { toDTO } from "@/lib/model-shared";
+import { getProductPricing } from "@/lib/product-pricing";
 import { Cart } from "@/models/cart";
 import { Counter } from "@/models/counter";
 import { Order, type IOrder } from "@/models/order";
 import { Product } from "@/models/product";
 import { User } from "@/models/user";
-import { objectIdSchema } from "@/validations/common";
+import { objectIdSchema, quantitySchema } from "@/validations/common";
 import {
   orderSchema,
   orderQuerySchema,
@@ -86,6 +87,7 @@ export async function createOrderFromCart(
     const items: Omit<IOrder["items"][number], "createdAt" | "updatedAt">[] =
       [];
     for (const item of cart.items) {
+      quantitySchema.parse(item.quantity);
       const product = await Product.findOneAndUpdate(
         { _id: item.product, isActive: true, stock: { $gte: item.quantity } },
         { $inc: { stock: -item.quantity } },
@@ -106,17 +108,11 @@ export async function createOrderFromCart(
         title: product.title,
         slug: product.slug,
         image: product.images[0],
-        price: product.price,
+        price: getProductPricing(product).finalPrice,
         quantity: item.quantity,
       });
     }
     const totals = calculateCartTotals(items);
-    if (
-      ![totals.subtotal, totals.shippingFee, totals.total].every(
-        Number.isSafeInteger,
-      )
-    )
-      throw new AppError("مبلغ سفارش خارج از محدودهٔ مجاز است", "VALIDATION");
     // Initialize once, then increment atomically; gaps after failed orders are harmless.
     await Counter.updateOne(
       { _id: "orders" },
@@ -147,7 +143,11 @@ export async function createOrderFromCart(
           status: "pending" as const,
           payment: { status: "unpaid" as const },
           statusHistory: [
-            { status: "pending" as const, changedAt: new Date(), changedBy: user },
+            {
+              status: "pending" as const,
+              changedAt: new Date(),
+              changedBy: user,
+            },
           ],
         };
         return session
@@ -427,6 +427,7 @@ export async function attachOrderPayment(
 }
 
 export function calculateShipping(subtotal: number) {
+  assertSafeAmount(subtotal);
   const env = getEnv();
   return subtotal >= env.FREE_SHIPPING_THRESHOLD ? 0 : env.SHIPPING_FLAT_FEE;
 }
@@ -448,8 +449,31 @@ export async function getDashboardRevenue(from: Date, through: Date) {
 export function calculateCartTotals(
   items: { price: number; quantity: number }[],
 ) {
-  const lineTotals = items.map((item) => item.price * item.quantity);
-  const subtotal = lineTotals.reduce((sum, value) => sum + value, 0);
+  const lineTotals = items.map((item) => {
+    assertSafeAmount(item.price);
+    const quantity = quantitySchema.parse(item.quantity);
+    return safeAmount(BigInt(item.price) * BigInt(quantity));
+  });
+  const subtotal = safeAmount(
+    lineTotals.reduce((sum, value) => sum + BigInt(value), BigInt(0)),
+  );
   const shippingFee = items.length ? calculateShipping(subtotal) : 0;
-  return { lineTotals, subtotal, shippingFee, total: subtotal + shippingFee };
+  assertSafeAmount(shippingFee);
+  return {
+    lineTotals,
+    subtotal,
+    shippingFee,
+    total: safeAmount(BigInt(subtotal) + BigInt(shippingFee)),
+  };
+}
+
+function assertSafeAmount(value: number) {
+  if (!Number.isSafeInteger(value) || value < 0)
+    throw new AppError("مبلغ سفارش خارج از محدودهٔ مجاز است", "VALIDATION");
+}
+
+function safeAmount(value: bigint) {
+  if (value < BigInt(0) || value > BigInt(Number.MAX_SAFE_INTEGER))
+    throw new AppError("مبلغ سفارش خارج از محدودهٔ مجاز است", "VALIDATION");
+  return Number(value);
 }

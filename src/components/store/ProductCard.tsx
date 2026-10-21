@@ -25,15 +25,8 @@ export function ProductCard({
   const specs = product.attributes
     .filter((item) => item.key !== "برند" && item.key !== "مدل")
     .slice(0, 3);
-  const showPreviousPrice =
-    variant === "compact"
-      ? Number.isSafeInteger(product.compareAtPrice) &&
-        (product.compareAtPrice ?? 0) > product.price
-      : Boolean(product.compareAtPrice);
-  const discount =
-    showPreviousPrice && product.compareAtPrice
-      ? Math.round((1 - product.price / product.compareAtPrice) * 100)
-      : null;
+  const showPreviousPrice = product.pricing.hasDiscount;
+  const discount = showPreviousPrice ? product.pricing.discountPercent : null;
 
   return (
     <article
@@ -45,7 +38,11 @@ export function ProductCard({
       {variant === "default" && (
         <div className={styles.cardTop}>
           <ProductLikeButton id={product.id} title={product.title} />
-          <CompareProductButton id={product.id} title={product.title} iconOnly />
+          <CompareProductButton
+            id={product.id}
+            title={product.title}
+            iconOnly
+          />
         </div>
       )}
       {variant === "default" && (
@@ -119,8 +116,8 @@ export function ProductCard({
         <div className={styles.prices}>
           {variant === "compact" ? (
             <div className={styles.compactHistory}>
-              {showPreviousPrice && product.compareAtPrice && (
-                <del>{formatPrice(product.compareAtPrice)}</del>
+              {showPreviousPrice && (
+                <del>{formatPrice(product.pricing.originalPrice)}</del>
               )}
               {discount !== null && discount > 0 && (
                 <span className={styles.compactDiscount}>
@@ -130,11 +127,11 @@ export function ProductCard({
               {product.stock === 0 && <span>ناموجود</span>}
             </div>
           ) : (
-            product.compareAtPrice && (
-              <del>{formatPrice(product.compareAtPrice)}</del>
+            showPreviousPrice && (
+              <del>{formatPrice(product.pricing.originalPrice)}</del>
             )
           )}
-          <strong>{formatPrice(product.price)}</strong>
+          <strong>{formatPrice(product.pricing.finalPrice)}</strong>
         </div>
       </div>
       {variant === "compact" && (

@@ -2,6 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it, vi } from "vitest";
 import { ProductDetails } from "@/components/store/ProductDetails";
 import { formatPrice } from "@/lib/format";
+import { getProductPricing } from "@/lib/product-pricing";
+
+vi.mock("server-only", () => ({}));
+
 import type { StoreProductDTO } from "@/types/dto";
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +24,7 @@ const product: StoreProductDTO = {
   slug: "registered-fridge",
   description: "توضیحات ثبت‌شده برای محصول فروشگاه",
   price: 35400000,
+  pricing: getProductPricing({ price: 35400000, compareAtPrice: 36900000 }),
   compareAtPrice: 36900000,
   stock: 3,
   sku: "SKU-1",
@@ -53,6 +58,16 @@ function render(overrides: Partial<StoreProductDTO> = {}, quantity = 0) {
     />,
   );
 }
+
+it("uses the current encoded category slug and removes inactive category links", () => {
+  const category = { ...product.category, slug: "دسته-تازه", isActive: true };
+  expect(render({ category })).toContain(
+    `/categories/${encodeURIComponent(category.slug)}`,
+  );
+  expect(render({ category: { ...category, isActive: false } })).not.toContain(
+    "/categories/",
+  );
+});
 
 it("renders registered product fields and omits preview content and feedback UI", () => {
   const markup = render();
@@ -93,6 +108,7 @@ it("shows missing optional data honestly and renders the related-product empty s
     attributes: [],
     sku: undefined,
     compareAtPrice: undefined,
+    pricing: getProductPricing({ price: product.price }),
   });
   for (const value of [
     "برند نامشخص",
