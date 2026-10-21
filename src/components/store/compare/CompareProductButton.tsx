@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { GitCompareArrows } from "lucide-react";
-import { parseCompareIds } from "@/validations/compare";
+import { COMPARE_PRODUCT_LIMIT, parseCompareIds } from "@/validations/compare";
 import {
   comparisonHref,
   readComparisonSelection,
@@ -26,20 +26,23 @@ export function CompareProductButton({
     () => "",
   );
   const [full, setFull] = useState(false);
-  if (!parseCompareIds(id).length) return null;
+  const normalizedId = parseCompareIds(id)[0];
+  if (!normalizedId) return null;
   const selected = parseCompareIds(saved);
-  const exists = selected.includes(id);
-  const next = exists ? selected : [...selected, id];
+  const exists = selected.includes(normalizedId);
+  const next = exists ? selected : [...selected, normalizedId];
   return (
     <div className={`${styles.entry} ${iconOnly ? styles.iconEntry : ""}`}>
       <Link
-        href={comparisonHref(next.length <= 4 ? next : selected)}
+        href={comparisonHref(
+          next.length <= COMPARE_PRODUCT_LIMIT ? next : selected,
+        )}
         prefetch={false}
         className={`${styles.link} ${iconOnly ? styles.iconLink : ""}`}
         aria-label={`مقایسه ${title}`}
         title={`مقایسه ${title}`}
         onClick={(event) => {
-          if (!exists && selected.length === 4) {
+          if (!exists && selected.length >= COMPARE_PRODUCT_LIMIT) {
             event.preventDefault();
             setFull(true);
           }

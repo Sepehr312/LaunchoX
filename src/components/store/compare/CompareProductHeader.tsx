@@ -1,3 +1,4 @@
+import { COMPARE_PRODUCT_LIMIT } from "@/validations/compare";
 import Image from "next/image";
 import Link from "next/link";
 import { Plus, X, ArrowUpLeft } from "lucide-react";
@@ -22,7 +23,8 @@ export function CompareProductHeader({
       <div className={styles.introCell}>
         <span>انتخاب‌های تو</span>
         <strong>
-          {toPersianDigits(products.length)} / {toPersianDigits(4)}
+          {toPersianDigits(products.length)} /{" "}
+          {toPersianDigits(COMPARE_PRODUCT_LIMIT)}
         </strong>
         <p>جزئیات را کنار هم ببین.</p>
       </div>
@@ -75,7 +77,7 @@ export function CompareProductHeader({
           </article>
         );
       })}
-      {products.length < 4 && (
+      {products.length < COMPARE_PRODUCT_LIMIT && (
         <button className={styles.addProduct} onClick={onPick}>
           <span>
             <Plus size={26} />

@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { Search, X, Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { searchCompareAction } from "@/actions/compare.actions";
-import { compareSearchSchema } from "@/validations/compare";
+import {
+  COMPARE_PRODUCT_LIMIT,
+  compareSearchSchema,
+} from "@/validations/compare";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 import type { CompareProductDTO } from "@/types/dto";
 import { getCompareAttribute } from "./compare-data";
@@ -105,9 +108,9 @@ export function CompareProductPicker({
         />
       </label>
       <p role="status" className={styles.hint}>
-        {selected.length === 4
+        {selected.length >= COMPARE_PRODUCT_LIMIT
           ? "ظرفیت مقایسه تکمیل است؛ ابتدا یکی از محصولات را حذف کن."
-          : `${toPersianDigits(selected.length)} از ${toPersianDigits(4)} محصول انتخاب شده`}
+          : `${toPersianDigits(selected.length)} از ${toPersianDigits(COMPARE_PRODUCT_LIMIT)} محصول انتخاب شده`}
       </p>
       <div className={styles.pickerResults} aria-busy={loading}>
         {loading ? (
@@ -137,7 +140,7 @@ export function CompareProductPicker({
                 </div>
                 <button
                   className={styles.iconButton}
-                  disabled={exists || selected.length === 4}
+                  disabled={exists || selected.length >= COMPARE_PRODUCT_LIMIT}
                   onClick={() => onAdd(product)}
                   aria-label={
                     exists
