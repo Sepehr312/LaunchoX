@@ -7,7 +7,10 @@ import { AdminListSearch } from "@/components/admin/AdminListSearch";
 import { AdminTableScroll } from "@/components/admin/AdminTableScroll";
 import { UserActiveForm } from "@/components/admin/UserActiveForm";
 import { UserRoleForm } from "@/components/admin/UserRoleForm";
-import { listUsersAdmin } from "@/services/admin-user.service";
+import {
+  listUsersAdmin,
+  getUserManagementPermissions,
+} from "@/services/admin-user.service";
 import { adminListQuerySchema } from "@/validations/admin-list";
 import { toPersianDigits } from "@/lib/format";
 
@@ -32,6 +35,7 @@ export default async function Users({
       </section>
     );
   const users = await listUsersAdmin();
+  const permissions = await getUserManagementPermissions();
   const filtered = users.filter((user) =>
     `${user.name} ${user.email}`
       .toLocaleLowerCase("fa")
@@ -84,20 +88,33 @@ export default async function Users({
                       <bdi className="admin-user-email">{user.email}</bdi>
                     </td>
                     <td>
-                      <UserRoleForm
-                        id={user.id}
-                        name={user.name}
-                        role={user.role}
-                        isSelf={user.id === admin.id}
-                      />
+                      {user.id === permissions.ownerId ? (
+                        <span>ادمین</span>
+                      ) : (
+                        <UserRoleForm
+                          id={user.id}
+                          name={user.name}
+                          role={user.role}
+                          canManage={permissions.canManageAdmins}
+                          isSelf={user.id === admin.id}
+                        />
+                      )}
                     </td>
                     <td>
-                      <UserActiveForm
-                        id={user.id}
-                        name={user.name}
-                        isActive={user.isActive}
-                        isSelf={user.id === admin.id}
-                      />
+                      {user.id === permissions.ownerId ? (
+                        <span>{user.isActive ? "فعال" : "غیرفعال"}</span>
+                      ) : (
+                        <UserActiveForm
+                          id={user.id}
+                          name={user.name}
+                          isActive={user.isActive}
+                          requiresConfirmation={user.role === "admin"}
+                          canManage={
+                            user.role !== "admin" || permissions.canManageAdmins
+                          }
+                          isSelf={user.id === admin.id}
+                        />
+                      )}
                     </td>
                   </tr>
                 ))}

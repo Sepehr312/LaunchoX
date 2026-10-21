@@ -3,6 +3,7 @@ import type { Types } from "mongoose";
 import { z } from "zod";
 import type { Env } from "@/lib/env";
 import { User } from "@/models/user";
+import { AdminOwnership } from "@/models/admin-ownership";
 import { Category } from "@/models/category";
 import { Product } from "@/models/product";
 import { Cart } from "@/models/cart";
@@ -83,6 +84,9 @@ export async function seedDatabase(
     const existing = await User.findOne({ email: account.email }).select(
       "+passwordHash",
     );
+    const ownership = await AdminOwnership.findById("store-owner").lean();
+    // Catalog maintenance must not reset the owner's credentials or access.
+    if (existing && String(ownership?.owner) === String(existing._id)) continue;
     const passwordHash =
       existing && (await compare(account.password, existing.passwordHash))
         ? existing.passwordHash

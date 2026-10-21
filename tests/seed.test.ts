@@ -7,6 +7,7 @@ import { startTestMongo } from "./mongo-server";
 vi.mock("server-only", () => ({}));
 import { envSchema } from "@/lib/env";
 import { User } from "@/models/user";
+import { AdminOwnership } from "@/models/admin-ownership";
 import { Product } from "@/models/product";
 import { Category } from "@/models/category";
 import { Cart } from "@/models/cart";
@@ -167,3 +168,22 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
     (await User.findById(customer._id).lean().orFail()).addresses[0]._id,
   ).toEqual(customer.addresses[0]._id);
 }, 60000);
+
+it("catalog seed never overwrites owner credentials or transfers ownership", async () => {
+  const options = parseSeedOptions([], env);
+  await seedDatabase(options);
+  const owner = await User.findOne({ role: "admin" })
+    .select("+passwordHash")
+    .lean()
+    .orFail();
+  await AdminOwnership.create({ _id: "store-owner", owner: owner._id });
+  await seedDatabase({ ...options, password: "DifferentSeed123!" });
+  const after = await User.findById(owner._id)
+    .select("+passwordHash")
+    .lean()
+    .orFail();
+  expect(after.passwordHash).toBe(owner.passwordHash);
+  expect(
+    String((await AdminOwnership.findById("store-owner").lean())?.owner),
+  ).toBe(String(owner._id));
+}, 30000);

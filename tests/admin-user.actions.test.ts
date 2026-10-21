@@ -32,6 +32,7 @@ function roleForm(role = "admin", target = id) {
   const data = new FormData();
   data.set("id", target);
   data.set("role", role);
+  data.set("confirmationPassword", "Owner-current-password");
   data.set("isActive", "false");
   data.set("actorId", "attacker");
   return data;
@@ -56,7 +57,11 @@ it("validates role input and forwards only the target and role", async () => {
     ok: true,
     data: { id },
   });
-  expect(mocks.role).toHaveBeenCalledWith({ id, role: "admin" });
+  expect(mocks.role).toHaveBeenCalledWith({
+    id,
+    role: "admin",
+    confirmationPassword: "Owner-current-password",
+  });
   expect(mocks.revalidate).toHaveBeenCalledWith("/admin", "layout");
 });
 it("reports role conflicts without refreshing the page", async () => {
@@ -89,7 +94,11 @@ it("passes only validated activity fields and refreshes admin pages", async () =
     ok: true,
     data: { id },
   });
-  expect(mocks.update).toHaveBeenCalledWith({ id, isActive: false });
+  expect(mocks.update).toHaveBeenCalledWith({
+    id,
+    isActive: false,
+    confirmationPassword: undefined,
+  });
   expect(mocks.revalidate).toHaveBeenCalledWith("/admin", "layout");
 });
 it("reports self-deactivation rejection without refreshing", async () => {
@@ -101,4 +110,20 @@ it("reports self-deactivation rejection without refreshing", async () => {
     error: "نمی‌توانید حساب خودتان را غیرفعال کنید",
   });
   expect(mocks.revalidate).not.toHaveBeenCalled();
+});
+
+it("forwards owner confirmation for admin activity without trusting actor or owner fields", async () => {
+  mocks.update.mockResolvedValue({ id });
+  const data = form();
+  data.set("confirmationPassword", "Owner-current-password");
+  data.set("owner", id);
+  expect(await userActiveAction(undefined, data)).toEqual({
+    ok: true,
+    data: { id },
+  });
+  expect(mocks.update).toHaveBeenCalledWith({
+    id,
+    isActive: false,
+    confirmationPassword: "Owner-current-password",
+  });
 });
