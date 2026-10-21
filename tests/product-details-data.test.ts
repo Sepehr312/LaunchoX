@@ -1,11 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { getRealPreviewData } from "@/components/store/product-details-data";
-import { mockProduct } from "@/components/preview/product/mock-product";
+import { getProductDetailsData } from "@/components/store/product-details-data";
+const productFixture = {
+  price: 112600000,
+  compareAtPrice: 128000000,
+  images: ["/images/product.png"],
+  category: { id: "category-1", name: "ساید بای ساید", slug: "side-by-side" },
+  attributes: [],
+  sku: "SKU-1",
+  createdAt: "2026-10-13T00:00:00.000Z",
+  updatedAt: "2026-10-13T00:00:00.000Z",
+};
 
-describe("real product preview mapping", () => {
+describe("product detail data mapping", () => {
   it("uses registered images and attributes without adding mock specifications", () => {
     const product = {
-      ...mockProduct,
+      ...productFixture,
       sku: "REAL-1",
       images: [
         "/images/preview/categories/side-by-side.png",
@@ -15,12 +24,12 @@ describe("real product preview mapping", () => {
         {
           key: "ظرفیت",
           value: "530 لیتر",
-          createdAt: mockProduct.createdAt,
-          updatedAt: mockProduct.updatedAt,
+          createdAt: productFixture.createdAt,
+          updatedAt: productFixture.updatedAt,
         },
       ],
     };
-    const data = getRealPreviewData(product);
+    const data = getProductDetailsData(product);
     expect(data.galleryViews.map((view) => view.src)).toEqual(product.images);
     expect(data.galleryViews.every((view) => view.scale === 1)).toBe(true);
     expect(data.specifications).toEqual([
@@ -42,16 +51,18 @@ describe("real product preview mapping", () => {
 
   it("does not manufacture a discount when a previous price is absent or invalid", () => {
     expect(
-      getRealPreviewData({ ...mockProduct, compareAtPrice: undefined })
+      getProductDetailsData({ ...productFixture, compareAtPrice: undefined })
         .discountPercent,
     ).toBe(0);
     expect(
-      getRealPreviewData({ ...mockProduct, compareAtPrice: mockProduct.price })
-        .discountPercent,
+      getProductDetailsData({
+        ...productFixture,
+        compareAtPrice: productFixture.price,
+      }).discountPercent,
     ).toBe(0);
     expect(
-      getRealPreviewData({
-        ...mockProduct,
+      getProductDetailsData({
+        ...productFixture,
         price: 35400000,
         compareAtPrice: 36900000,
       }).discountPercent,

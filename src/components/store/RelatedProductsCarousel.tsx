@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEventHandler,
-  type MouseEventHandler,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/store/ProductCard";
 import type { StoreProductDTO } from "@/types/dto";
@@ -14,12 +8,8 @@ import styles from "./product-details.module.css";
 
 export function RelatedProductsCarousel({
   products,
-  onClickCapture,
-  onSubmitCapture,
 }: {
   products: StoreProductDTO[];
-  onClickCapture?: MouseEventHandler<HTMLDivElement>;
-  onSubmitCapture?: FormEventHandler<HTMLDivElement>;
 }) {
   const track = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: true, end: false });
@@ -85,8 +75,6 @@ export function RelatedProductsCarousel({
             role="group"
             aria-label="پیمایش کالاهای مشابه"
             tabIndex={0}
-            onClickCapture={onClickCapture}
-            onSubmitCapture={onSubmitCapture}
             onKeyDown={(event) => {
               if (event.target !== event.currentTarget) return;
               if (event.key === "ArrowLeft" || event.key === "ArrowRight") {

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Plus, X, ArrowUpLeft } from "lucide-react";
-import { getRealPreviewData } from "@/components/store/product-details-data";
+import { getProductDetailsData } from "@/components/store/product-details-data";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 import type { CompareProductDTO } from "@/types/dto";
 import styles from "./compare.module.css";
@@ -27,7 +27,7 @@ export function CompareProductHeader({
         <p>جزئیات را کنار هم ببین.</p>
       </div>
       {products.map((product) => {
-        const details = getRealPreviewData(product);
+        const details = getProductDetailsData(product);
         return (
           <article key={product.id} className={styles.product}>
             <button

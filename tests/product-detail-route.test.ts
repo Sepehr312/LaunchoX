@@ -49,7 +49,7 @@ it.each(["یخچال-جدید", encodeURIComponent("یخچال-جدید"), "frid
     const page = await ProductPage({ params });
     const metadata = await generateMetadata({ params });
     expect(mocks.product).toHaveBeenCalledWith(decodeURIComponent(slug));
-    expect(page.props.realProduct).toBe(product);
+    expect(page.props.product).toBe(product);
     expect(metadata.title).toContain(product.title);
   },
 );
@@ -86,7 +86,7 @@ it("propagates database outages without treating the product as missing", async 
   expect(mocks.related).not.toHaveBeenCalled();
 
   mocks.product.mockResolvedValue(product);
-  expect((await ProductPage({ params })).props.realProduct).toBe(product);
+  expect((await ProductPage({ params })).props.product).toBe(product);
 });
 
 it.each(["related", "cart"] as const)(

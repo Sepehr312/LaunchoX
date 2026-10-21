@@ -129,6 +129,8 @@ npm run seed -- --reset
 
 ## Decisions
 
+- Product details require database product and related-product DTOs and use the server cart exclusively. Product-specific values come from saved fields and attributes; missing optional information is stated explicitly. Preview fixtures, synthetic colors/specifications, and review/question UI are removed from the production component. Generic store labels and buying guidance remain static.
+
 - Product existence is checked by the product page's request-memoized loader, shared by metadata and rendering; product routes are excluded from the proxy. Missing, deleted, or inactive products use `notFound()`, while database errors propagate to the retry boundary. Next.js may send HTTP 200 when a loading boundary has already started streaming the not-found UI, with noindex metadata; no extra database query is issued to force a pre-stream 404.
 
 - The owner row displays role and activity as plain Persian text instead of disabled editors or restriction notes. Editable role-save buttons use the primary blue background with white text when enabled; the modal password visibility control remains an icon-only borderless button.

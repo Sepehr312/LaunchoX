@@ -55,11 +55,9 @@ export default async function ProductPage({
   return (
     <ProductDetails
       key={product.id}
-      mode="storefront"
-      realProduct={product}
-      realRelatedProducts={related}
+      product={product}
+      relatedProducts={related}
       initialQuantity={quantity}
-      feedbackState="empty"
     />
   );
 }
