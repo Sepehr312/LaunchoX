@@ -14,6 +14,7 @@ import {
 export const revalidate = 300;
 export const dynamicParams = true;
 
+// Share one lookup between metadata and page rendering within this request.
 const loadProduct = cache(async (slug: string) => {
   const parsed = routeSlugSchema.safeParse(slug);
   if (!parsed.success) notFound();
@@ -54,11 +55,9 @@ export default async function ProductPage({
   return (
     <ProductDetails
       key={product.id}
-      mode="storefront"
-      realProduct={product}
-      realRelatedProducts={related}
+      product={product}
+      relatedProducts={related}
       initialQuantity={quantity}
-      feedbackState="empty"
     />
   );
 }

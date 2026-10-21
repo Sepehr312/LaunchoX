@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
   type MouseEvent,
-  type FormEvent,
 } from "react";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -20,48 +19,31 @@ import {
 import { cartItemSchema } from "@/validations/cart";
 import {
   Check,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Leaf,
   Maximize2,
-  MessageCircle,
   Minus,
   Plus,
   Share2,
   ShieldCheck,
   ShoppingCart,
   Snowflake,
-  Star,
   Truck,
   X,
 } from "lucide-react";
-import { FrosticHeader } from "@/components/preview/frostic/FrosticHeader";
 import { ProductLikeButton } from "@/components/store/ProductLikeButton";
 import { CompareProductButton } from "@/components/store/compare/CompareProductButton";
-import { StoreFooter } from "@/components/store/StoreFooter";
 import { Button } from "@/components/ui/Button";
-import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
+import { formatPrice, toPersianDigits } from "@/lib/format";
 import type { StoreProductDTO } from "@/types/dto";
-import {
-  mockProduct,
-  previewDetails,
-  relatedProducts as mockRelatedProducts,
-  galleryViews as mockGalleryViews,
-  specifications as mockSpecifications,
-  mockReviews,
-  mockQuestions,
-} from "@/components/preview/product/mock-product";
 import styles from "./product-details.module.css";
 import { RelatedProductsCarousel } from "./RelatedProductsCarousel";
-import { getRealPreviewData } from "./product-details-data";
+import { getProductDetailsData } from "./product-details-data";
 
 const sections = [
   ["description", "معرفی"],
   ["specifications", "مشخصات فنی"],
-  ["customer-reviews", "دیدگاه‌ها"],
-  ["questions", "پرسش و پاسخ"],
   ["related", "کالاهای مشابه"],
 ] as const;
 const benefits = [
@@ -70,29 +52,16 @@ const benefits = [
   { Icon: Snowflake, label: "تخصص در سرمایش" },
   { Icon: Leaf, label: "انتخاب آگاهانه" },
 ];
-const sortSchema = z.enum(["helpful", "newest", "highest"]);
-
 type ProductDetailsProps = {
-  feedbackState?: "empty" | "sample";
-} & (
-  | {
-      mode: "storefront";
-      realProduct: StoreProductDTO;
-      realRelatedProducts: StoreProductDTO[];
-      initialQuantity: number;
-    }
-  | {
-      mode?: "preview";
-      realProduct?: StoreProductDTO;
-      realRelatedProducts?: StoreProductDTO[];
-      initialQuantity?: never;
-    }
-);
+  product: StoreProductDTO;
+  relatedProducts: StoreProductDTO[];
+  initialQuantity: number;
+};
 
 function SpecificationGroup({
   group,
 }: {
-  group: (typeof mockSpecifications)[number];
+  group: ReturnType<typeof getProductDetailsData>["specifications"][number];
 }) {
   return (
     <div className={styles.specGroup}>
@@ -102,7 +71,7 @@ function SpecificationGroup({
         <tbody>
           {group.rows.map(([key, value]) => (
             <tr key={key}>
-              <th scope="row">{key}</th>
+              <th scope="row">{toPersianDigits(key)}</th>
               <td>
                 <bdi>{toPersianDigits(value)}</bdi>
               </td>
@@ -115,49 +84,26 @@ function SpecificationGroup({
 }
 
 export function ProductDetails({
-  feedbackState = "sample",
-  realProduct,
-  realRelatedProducts,
-  mode = "preview",
-  initialQuantity = 0,
+  product,
+  relatedProducts,
+  initialQuantity,
 }: ProductDetailsProps) {
-  const isStorefront = mode === "storefront";
   const router = useRouter();
-  const product = realProduct ?? mockProduct;
-  const realData = realProduct ? getRealPreviewData(realProduct) : undefined;
-  const relatedProducts = realProduct
-    ? (realRelatedProducts ?? [])
-    : mockRelatedProducts;
-  const galleryViews =
-    realData?.galleryViews ??
-    mockGalleryViews.map((view) => ({ ...view, src: product.images[0] }));
-  const specifications = realData?.specifications ?? mockSpecifications;
-  const discountPercent =
-    realData?.discountPercent ?? previewDetails.discountPercent;
-  const descriptionNeedsExpansion = realProduct
-    ? product.description.length > 280
-    : true;
-  const [cart, setCart] = useState<Record<string, number>>({});
+  const data = getProductDetailsData(product);
+  const { galleryViews, specifications, discountPercent } = data;
+  const features = product.attributes.filter(
+    (item) => !["مدل", "رنگ", "برند"].includes(item.key),
+  );
+  const descriptionNeedsExpansion = product.description.length > 280;
   const [notice, setNotice] = useState("");
-  const [selectedColor, setSelectedColor] = useState("silver");
   const [imageIndex, setImageIndex] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [specificationsExpanded, setSpecificationsExpanded] = useState(false);
   const [activeSection, setActiveSection] = useState("description");
-  const [sort, setSort] = useState<z.infer<typeof sortSchema>>("helpful");
   const [sharedUrl, setSharedUrl] = useState("");
-  const [relatedImage, setRelatedImage] = useState<{
-    src: string;
-    title: string;
-  } | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
-  const color = previewDetails.colors.find(
-    (item) => item.id === selectedColor,
-  )!;
-  const cartKey = realProduct ? product.id : `${product.id}:${selectedColor}`;
-  const quantity = isStorefront ? initialQuantity : (cart[cartKey] ?? 0);
+  const quantity = initialQuantity;
   const [cartState, cartAction, cartPending] = useActionState(
     async (
       _previous: Awaited<ReturnType<typeof addCartAction>> | undefined,
@@ -196,27 +142,7 @@ export function ProductDetails({
     },
     undefined,
   );
-  const productCount = realProduct
-    ? quantity
-    : previewDetails.colors.reduce(
-        (count, item) => count + (cart[`${product.id}:${item.id}`] ?? 0),
-        0,
-      );
-  const cartCount = Object.values(cart).reduce(
-    (total, count) => total + count,
-    0,
-  );
   const view = galleryViews[imageIndex] ?? galleryViews[0];
-  const reviews = realProduct || feedbackState === "empty" ? [] : mockReviews;
-  const questions =
-    realProduct || feedbackState === "empty" ? [] : mockQuestions;
-  const sortedReviews = [...reviews].sort((a, b) =>
-    sort === "newest"
-      ? b.date.localeCompare(a.date)
-      : sort === "highest"
-        ? b.rating - a.rating
-        : b.helpful - a.helpful,
-  );
 
   useEffect(() => {
     if (!notice) return;
@@ -241,28 +167,8 @@ export function ProductDetails({
     return () => observer.disconnect();
   }, []);
 
-  function changeQuantity(delta: number) {
-    if (delta > 0 && productCount >= product.stock) {
-      setNotice(
-        realProduct
-          ? "موجودی ثبت‌شده برای افزودن تعداد بیشتر کافی نیست."
-          : "موجودی نمونه برای افزودن تعداد بیشتر کافی نیست.",
-      );
-      return;
-    }
-    setCart((current) => ({
-      ...current,
-      [cartKey]: Math.max(0, (current[cartKey] ?? 0) + delta),
-    }));
-    setNotice(
-      delta > 0
-        ? "سبد آزمایشی همین صفحه به‌روز شد؛ سفارشی در سرور ثبت نشده است."
-        : "تعداد در سبد آزمایشی کاهش یافت.",
-    );
-  }
   function openGallery(event: MouseEvent<HTMLButtonElement>) {
     opener.current = event.currentTarget;
-    setRelatedImage(null);
     setZoomed(false);
     dialog.current?.showModal();
   }
@@ -274,10 +180,8 @@ export function ProductDetails({
     setZoomed(false);
   }
   async function share() {
-    const url = new URL(
-      isStorefront ? `/products/${product.slug}` : "/test/product",
-      window.location.origin,
-    ).href;
+    const url = new URL(`/products/${product.slug}`, window.location.origin)
+      .href;
     if (navigator.share) {
       try {
         await navigator.share({ title: product.title, url });
@@ -289,158 +193,76 @@ export function ProductDetails({
     }
     try {
       await navigator.clipboard.writeText(url);
-      setNotice("پیوند پیش‌نمایش کپی شد.");
+      setNotice("پیوند محصول کپی شد.");
     } catch {
       setSharedUrl(url);
       setNotice("برای اشتراک‌گذاری، پیوند نمایش‌داده‌شده را کپی کنید.");
     }
   }
-  function previewRelated(event: MouseEvent<HTMLDivElement>) {
-    if (!(event.target instanceof Element)) return;
-    const anchor = event.target.closest<HTMLAnchorElement>("a");
-    const item = relatedProducts.find(
-      (related) => anchor?.getAttribute("href") === `/products/${related.slug}`,
-    );
-    if (!item || !anchor) return;
-    event.preventDefault();
-    event.stopPropagation();
-    opener.current = anchor;
-    setRelatedImage({ src: item.images[0], title: item.title });
-    setZoomed(false);
-    dialog.current?.showModal();
-  }
-  function addRelated(event: FormEvent<HTMLDivElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!(event.target instanceof HTMLFormElement)) return;
-    const parsed = z
-      .string()
-      .safeParse(new FormData(event.target).get("product"));
-    if (!parsed.success) return;
-    const item = relatedProducts.find((related) => related.id === parsed.data);
-    if (!item) return;
-    if ((cart[item.id] ?? 0) >= item.stock) {
-      setNotice("موجودی نمونه کافی نیست.");
-      return;
-    }
-    setCart((current) => ({
-      ...current,
-      [item.id]: (current[item.id] ?? 0) + 1,
-    }));
-    setNotice(
-      "محصول مشابه به سبد آزمایشی همین صفحه اضافه شد؛ در سرور ثبت نشده است.",
-    );
-  }
   function purchaseControl() {
-    if (isStorefront) {
-      return (
-        <form action={cartAction} className={styles.purchaseControl}>
-          <input type="hidden" name="product" value={product.id} />
-          <input type="hidden" name="quantity" value={Math.max(1, quantity)} />
-          {quantity > 0 ? (
-            <div
-              className={styles.quantity}
-              role="group"
-              aria-label="تعداد در سبد خرید"
-              aria-busy={cartPending}
-            >
-              <button
-                type="submit"
-                name="intent"
-                value="increment"
-                aria-label="افزایش تعداد"
-                disabled={
-                  cartPending || quantity >= Math.min(product.stock, 10)
-                }
-              >
-                <Plus size={18} aria-hidden="true" />
-              </button>
-              <span>
-                <output aria-live="polite">{toPersianDigits(quantity)}</output>
-                <small>{cartPending ? "در حال ثبت…" : "در سبد خرید"}</small>
-              </span>
-              <button
-                type="submit"
-                name="intent"
-                value={quantity === 1 ? "remove" : "decrement"}
-                aria-label={quantity === 1 ? "حذف از سبد خرید" : "کاهش تعداد"}
-                disabled={cartPending}
-              >
-                <Minus size={18} aria-hidden="true" />
-              </button>
-            </div>
-          ) : (
-            <Button
+    return (
+      <form action={cartAction} className={styles.purchaseControl}>
+        <input type="hidden" name="product" value={product.id} />
+        <input type="hidden" name="quantity" value={Math.max(1, quantity)} />
+        {quantity > 0 ? (
+          <div
+            className={styles.quantity}
+            role="group"
+            aria-label="تعداد در سبد خرید"
+            aria-busy={cartPending}
+          >
+            <button
               type="submit"
               name="intent"
-              value="add"
-              className={styles.addButton}
-              disabled={cartPending || product.stock === 0}
+              value="increment"
+              aria-label="افزایش تعداد"
+              disabled={cartPending || quantity >= Math.min(product.stock, 10)}
             >
-              <ShoppingCart size={19} aria-hidden="true" />
-              {cartPending
-                ? "در حال افزودن…"
-                : product.stock === 0
-                  ? "ناموجود"
-                  : "افزودن به سبد خرید"}
-            </Button>
-          )}
-          {quantity > 0 && (
-            <Link className={styles.cartLink} href="/cart">
-              مشاهده سبد خرید <ChevronLeft size={14} aria-hidden="true" />
-            </Link>
-          )}
-        </form>
-      );
-    }
-    return quantity > 0 ? (
-      <div
-        className={styles.quantity}
-        role="group"
-        aria-label="تعداد در سبد آزمایشی"
-      >
-        <button
-          onClick={() => changeQuantity(1)}
-          disabled={productCount >= product.stock}
-          aria-label="افزایش تعداد"
-        >
-          <Plus size={18} />
-        </button>
-        <span>
-          <output aria-live="polite">{toPersianDigits(quantity)}</output>
-          <small>در سبد آزمایشی</small>
-        </span>
-        <button
-          onClick={() => changeQuantity(-1)}
-          aria-label={quantity === 1 ? "حذف از سبد آزمایشی" : "کاهش تعداد"}
-        >
-          <Minus size={18} />
-        </button>
-      </div>
-    ) : (
-      <Button
-        className={styles.addButton}
-        onClick={() => changeQuantity(1)}
-        disabled={productCount >= product.stock}
-      >
-        <ShoppingCart size={19} aria-hidden="true" />
-        {productCount >= product.stock
-          ? realProduct
-            ? "سقف موجودی ثبت‌شده"
-            : "اتمام موجودی نمونه"
-          : "افزودن به سبد خرید"}
-      </Button>
+              <Plus size={18} aria-hidden="true" />
+            </button>
+            <span>
+              <output aria-live="polite">{toPersianDigits(quantity)}</output>
+              <small>{cartPending ? "در حال ثبت…" : "در سبد خرید"}</small>
+            </span>
+            <button
+              type="submit"
+              name="intent"
+              value={quantity === 1 ? "remove" : "decrement"}
+              aria-label={quantity === 1 ? "حذف از سبد خرید" : "کاهش تعداد"}
+              disabled={cartPending}
+            >
+              <Minus size={18} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <Button
+            type="submit"
+            name="intent"
+            value="add"
+            className={styles.addButton}
+            disabled={cartPending || product.stock === 0}
+          >
+            <ShoppingCart size={19} aria-hidden="true" />
+            {cartPending
+              ? "در حال افزودن…"
+              : product.stock === 0
+                ? "ناموجود"
+                : "افزودن به سبد خرید"}
+          </Button>
+        )}
+        {quantity > 0 && (
+          <Link className={styles.cartLink} href="/cart">
+            مشاهده سبد خرید <ChevronLeft size={14} aria-hidden="true" />
+          </Link>
+        )}
+      </form>
     );
   }
   function renderImage(modal = false) {
     return (
       <Image
-        src={relatedImage && modal ? relatedImage.src : view.src}
-        alt={
-          relatedImage && modal
-            ? relatedImage.title
-            : `${product.title}؛ ${toPersianDigits(view.label)}`
-        }
+        src={view.src}
+        alt={`${product.title}؛ ${toPersianDigits(view.label)}`}
         fill
         priority={!modal}
         sizes={
@@ -450,7 +272,7 @@ export function ProductDetails({
         }
         className={styles.productImage}
         style={{
-          transform: `scale(${relatedImage && modal ? (zoomed ? 1.4 : 1) : view.scale * (modal && zoomed ? 1.4 : 1)})`,
+          transform: `scale(${view.scale * (modal && zoomed ? 1.4 : 1)})`,
           transformOrigin: view.position,
         }}
       />
@@ -460,50 +282,29 @@ export function ProductDetails({
   return (
     <div
       className={styles.page}
-      data-product-preview={isStorefront ? undefined : true}
-      data-product-details={mode}
+      data-product-details="storefront"
       data-product-id={product.id}
-      data-product-source={realProduct ? "database" : "mock"}
+      data-product-source="database"
     >
-      {!isStorefront && (
-        <FrosticHeader theme="light" cartCount={0} activeHref="/products" />
-      )}
       <main className={styles.content}>
         <nav className={styles.breadcrumb} aria-label="مسیر صفحه">
           <Link href="/">لانچ‌اوکس</Link>
           <ChevronLeft size={14} />
-          <Link href="/products">یخچال و فریزر</Link>
+          <Link href="/products">محصولات</Link>
           <ChevronLeft size={14} />
-          <span>{product.category.name}</span>
+          <Link href={`/categories/${product.category.slug}`}>
+            {toPersianDigits(product.category.name)}
+          </Link>
         </nav>
-        {!isStorefront && (
-          <p className={styles.previewNote}>
-            {realProduct ? (
-              <>
-                پیش‌نمایش با اطلاعات محصول ثبت‌شدهٔ فروشگاه · سبد محلی آزمایشی
-                است و در سرور ذخیره نمی‌شود.{" "}
-              </>
-            ) : (
-              <>
-                پیش‌نمایش طراحی · تمام مشخصات، رنگ‌ها، قیمت‌ها و دیدگاه‌ها
-                نمونه‌اند.
-              </>
-            )}
-            سبد آزمایشی: {toPersianDigits(cartCount)} کالا؛ با خروج از صفحه پاک
-            می‌شود.
-          </p>
-        )}
         <section className={styles.hero} aria-labelledby="product-title">
           <div className={styles.galleryPanel}>
             <div className={styles.galleryTools}>
               <ProductLikeButton id={product.id} title={product.title} />
-              {isStorefront && (
-                <CompareProductButton
-                  id={product.id}
-                  title={product.title}
-                  iconOnly
-                />
-              )}
+              <CompareProductButton
+                id={product.id}
+                title={product.title}
+                iconOnly
+              />
               <button onClick={share} aria-label="اشتراک‌گذاری محصول">
                 <Share2 size={21} />
               </button>
@@ -514,7 +315,7 @@ export function ProductDetails({
             <button
               className={styles.mainImage}
               onClick={openGallery}
-              aria-label={`بزرگ‌نمایی ${view.label}`}
+              aria-label={`بزرگ‌نمایی ${toPersianDigits(view.label)}`}
             >
               {renderImage()}
             </button>
@@ -546,121 +347,45 @@ export function ProductDetails({
                 </button>
               ))}
             </div>
-            <p className={styles.caption}>
-              {toPersianDigits(view.label)}
-              {!realProduct && " · جزئیات از همان تصویر موجود"}
-            </p>
+            <p className={styles.caption}>{toPersianDigits(view.label)}</p>
           </div>
           <div className={styles.summary}>
             <p className={styles.brand}>
-              {realData ? (realData.brand ?? "برند نامشخص") : "لانچ‌اوکس"}{" "}
-              <span>/ {product.category.name}</span>
+              {toPersianDigits(data.brand ?? "برند نامشخص")}{" "}
+              <span>/ {toPersianDigits(product.category.name)}</span>
             </p>
-            <h1 id="product-title">
-              {realProduct ? (
-                toPersianDigits(product.title)
-              ) : (
-                <>
-                  یخچال فریزر ساید بای ساید لانچ‌اوکس مدل{" "}
-                  <bdi>{toPersianDigits(previewDetails.model)}</bdi>
-                </>
-              )}
-            </h1>
+            <h1 id="product-title">{toPersianDigits(product.title)}</h1>
             <p className={styles.model}>
-              {realProduct ? (
-                realData?.model ? (
-                  `مدل ${toPersianDigits(realData.model)}`
-                ) : product.sku ? (
-                  `شناسه کالا: ${toPersianDigits(product.sku)}`
-                ) : (
-                  product.category.name
-                )
-              ) : (
-                <>سری خانگی · گنجایش {toPersianDigits(600)} لیتر</>
-              )}
+              {data.model
+                ? `مدل ${toPersianDigits(data.model)}`
+                : product.sku
+                  ? `شناسه کالا: ${toPersianDigits(product.sku)}`
+                  : toPersianDigits(product.category.name)}
             </p>
-            <div className={styles.rating}>
-              {reviews.length > 0 ? (
-                <>
-                  <Star size={16} fill="currentColor" />
-                  <strong>{toPersianDigits(4)}</strong>
-                  <span>از {toPersianDigits(5)}</span>
-                </>
-              ) : (
-                <span>هنوز امتیازی ثبت نشده</span>
-              )}
-              <a href="#customer-reviews">
-                {toPersianDigits(reviews.length)} دیدگاه
-              </a>
-              <a href="#questions">{toPersianDigits(questions.length)} پرسش</a>
-            </div>
-            {realProduct ? (
-              <p className={styles.caption}>
-                رنگ محصول:{" "}
-                {toPersianDigits(
-                  realData?.color ??
-                    (isStorefront
-                      ? "اطلاعات رنگ در دسترس نیست"
-                      : "ثبت نشده است"),
-                )}
-              </p>
-            ) : (
-              <>
-                <fieldset className={styles.colors}>
-                  <legend>
-                    رنگ: <strong>{color.label}</strong>
-                  </legend>
-                  <div>
-                    {previewDetails.colors.map((item) => (
-                      <label
-                        key={item.id}
-                        data-selected={selectedColor === item.id}
-                      >
-                        <input
-                          type="radio"
-                          name="preview-color"
-                          checked={selectedColor === item.id}
-                          onChange={() => setSelectedColor(item.id)}
-                        />
-                        <span
-                          className={styles.swatch}
-                          style={{ background: item.swatch }}
-                        >
-                          {selectedColor === item.id && <Check size={14} />}
-                        </span>
-                        {item.label}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-                <p className={styles.caption}>
-                  تصویر موجود نقره‌ای است؛ انتخاب رنگ فقط آزمایشی است.
-                </p>
-              </>
-            )}
+            <p className={styles.caption}>
+              رنگ محصول:{" "}
+              {toPersianDigits(data.color ?? "اطلاعات رنگ در دسترس نیست")}
+            </p>
             <h2 className={styles.smallTitle}>ویژگی‌های اصلی</h2>
-            <dl className={styles.features}>
-              {product.attributes
-                .filter(
-                  (item) =>
-                    !(
-                      realProduct ? ["مدل", "رنگ", "برند"] : ["مدل", "رنگ"]
-                    ).includes(item.key),
-                )
-                .map((item) => (
+            {features.length > 0 ? (
+              <dl className={styles.features}>
+                {features.map((item) => (
                   <div key={item.key}>
-                    <dt>{item.key}</dt>
+                    <dt>{toPersianDigits(item.key)}</dt>
                     <dd>{toPersianDigits(item.value)}</dd>
                   </div>
                 ))}
-            </dl>
+              </dl>
+            ) : (
+              <p className={styles.caption}>
+                ویژگی دیگری برای این محصول ثبت نشده است.
+              </p>
+            )}
             <a className={styles.specLink} href="#specifications">
               مشاهده همه مشخصات <ChevronLeft size={16} />
             </a>
             <p className={styles.disclaimer}>
               قبل از انتخاب، ابعاد محل نصب و مسیر حمل را بررسی کنید.
-              {!realProduct &&
-                " اطلاعات این مدل برای ارزیابی طراحی تعریف شده است."}
             </p>
           </div>
           <aside className={styles.purchase} aria-label="خرید محصول">
@@ -670,48 +395,22 @@ export function ProductDetails({
               </span>
               <div>
                 <h2>فروشگاه لانچ‌اوکس</h2>
-                <small>
-                  فروشنده مستقیم{!realProduct && " · اطلاعات نمونه"}
-                </small>
+                <small>فروشنده مستقیم</small>
               </div>
               <ShieldCheck size={20} />
             </div>
             <div className={styles.serviceRow}>
               <ShieldCheck size={21} />
               <span>
-                {realProduct ? (
-                  toPersianDigits(
-                    realData?.warranty ??
-                      (isStorefront
-                        ? "اطلاعات گارانتی در دسترس نیست"
-                        : "اطلاعات گارانتی ثبت نشده است"),
-                  )
-                ) : (
-                  <>
-                    گارانتی {toPersianDigits(24)} ماهه لانچ‌اوکس
-                    <small>شرایط گارانتی آزمایشی</small>
-                  </>
+                {toPersianDigits(
+                  data.warranty ?? "اطلاعات گارانتی در دسترس نیست",
                 )}
               </span>
             </div>
             <div className={styles.serviceRow}>
               <Truck size={21} />
               <span>
-                {realProduct ? (
-                  toPersianDigits(
-                    realData?.shipping ??
-                      (isStorefront
-                        ? "زمان ارسال مشخص نشده است"
-                        : "زمان ارسال ثبت نشده است"),
-                  )
-                ) : (
-                  <>
-                    ارسال از انبار لانچ‌اوکس
-                    <small>
-                      تحویل {toPersianDigits("2 تا 4")} روز کاری · نمونه
-                    </small>
-                  </>
-                )}
+                {toPersianDigits(data.shipping ?? "زمان ارسال مشخص نشده است")}
               </span>
             </div>
             <div className={styles.serviceRow}>
@@ -720,11 +419,7 @@ export function ProductDetails({
                 className={product.stock > 0 ? styles.available : undefined}
               >
                 {product.stock > 0 ? "موجود در انبار" : "ناموجود"}
-                {!realProduct && " نمونه"}
-                <small>
-                  {toPersianDigits(product.stock)} عدد
-                  {!realProduct && " برای همه رنگ‌ها"}
-                </small>
+                <small>{toPersianDigits(product.stock)} عدد</small>
               </span>
             </div>
             <div className={styles.price}>
@@ -740,11 +435,6 @@ export function ProductDetails({
               <strong>{formatPrice(product.price)}</strong>
             </div>
             {purchaseControl()}
-            {!isStorefront && (
-              <p className={styles.caption}>
-                سبد محلی آزمایشی؛ خرید واقعی انجام نمی‌شود.
-              </p>
-            )}
           </aside>
         </section>
         <div className={styles.benefits}>
@@ -757,16 +447,14 @@ export function ProductDetails({
         </div>
         <div
           className={styles.notice}
-          role={isStorefront && cartState && !cartState.ok ? "alert" : "status"}
+          role={cartState && !cartState.ok ? "alert" : "status"}
           aria-live="polite"
         >
-          {isStorefront && cartState && !cartState.ok
-            ? cartState.error
-            : notice}
+          {cartState && !cartState.ok ? cartState.error : notice}
         </div>
         {sharedUrl && (
           <label className={styles.shareFallback}>
-            پیوند پیش‌نمایش
+            پیوند محصول
             <input
               readOnly
               dir="ltr"
@@ -799,38 +487,15 @@ export function ProductDetails({
         </nav>
         <section id="description" className={styles.infoSection}>
           <h2>معرفی محصول</h2>
-          <p className={styles.sectionSubtitle}>
-            {realProduct
-              ? isStorefront
-                ? "درباره این محصول"
-                : "معرفی ثبت‌شدهٔ محصول"
-              : "فضای بیشتر برای تازگی هر روز"}
-          </p>
+          <p className={styles.sectionSubtitle}>درباره این محصول</p>
           <div id="product-description">
             <p>
               {toPersianDigits(
-                realProduct && descriptionNeedsExpansion && !expanded
+                descriptionNeedsExpansion && !expanded
                   ? `${product.description.slice(0, 280)}…`
                   : product.description,
               )}
             </p>
-            {expanded && !realProduct && (
-              <>
-                <p>
-                  ظرفیت {toPersianDigits(600)} لیتری نمونه، فضای مجزایی برای
-                  مواد غذایی تازه و منجمد فراهم می‌کند. طبقات قابل تنظیم، کشوهای
-                  اختصاصی و محفظه‌های روی در، چیدمان مواد غذایی را ساده‌تر
-                  می‌کنند. گردش چندگانه هوا برای توزیع یکنواخت سرما در نظر گرفته
-                  شده است.
-                </p>
-                <p>
-                  کمپرسور اینورتر و روشنایی داخلی کم‌مصرف، بخشی از مشخصات
-                  آزمایشی این مدل هستند. برای انتخاب نهایی، ابعاد واقعی، مصرف
-                  انرژی، شرایط نصب و گارانتی محصول باید با اطلاعات رسمی سازنده
-                  تطبیق داده شوند.
-                </p>
-              </>
-            )}
           </div>
           {descriptionNeedsExpansion && (
             <button
@@ -846,196 +511,18 @@ export function ProductDetails({
         </section>
         <section id="specifications" className={styles.infoSection}>
           <h2>مشخصات فنی</h2>
-          <p className={styles.sectionSubtitle}>
-            {realProduct ? (
-              isStorefront ? (
-                "اطلاعات فنی محصول"
-              ) : (
-                "مشخصات ثبت‌شدهٔ محصول"
-              )
-            ) : (
-              <>
-                اطلاعات کامل مدل نمونه {toPersianDigits(previewDetails.model)}
-              </>
-            )}
-          </p>
+          <p className={styles.sectionSubtitle}>اطلاعات فنی محصول</p>
           <div className={styles.specGroups}>
-            {specifications.slice(0, 1).map((group) => (
+            {specifications.map((group) => (
               <SpecificationGroup key={group.title} group={group} />
             ))}
           </div>
-          <div
-            id="additional-specifications"
-            className={styles.additionalSpecs}
-            data-expanded={specificationsExpanded}
-            aria-hidden={!specificationsExpanded}
-            inert={!specificationsExpanded}
-          >
-            <div className={styles.additionalSpecsInner}>
-              <div className={styles.specGroups}>
-                {specifications.slice(1).map((group) => (
-                  <SpecificationGroup key={group.title} group={group} />
-                ))}
-              </div>
-            </div>
-          </div>
-          {specifications.length > 1 && (
-            <button
-              className={styles.textButton}
-              aria-expanded={specificationsExpanded}
-              aria-controls="additional-specifications"
-              onClick={() => setSpecificationsExpanded((current) => !current)}
-            >
-              {specificationsExpanded ? "مشاهده کمتر" : "مشاهده بیشتر"}
-              {specificationsExpanded ? (
-                <ChevronUp size={16} aria-hidden="true" />
-              ) : (
-                <ChevronDown size={16} aria-hidden="true" />
-              )}
-            </button>
-          )}
         </section>
-        <section id="customer-reviews" className={styles.infoSection}>
-          <h2>امتیاز و دیدگاه کاربران</h2>
-          {reviews.length === 0 ? (
-            <div className={styles.feedbackEmpty}>
-              <span className={styles.feedbackEmptyIcon}>
-                <Star size={30} aria-hidden="true" />
-              </span>
-              <h3>هنوز دیدگاهی برای این محصول ثبت نشده است.</h3>
-              <p>تجربه شما می‌تواند به دیگران در انتخاب این محصول کمک کند.</p>
-              <small>
-                {isStorefront
-                  ? "ثبت دیدگاه هنوز فعال نشده است."
-                  : "ثبت دیدگاه در این پیش‌نمایش فعال نیست."}
-              </small>
-            </div>
-          ) : (
-            <>
-              <p className={styles.sectionSubtitle}>
-                دیدگاه‌های زیر ساختگی و صرفاً برای بررسی طراحی هستند؛ ثبت دیدگاه
-                فعال نیست.
-              </p>
-              <div className={styles.reviewLayout}>
-                <aside className={styles.reviewSummary}>
-                  <strong>
-                    {toPersianDigits(4)} <small>از {toPersianDigits(5)}</small>
-                  </strong>
-                  <div
-                    className={styles.stars}
-                    aria-label="امتیاز نمونه ۴ از ۵"
-                  >
-                    {Array.from({ length: 5 }, (_, index) => (
-                      <Star
-                        key={index}
-                        size={19}
-                        fill={index < 4 ? "currentColor" : "none"}
-                      />
-                    ))}
-                  </div>
-                  <span>
-                    از مجموع {toPersianDigits(reviews.length)} دیدگاه نمونه
-                  </span>
-                  <p>تجربه دیگران، برای انتخابی آگاهانه‌تر</p>
-                </aside>
-                <div>
-                  <label className={styles.sort}>
-                    مرتب‌سازی دیدگاه‌ها
-                    <select
-                      value={sort}
-                      onChange={(event) => {
-                        const parsed = sortSchema.safeParse(event.target.value);
-                        if (parsed.success) setSort(parsed.data);
-                      }}
-                    >
-                      <option value="helpful">مفیدترین</option>
-                      <option value="newest">جدیدترین</option>
-                      <option value="highest">بیشترین امتیاز</option>
-                    </select>
-                  </label>
-                  <div data-review-list>
-                    {sortedReviews.map((review) => (
-                      <article
-                        className={styles.review}
-                        key={review.id}
-                        data-review-id={review.id}
-                      >
-                        <div className={styles.reviewMeta}>
-                          <span className={styles.ratingBadge}>
-                            <Star size={14} fill="currentColor" />
-                            {toPersianDigits(review.rating)}
-                          </span>
-                          <span>{review.name}</span>
-                          {review.buyer && (
-                            <span className={styles.buyer}>خریدار نمونه</span>
-                          )}
-                          <time dateTime={review.date}>
-                            {formatDate(review.date)}
-                          </time>
-                        </div>
-                        <h3>{review.title}</h3>
-                        <p>{review.text}</p>
-                        <small>
-                          {toPersianDigits(review.helpful)} رأی مفید · داده
-                          نمونه
-                        </small>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </section>
-        <section id="questions" className={styles.infoSection}>
-          <h2>پرسش و پاسخ</h2>
-          {questions.length === 0 ? (
-            <div className={styles.feedbackEmpty}>
-              <span className={styles.feedbackEmptyIcon}>
-                <MessageCircle size={30} aria-hidden="true" />
-              </span>
-              <h3>هنوز پرسشی درباره این محصول ثبت نشده است.</h3>
-              <p>پرسش‌های شما می‌توانند انتخاب را برای دیگران آسان‌تر کنند.</p>
-              <small>
-                {isStorefront
-                  ? "ارسال پرسش هنوز فعال نشده است."
-                  : "ارسال پرسش در این پیش‌نمایش فعال نیست."}
-              </small>
-            </div>
-          ) : (
-            <>
-              <p className={styles.sectionSubtitle}>
-                پرسش‌های نمونه؛ ارسال پرسش در این پیش‌نمایش فعال نیست.
-              </p>
-              {questions.map((item) => (
-                <details className={styles.question} key={item.question}>
-                  <summary>
-                    <MessageCircle size={21} />
-                    {item.question}
-                    <Plus size={18} />
-                  </summary>
-                  <p>
-                    <strong>پاسخ نمونه لانچ‌اوکس: </strong>
-                    {toPersianDigits(item.answer)}
-                  </p>
-                </details>
-              ))}
-            </>
-          )}
-        </section>
-        <RelatedProductsCarousel
-          products={relatedProducts}
-          onSubmitCapture={isStorefront ? undefined : addRelated}
-          onClickCapture={isStorefront ? undefined : previewRelated}
-        />
+        <RelatedProductsCarousel products={relatedProducts} />
       </main>
-      {!isStorefront && <StoreFooter />}
-      <div
-        className={styles.mobileBuy}
-        aria-label={isStorefront ? "خرید سریع" : "خرید سریع آزمایشی"}
-      >
+      <div className={styles.mobileBuy} aria-label="خرید سریع">
         <div>
-          <small>{realProduct ? "قیمت محصول" : "قیمت نمونه"}</small>
+          <small>قیمت محصول</small>
           <strong>{formatPrice(product.price)}</strong>
         </div>
         {purchaseControl()}
@@ -1049,7 +536,6 @@ export function ProductDetails({
           if (event.target === event.currentTarget) dialog.current?.close();
         }}
         onKeyDown={(event) => {
-          if (relatedImage) return;
           if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
             event.preventDefault();
             moveImage(event.key === "ArrowLeft" ? 1 : -1);
@@ -1058,8 +544,7 @@ export function ProductDetails({
       >
         <div className={styles.dialogHeading}>
           <h2 id="image-dialog-title">
-            {relatedImage?.title ??
-              `گالری محصول · ${toPersianDigits(view.label)}`}
+            {`گالری محصول · ${toPersianDigits(view.label)}`}
           </h2>
           <button
             autoFocus
@@ -1077,33 +562,28 @@ export function ProductDetails({
         >
           {renderImage(true)}
         </button>
-        {!relatedImage && (
-          <div className={styles.galleryNavigation}>
-            <button
-              onClick={() => moveImage(-1)}
-              aria-label="تصویر قبلی"
-              disabled={galleryViews.length < 2}
-            >
-              <ChevronRight />
-            </button>
-            <span aria-live="polite">
-              {toPersianDigits(imageIndex + 1)} از{" "}
-              {toPersianDigits(galleryViews.length)} ·{" "}
-              {toPersianDigits(view.label)}
-            </span>
-            <button
-              onClick={() => moveImage(1)}
-              aria-label="تصویر بعدی"
-              disabled={galleryViews.length < 2}
-            >
-              <ChevronLeft />
-            </button>
-          </div>
-        )}
-        <p className={styles.caption}>
-          {!isStorefront && "تصویر موجود پروژه؛ "}برای بزرگ‌نمایی روی تصویر
-          بزنید.
-        </p>
+        <div className={styles.galleryNavigation}>
+          <button
+            onClick={() => moveImage(-1)}
+            aria-label="تصویر قبلی"
+            disabled={galleryViews.length < 2}
+          >
+            <ChevronRight />
+          </button>
+          <span aria-live="polite">
+            {toPersianDigits(imageIndex + 1)} از{" "}
+            {toPersianDigits(galleryViews.length)} ·{" "}
+            {toPersianDigits(view.label)}
+          </span>
+          <button
+            onClick={() => moveImage(1)}
+            aria-label="تصویر بعدی"
+            disabled={galleryViews.length < 2}
+          >
+            <ChevronLeft />
+          </button>
+        </div>
+        <p className={styles.caption}>برای بزرگ‌نمایی روی تصویر بزنید.</p>
       </dialog>
     </div>
   );

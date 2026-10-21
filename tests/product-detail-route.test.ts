@@ -49,7 +49,7 @@ it.each(["یخچال-جدید", encodeURIComponent("یخچال-جدید"), "frid
     const page = await ProductPage({ params });
     const metadata = await generateMetadata({ params });
     expect(mocks.product).toHaveBeenCalledWith(decodeURIComponent(slug));
-    expect(page.props.realProduct).toBe(product);
+    expect(page.props.product).toBe(product);
     expect(metadata.title).toContain(product.title);
   },
 );
@@ -64,10 +64,38 @@ it.each(["%E0%A4%A", "%2Fadmin", "%252Fadmin", "invalid_slug"])(
   },
 );
 
-it("keeps missing or inactive products unavailable", async () => {
-  mocks.product.mockResolvedValue(null);
-  await expect(
-    ProductPage({ params: Promise.resolve({ slug: product.slug }) }),
-  ).rejects.toThrow("NOT_FOUND");
+it.each(["missing", "deleted", "inactive"])(
+  "uses notFound for %s products in both rendering and metadata",
+  async () => {
+    mocks.product.mockResolvedValue(null);
+    const params = Promise.resolve({ slug: product.slug });
+    await expect(ProductPage({ params })).rejects.toThrow("NOT_FOUND");
+    await expect(generateMetadata({ params })).rejects.toThrow("NOT_FOUND");
+    expect(mocks.cart).not.toHaveBeenCalled();
+    expect(mocks.related).not.toHaveBeenCalled();
+  },
+);
+
+it("propagates database outages without treating the product as missing", async () => {
+  const failure = new Error("Database unavailable");
+  mocks.product.mockRejectedValue(failure);
+  const params = Promise.resolve({ slug: product.slug });
+  await expect(ProductPage({ params })).rejects.toBe(failure);
+  await expect(generateMetadata({ params })).rejects.toBe(failure);
   expect(mocks.cart).not.toHaveBeenCalled();
+  expect(mocks.related).not.toHaveBeenCalled();
+
+  mocks.product.mockResolvedValue(product);
+  expect((await ProductPage({ params })).props.product).toBe(product);
 });
+
+it.each(["related", "cart"] as const)(
+  "propagates %s failures to the retry boundary",
+  async (source) => {
+    const failure = new Error("Database unavailable");
+    mocks[source].mockRejectedValue(failure);
+    await expect(
+      ProductPage({ params: Promise.resolve({ slug: product.slug }) }),
+    ).rejects.toBe(failure);
+  },
+);

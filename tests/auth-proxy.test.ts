@@ -34,7 +34,7 @@ vi.mock("next/server", () => ({
   },
 }));
 import { AppError } from "@/lib/errors";
-import proxy from "@/proxy";
+import proxy, { config } from "@/proxy";
 
 function request(
   path: string,
@@ -60,31 +60,23 @@ beforeEach(() => {
   mocks.next.mockReturnValue(new Response(null));
 });
 afterEach(() => vi.unstubAllGlobals());
-it.each(["missing-product", "invalid_slug", "%E0%A4%A"])(
-  "returns HTTP 404 for unavailable or invalid product %s",
+it("excludes public product routes from proxy interception", () => {
+  expect(config.matcher).not.toContain("/products/:slug");
+  expect(config.matcher.every((path) => !path.startsWith("/products"))).toBe(
+    true,
+  );
+});
+it.each(["active-product", "missing-product", "invalid_slug", "%E0%A4%A"])(
+  "does not look up product %s even when invoked directly",
   async (slug) => {
-    mocks.product.mockResolvedValueOnce(null);
+    mocks.product.mockRejectedValue(new Error("Database unavailable"));
     const response = await proxy(request(`/products/${slug}`), event);
-    expect(response?.status).toBe(404);
-    expect(response?.headers.get("cache-control")).toBe("no-store");
-    expect(response?.headers.get("x-middleware-rewrite")).toBe(
-      "http://localhost:3000/_not-found",
-    );
-    if (slug !== "missing-product")
-      expect(mocks.product).not.toHaveBeenCalled();
+    expect(response?.status).toBe(200);
+    expect(mocks.product).not.toHaveBeenCalled();
+    expect(mocks.order).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   },
 );
-it("passes active products and propagates product database failures", async () => {
-  mocks.product.mockResolvedValueOnce({ id: "active" });
-  expect(
-    (await proxy(request("/products/active-product"), event))?.status,
-  ).toBe(200);
-  expect(mocks.product).toHaveBeenCalledWith("active-product");
-  mocks.product.mockRejectedValueOnce(new Error("Database unavailable"));
-  await expect(
-    proxy(request("/products/active-product"), event),
-  ).rejects.toThrow("Database unavailable");
-});
 it("exports a callable proxy even when Auth.js resolves its wrapper asynchronously", async () => {
   expect(typeof proxy).toBe("function");
   const response = await proxy(request("/account?tab=orders"), event);

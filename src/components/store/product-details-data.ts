@@ -1,6 +1,6 @@
 import type { StoreProductDTO } from "@/types/dto";
 
-export function getRealPreviewData(
+export function getProductDetailsData(
   product: Pick<
     StoreProductDTO,
     "attributes" | "price" | "compareAtPrice" | "images" | "category" | "sku"
