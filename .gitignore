@@ -45,3 +45,8 @@ next-env.d.ts
 
 # Local reports
 *.log
+
+# Generated QA artifacts
+/test-results/
+/playwright-report/
+/tmp/

@@ -58,7 +58,6 @@ export default async function ProductPage({
       realProduct={product}
       realRelatedProducts={related}
       initialQuantity={quantity}
-      feedbackState="empty"
     />
   );
 }

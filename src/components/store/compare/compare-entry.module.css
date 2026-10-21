@@ -28,7 +28,7 @@
   padding: 0;
   border: 0;
   border-radius: 8px;
-  color: light-dark(#3b5194, #a3d7ff);
+  color: #3b5194;
 }
 .iconEntry .message {
   position: absolute;

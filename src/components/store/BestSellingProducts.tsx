@@ -1,7 +1,6 @@
 "use client";
 
 import { ProductGrid } from "@/components/store/ProductGrid";
-import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
 import type { StoreProductDTO } from "@/types/dto";
 import styles from "./ArcticProducts.module.css";
 
@@ -10,11 +9,9 @@ export function BestSellingProducts({
 }: {
   products: StoreProductDTO[];
 }) {
-  const { theme } = usePreviewTheme();
   return (
     <section
       className={styles.section}
-      data-theme={theme}
       aria-labelledby="bestselling-products-title"
     >
       <div className={styles.panel}>

@@ -12,7 +12,6 @@ import {
 } from "@/components/store/Icons";
 import { toPersianDigits } from "@/lib/format";
 import { FrosticIcon } from "./FrosticIcons";
-import type { FrosticTheme } from "./use-preview-theme";
 import themeStyles from "./frostic-theme.module.css";
 import styles from "./FrosticHeader.module.css";
 
@@ -64,13 +63,11 @@ export function FrosticHeader({
   authenticated = false,
   links = defaultLinks,
   activeHref,
-  theme = "system",
 }: {
   cartCount?: number;
   authenticated?: boolean;
   links?: readonly FrosticNavItem[];
   activeHref?: string;
-  theme?: FrosticTheme;
 }) {
   const pathname = usePathname();
   const selectedHref = activeHref ?? pathname;
@@ -216,7 +213,6 @@ export function FrosticHeader({
   return (
     <header
       className={`${themeStyles.theme} ${styles.header}`}
-      data-theme={theme}
       data-frostic-header
     >
       <div className={styles.bar}>

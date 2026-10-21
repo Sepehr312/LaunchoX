@@ -31,7 +31,7 @@ export default async function HomePage() {
         <div className="store-shell grid items-center gap-8 lg:grid-cols-2">
           <div className="showroom-image">
             <Image
-              src="/images/arctic-showroom-dark.png"
+              src="/images/arctic-showroom-light.webp"
               alt="نمایشگاه یخچال لانچ‌اوکس در فضای قطبی"
               fill
               sizes="(max-width: 1023px) 100vw, 50vw"
