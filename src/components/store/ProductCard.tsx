@@ -7,7 +7,6 @@ import { Check, ShoppingCart } from "lucide-react";
 import { addCartAction } from "@/actions/cart.actions";
 import { ProductLikeButton } from "@/components/store/ProductLikeButton";
 import { CompareProductButton } from "@/components/store/compare/CompareProductButton";
-import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 import type { StoreProductDTO } from "@/types/dto";
 import styles from "./ArcticProducts.module.css";
@@ -19,7 +18,6 @@ export function ProductCard({
   product: StoreProductDTO;
   variant?: "default" | "compact";
 }) {
-  const { theme } = usePreviewTheme();
   const [state, formAction, pending] = useActionState(addCartAction, undefined);
   const model = product.attributes.find((item) => item.key === "مدل");
   const specs = product.attributes
@@ -38,7 +36,6 @@ export function ProductCard({
   return (
     <article
       className={styles.card}
-      data-theme={theme}
       data-arctic-product-card
       data-variant={variant}
     >

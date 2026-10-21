@@ -35,12 +35,7 @@
   object-position: 26% center;
   transition: opacity 500ms ease;
 }
-.dayScene {
-  opacity: var(--f-day-opacity);
-}
-.nightScene {
-  opacity: var(--f-night-opacity);
-}
+
 .scene::after {
   position: absolute;
   inset: 0;
@@ -69,7 +64,7 @@
   background: var(--f-accent);
   box-shadow: 0 0 0 5px rgb(56 189 248 / 10%);
 }
-.content h1 {
+.content :is(h1, h2) {
   max-inline-size: 600px;
   font-size: clamp(30px, 7.7vw, 42px);
   font-weight: 800;
@@ -104,7 +99,7 @@
   gap: 18px;
   min-block-size: 48px;
   padding: 10px 18px;
-  border: 1px solid light-dark(rgb(124 177 206 / 50%), rgb(125 211 252 / 30%));
+  border: 1px solid rgb(124 177 206 / 50%);
   border-radius: 14px;
   font-size: 12px;
   font-weight: 600;
@@ -114,12 +109,12 @@
 }
 .primary {
   color: #092d46;
-  background: light-dark(#b4e6fa, #8cddff);
+  background: #b4e6fa;
   box-shadow: 0 6px 24px rgb(56 189 248 / 10%);
 }
 .secondary {
   color: var(--f-ink);
-  background: light-dark(rgb(248 253 255 / 65%), rgb(7 27 46 / 65%));
+  background: rgb(248 253 255 / 65%);
   backdrop-filter: blur(14px);
 }
 .actions a:hover {
@@ -136,7 +131,7 @@
   align-items: center;
   gap: 18px;
   margin-block-start: 28px;
-  color: light-dark(#1685b4, #68d9ff);
+  color: #1685b4;
 }
 .navigationLabel {
   font-size: 10px;
@@ -164,7 +159,7 @@ button.number {
   cursor: pointer;
 }
 .number[aria-current="true"] {
-  color: light-dark(#1685b4, #68d9ff);
+  color: #1685b4;
 }
 .number[aria-current="true"]::before {
   position: absolute;
@@ -211,8 +206,8 @@ button.number {
   .scene::after {
     background: linear-gradient(
       to left,
-      light-dark(rgb(241 248 252 / 86%), rgb(6 20 33 / 80%)),
-      light-dark(rgb(241 248 252 / 55%), rgb(6 20 33 / 48%)) 48%,
+      rgb(241 248 252 / 86%),
+      rgb(241 248 252 / 55%) 48%,
       transparent 78%
     );
     pointer-events: none;
@@ -239,7 +234,7 @@ button.number {
     inline-size: 4px;
     block-size: 4px;
   }
-  .content h1 {
+  .content :is(h1, h2) {
     font-size: clamp(20px, 5.4vw, 24px);
     line-height: 1.4;
     letter-spacing: -0.5px;
@@ -345,7 +340,7 @@ button.number {
   .scene::after {
     background: linear-gradient(
       270deg,
-      light-dark(rgb(241 248 252 / 22%), rgb(6 20 33 / 18%)),
+      rgb(241 248 252 / 22%),
       transparent 38%
     );
   }
@@ -362,7 +357,7 @@ button.number {
     grid-row: 1;
     min-inline-size: 0;
   }
-  .content h1 {
+  .content :is(h1, h2) {
     font-size: clamp(30px, 3.25vw, 54px);
   }
   .subtitle {

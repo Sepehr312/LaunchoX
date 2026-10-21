@@ -29,8 +29,7 @@ import type {
   StoreBrandDetailDTO,
 } from "@/types/dto";
 import type { ProductQueryInput } from "@/validations/product";
-import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
-import themeStyles from "@/components/preview/frostic/frostic-theme.module.css";
+import themeStyles from "@/components/store/frostic/frostic-theme.module.css";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 import { parseProductQuery } from "@/lib/product-query";
 
@@ -429,7 +428,6 @@ export function ProductsCatalog({
     category: selectedCategory?.id ?? "",
     max: priceCeiling,
   };
-  const { theme } = usePreviewTheme();
   const queryKey = JSON.stringify(query);
   const queryFilters: Filters = {
     category: query.category ?? "",
@@ -551,7 +549,7 @@ export function ProductsCatalog({
   return (
     <div
       className={`${themeStyles.theme} ${styles.page}`}
-      data-theme={brand ? "light" : theme}
+      data-theme="light"
       data-products-catalog
       data-brand-catalog={brand ? "true" : undefined}
     >

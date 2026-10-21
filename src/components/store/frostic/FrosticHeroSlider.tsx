@@ -15,7 +15,6 @@ import styles from "./FrosticHeroSlider.module.css";
 export interface FrosticHeroSlide {
   id: string;
   dayImage: string;
-  nightImage: string;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -27,8 +26,7 @@ export interface FrosticHeroSlide {
 const defaultSlides: readonly FrosticHeroSlide[] = [
   {
     id: "freshness",
-    dayImage: "/images/arctic-showroom-light.png",
-    nightImage: "/images/arctic-showroom-dark.png",
+    dayImage: "/images/arctic-showroom-light.webp",
     eyebrow: "فناوری در خدمت تازگی",
     title: "یخچال‌هایی فراتر از انتظار",
     subtitle: "ترکیب طراحی مینیمال، فناوری پیشرفته و تازگی ماندگار",
@@ -38,19 +36,18 @@ const defaultSlides: readonly FrosticHeroSlide[] = [
   },
   {
     id: "home-design",
-    dayImage: "/images/arctic-showroom-light.png",
-    nightImage: "/images/arctic-showroom-dark.png",
+    dayImage: "/images/arctic-showroom-light.webp",
     eyebrow: "هماهنگ با زیبایی خانه",
     title: "طراحی برای زندگی امروز",
     subtitle: "خطوط ساده، جزئیات دقیق و حضوری متفاوت در آشپزخانه",
-    description: "یخچالی انتخاب کنید که با فضای خانه و سبک زندگی شما هماهنگ باشد",
+    description:
+      "یخچالی انتخاب کنید که با فضای خانه و سبک زندگی شما هماهنگ باشد",
     primary: { label: "مشاهده محصولات", href: "/products" },
     secondary: { label: "راهنمای خرید", href: "#frostic-buying-guide" },
   },
   {
     id: "thoughtful-choice",
-    dayImage: "/images/arctic-showroom-light.png",
-    nightImage: "/images/arctic-showroom-dark.png",
+    dayImage: "/images/arctic-showroom-light.webp",
     eyebrow: "انتخابی برای سال‌های پیش رو",
     title: "تازگی از یک انتخاب آغاز می‌شود",
     subtitle: "از ظرفیت و چیدمان تا مصرف انرژی؛ جزئیات را مقایسه کنید",
@@ -207,16 +204,7 @@ export function FrosticHeroSlider({
                 alt=""
                 fill
                 priority={position === 0}
-                sizes="(max-width: 767px) 736px, 70vw"
-                className={styles.dayScene}
-              />
-              <Image
-                src={slide.nightImage}
-                alt=""
-                fill
-                priority={position === 0}
-                sizes="(max-width: 767px) 736px, 70vw"
-                className={styles.nightScene}
+                sizes="(max-width: 767px) 100vw, 70vw"
               />
             </div>
             <div className={styles.content}>
@@ -225,7 +213,11 @@ export function FrosticHeroSlider({
                   <span />
                   {slide.eyebrow}
                 </p>
-                <h1>{slide.title}</h1>
+                {position === 0 ? (
+                  <h1>{slide.title}</h1>
+                ) : (
+                  <h2>{slide.title}</h2>
+                )}
                 <p className={styles.subtitle}>{slide.subtitle}</p>
                 <p className={styles.description}>{slide.description}</p>
                 <div className={styles.actions}>

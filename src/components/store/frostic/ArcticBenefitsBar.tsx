@@ -21,7 +21,7 @@ export function ArcticBenefitsBar() {
 
   return (
     <section
-      className={`${styles.placement} mx-auto w-full max-w-[1560px] px-5 sm:px-8`}
+      className={`${styles.placement} px-5 sm:px-8 mx-auto w-full max-w-[1560px]`}
       dir="rtl"
       aria-label="مزایای خرید و امکانات یخچال"
       data-arctic-benefits
@@ -67,22 +67,22 @@ export function ArcticBenefitsBar() {
           {benefits.map(({ title, description, icon: Icon }) => (
             <li
               key={title}
-              className={`${styles.item} flex h-[78px] shrink-0 basis-1/2 snap-start items-center justify-center gap-2 px-2 sm:basis-1/3 sm:gap-2.5 sm:px-3 lg:h-[83px] lg:min-w-0 lg:flex-1 lg:basis-0 lg:gap-3.5`}
+              className={`${styles.item} gap-2 px-2 sm:basis-1/3 sm:gap-2.5 sm:px-3 lg:h-[83px] lg:min-w-0 lg:flex-1 lg:basis-0 lg:gap-3.5 flex h-[78px] shrink-0 basis-1/2 snap-start items-center justify-center`}
             >
               <Icon
                 size={30}
                 strokeWidth={1.6}
-                className="size-[22px] shrink-0 text-[#1683FF] sm:size-6 lg:size-[30px]"
+                className="sm:size-6 lg:size-[30px] size-[22px] shrink-0 text-[#1683FF]"
                 aria-hidden="true"
               />
-              <div className="flex flex-col gap-1 text-start whitespace-nowrap lg:gap-[5px]">
+              <div className="gap-1 lg:gap-[5px] flex flex-col text-start whitespace-nowrap">
                 <h2
-                  className={`${styles.title} text-xs leading-[18px] font-bold sm:text-[13px] lg:text-sm lg:leading-5`}
+                  className={`${styles.title} text-xs font-bold sm:text-[13px] lg:text-sm lg:leading-5 leading-[18px]`}
                 >
                   {title}
                 </h2>
                 <p
-                  className={`${styles.description} text-[10px] leading-4 lg:text-[11px]`}
+                  className={`${styles.description} leading-4 lg:text-[11px] text-[10px]`}
                 >
                   {description}
                 </p>
