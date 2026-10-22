@@ -22,29 +22,6 @@
 .page {
   background: transparent;
 }
-/* Override the existing dark body background only while product details render. */
-:global(body):has(.page[data-product-details="storefront"]) {
-  background: linear-gradient(180deg, #eaf5ff, #f2f8ff 260px, #fff 900px) top /
-    100% 900px no-repeat #fff !important;
-}
-/* Keep reused components light without mutating the storefront preference. */
-.page [data-theme],
-:global(body):has(.page[data-product-details="storefront"])
-  :global([data-theme]) {
-  color-scheme: light !important;
-  --f-day: block !important;
-  --f-night: none !important;
-  --f-day-opacity: 1 !important;
-  --f-night-opacity: 0 !important;
-}
-.page [aria-label="تغییر به تم تاریک"],
-.page [aria-label="تغییر به تم روشن"],
-:global(body):has(.page[data-product-details="storefront"])
-  :global([aria-label="تغییر به تم تاریک"]),
-:global(body):has(.page[data-product-details="storefront"])
-  :global([aria-label="تغییر به تم روشن"]) {
-  display: none;
-}
 .page[data-product-details="storefront"] {
   background: transparent;
   padding-block-end: 0;

@@ -2,11 +2,11 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-block-start: 3px solid light-dark(#dcedfa, #183b5a);
-  background: light-dark(#f5faff, #07182d);
-  color: light-dark(#203568, #e5eeff);
-  --footer-muted: light-dark(#647595, #b2c5df);
-  --footer-line: light-dark(rgb(142 178 220 / 36%), rgb(114 166 219 / 24%));
+  border-block-start: 3px solid #dcedfa;
+  background: #f5faff;
+  color: #203568;
+  --footer-muted: #647595;
+  --footer-line: rgb(142 178 220 / 36%);
 }
 .landscape {
   position: absolute;
@@ -18,16 +18,7 @@
   background: url("/images/preview/footer/arctic-landscape-mobile-day.webp")
     center bottom / 100% 100% no-repeat;
 }
-.landscape::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("/images/preview/footer/arctic-landscape-mobile-day.webp");
-  background-position: inherit;
-  background-size: inherit;
-  background-repeat: no-repeat;
-  opacity: var(--f-night-opacity);
-}
+
 .footer::after {
   content: "";
   position: absolute;
@@ -35,8 +26,8 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    light-dark(rgb(247 251 255 / 16%), rgb(3 17 39 / 28%)),
-    light-dark(rgb(247 251 255 / 16%), rgb(3 17 39 / 10%))
+    rgb(247 251 255 / 16%),
+    rgb(247 251 255 / 16%)
   );
   pointer-events: none;
 }
@@ -75,7 +66,7 @@
   outline-offset: 4px;
 }
 .content :is(a, button):hover {
-  color: light-dark(#0078ed, #72cfff);
+  color: #0078ed;
 }
 .contact {
   grid-column: 1 / -1;
@@ -114,7 +105,7 @@
 .logo > svg {
   inline-size: 52px;
   block-size: 52px;
-  color: light-dark(#0089fa, #40bdff);
+  color: #0089fa;
   stroke-width: 1.65;
 }
 .logo span {
@@ -135,7 +126,7 @@
 .socials {
   display: flex;
   gap: 5px;
-  color: light-dark(#0084f6, #44bdff);
+  color: #0084f6;
 }
 .socials button {
   display: grid;
@@ -145,7 +136,7 @@
   border-radius: 10px;
 }
 .socials button:hover {
-  background: light-dark(rgb(0 132 246 / 8%), rgb(68 189 255 / 10%));
+  background: rgb(0 132 246 / 8%);
 }
 .socials svg {
   inline-size: 23px;
@@ -165,7 +156,7 @@
   font-weight: 600;
   line-height: 2;
   text-align: center;
-  background: light-dark(rgb(249 253 255 / 35%), rgb(4 18 39 / 25%));
+  background: rgb(249 253 255 / 35%);
 }
 .dialog {
   position: fixed;
@@ -196,7 +187,7 @@
   line-height: 2;
 }
 .dialog > a {
-  color: light-dark(#006bc5, #72cfff);
+  color: #006bc5;
   font-size: 13px;
 }
 .close {
@@ -231,9 +222,6 @@
   .landscape {
     background-image: url("/images/preview/footer/arctic-landscape.webp");
     background-size: 100% 100%;
-  }
-  .landscape::before {
-    background-image: url("/images/preview/footer/arctic-landscape.webp");
   }
 }
 @media (min-width: 1024px) {

@@ -1,7 +1,6 @@
 "use client";
 
-import { FrosticHeader } from "@/components/preview/frostic/FrosticHeader";
-import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
+import { FrosticHeader } from "@/components/store/frostic/FrosticHeader";
 import type { CategoryDTO } from "@/types/dto";
 
 export function StoreHeader({
@@ -12,13 +11,5 @@ export function StoreHeader({
   cartCount: number;
   authenticated?: boolean;
 }) {
-  const { theme } = usePreviewTheme();
-
-  return (
-    <FrosticHeader
-      cartCount={cartCount}
-      authenticated={authenticated}
-      theme={theme}
-    />
-  );
+  return <FrosticHeader cartCount={cartCount} authenticated={authenticated} />;
 }

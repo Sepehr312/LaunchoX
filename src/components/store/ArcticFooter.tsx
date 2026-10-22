@@ -2,10 +2,9 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { Mail, MapPin, Phone, Send, Snowflake, X } from "lucide-react";
+import { Mail, MapPin, Phone, Snowflake, X } from "lucide-react";
 import { toPersianDigits } from "@/lib/format";
-import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
-import themeStyles from "@/components/preview/frostic/frostic-theme.module.css";
+import themeStyles from "@/components/store/frostic/frostic-theme.module.css";
 import styles from "./ArcticFooter.module.css";
 
 const information = {
@@ -19,7 +18,7 @@ const information = {
   },
   contact: {
     title: "تماس با ما",
-    text: "برای مشاوره و ارتباط با LaunchoX، از شماره تلفن یا ایمیل درج‌شده در فوتر استفاده کنید.",
+    text: "راه‌های ارتباطی رسمی فروشگاه پس از تأیید در این بخش منتشر می‌شوند.",
   },
   questions: {
     title: "پرسش‌های متداول",
@@ -35,16 +34,23 @@ const information = {
   },
   social: {
     title: "همراه LaunchoX باشید",
-    text: "برای دریافت راهنمای خرید و ارتباط با LaunchoX، با ما تماس بگیرید یا به info@sermayesh.ir پیام بفرستید.",
+    text: "شبکه‌های اجتماعی رسمی فروشگاه هنوز منتشر نشده‌اند.",
   },
 } as const;
 
 export function ArcticFooter({
+  site,
   buyingGuideHref = "/#frostic-buying-guide",
 }: {
+  site: {
+    name: string;
+    phone: string;
+    email: string;
+    address: string;
+    year: string;
+  };
   buyingGuideHref?: string;
 }) {
-  const { theme } = usePreviewTheme();
   const dialog = useRef<HTMLDialogElement>(null);
   const [active, setActive] = useState<keyof typeof information>("about");
   function showInformation(key: keyof typeof information) {
@@ -54,9 +60,8 @@ export function ArcticFooter({
   return (
     <footer
       className={`${themeStyles.theme} ${styles.footer}`}
-      data-theme={theme}
       data-arctic-footer
-      aria-label="پاورقی LaunchoX"
+      aria-label={`پاورقی ${site.name}`}
     >
       <div className={styles.landscape} aria-hidden="true" />
       <div className={styles.content}>
@@ -66,18 +71,27 @@ export function ArcticFooter({
         >
           <h2 id="footer-contact-title">اطلاعات تماس</h2>
           <address>
-            <a href="tel:0711735628">
-              <Phone />
-              <bdi>{toPersianDigits("071-1735628")}</bdi>
-            </a>
-            <a href="mailto:info@sermayesh.ir">
-              <Mail />
-              <bdi>info@sermayesh.ir</bdi>
-            </a>
-            <span>
-              <MapPin />
-              تهران، خیابان ولیعصر، پلاک {toPersianDigits(138)}
-            </span>
+            {site.phone && (
+              <a href={`tel:${site.phone.replace(/[^+0-9]/g, "")}`}>
+                <Phone />
+                <bdi>{toPersianDigits(site.phone)}</bdi>
+              </a>
+            )}
+            {site.email && (
+              <a href={`mailto:${site.email}`}>
+                <Mail />
+                <bdi>{site.email}</bdi>
+              </a>
+            )}
+            {site.address && (
+              <span>
+                <MapPin />
+                {toPersianDigits(site.address)}
+              </span>
+            )}
+            {!site.phone && !site.email && !site.address && (
+              <span>اطلاعات تماس رسمی هنوز منتشر نشده است.</span>
+            )}
           </address>
         </section>
         <nav
@@ -102,56 +116,22 @@ export function ArcticFooter({
           <button onClick={() => showInformation("contact")}>تماس با ما</button>
         </nav>
         <div className={styles.brand}>
-          <a
+          <Link
             className={styles.logo}
-            href="#"
-            aria-label="LaunchoX، ابتدای صفحه"
+            href="/"
+            aria-label={`${site.name}، صفحه اصلی`}
           >
             <Snowflake aria-hidden="true" />
             <span>
-              <strong dir="ltr">LaunchoX</strong>
+              <strong dir="auto">{site.name}</strong>
               <small>انتخابی بهتر، زندگی آرام‌تر</small>
             </span>
-          </a>
-          <div
-            className={styles.socials}
-            role="group"
-            aria-label="شبکه‌های اجتماعی LaunchoX"
-          >
-            <button
-              aria-label="تلگرام LaunchoX"
-              onClick={() => showInformation("social")}
-            >
-              <Send />
-            </button>
-            <button
-              aria-label="اینستاگرام LaunchoX"
-              onClick={() => showInformation("social")}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle
-                  cx="17.5"
-                  cy="6.5"
-                  r="1"
-                  fill="currentColor"
-                  stroke="none"
-                />
-              </svg>
-            </button>
-          </div>
+          </Link>
         </div>
       </div>
       <div className={styles.copyright}>
         <p>
-          © {toPersianDigits(1405)} <bdi>LaunchoX</bdi>؛ همهٔ حقوق محفوظ است.
+          © {site.year} <bdi>{site.name}</bdi>؛ همهٔ حقوق محفوظ است.
         </p>
       </div>
       <dialog
@@ -170,8 +150,10 @@ export function ArcticFooter({
           <X />
         </button>
         <h2 id="footer-dialog-title">{information[active].title}</h2>
-        <p>{information[active].text}</p>
-        <a href="mailto:info@sermayesh.ir">ارتباط با LaunchoX</a>
+        <p>{information[active].text.replaceAll("LaunchoX", site.name)}</p>
+        {site.email && (
+          <a href={`mailto:${site.email}`}>ارتباط با {site.name}</a>
+        )}
       </dialog>
     </footer>
   );

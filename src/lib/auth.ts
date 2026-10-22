@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { headers, cookies } from "next/headers";
@@ -63,8 +64,8 @@ export async function requireUser() {
   return user;
 }
 
-export async function requireAdmin() {
+export const requireAdmin = cache(async function requireAdmin() {
   const user = await requireUser();
   if (user.role !== "admin") notFound();
   return user;
-}
+});

@@ -143,7 +143,7 @@ export default function AboutPage() {
           </div>
           <figure className={styles.storyVisual}>
             <Image
-              src="/images/arctic-showroom-light.png"
+              src="/images/arctic-showroom-light.webp"
               alt="نمای یخچال در فضایی روشن با چشم‌انداز کوهستان یخی"
               fill
               sizes="(max-width: 1440px) 100vw, 1440px"
