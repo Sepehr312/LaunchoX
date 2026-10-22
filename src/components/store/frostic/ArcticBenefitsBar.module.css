@@ -10,9 +10,9 @@
   overscroll-behavior-inline: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  border: 1px solid light-dark(#d6e9ff, #264c70);
+  border: 1px solid #d6e9ff;
   border-radius: 16px;
-  background: light-dark(rgba(255, 255, 255, 0.78), rgba(10, 32, 50, 0.78));
+  background: rgba(255, 255, 255, 0.78);
   box-shadow: 0 6px 24px rgb(38 113 194 / 7%);
   backdrop-filter: blur(12px);
 }
@@ -42,17 +42,17 @@
   inset-block-start: 50%;
   inline-size: 1px;
   block-size: 45px;
-  background: light-dark(#c5d8ec, #31516c);
+  background: #c5d8ec;
   transform: translateY(-50%);
   content: "";
 }
 
 .title {
-  color: light-dark(#102b63, #edf9ff);
+  color: #102b63;
 }
 
 .description {
-  color: light-dark(#788caa, #a8c2d2);
+  color: #788caa;
 }
 
 @media (hover: hover) and (max-width: 1023px) {

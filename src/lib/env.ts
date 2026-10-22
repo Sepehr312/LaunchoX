@@ -54,6 +54,15 @@ export const envSchema = z
       )
       .pipe(z.array(imageOrigin)),
     NEXT_PUBLIC_SITE_NAME: requiredText,
+    CONTACT_PHONE: z
+      .string()
+      .trim()
+      .regex(/^$|^\+?[0-9 ()-]{7,24}$/, "شماره تماس معتبر نیست")
+      .default(""),
+    CONTACT_EMAIL: z
+      .union([z.literal(""), z.email({ error: "ایمیل تماس معتبر نیست" })])
+      .default(""),
+    CONTACT_ADDRESS: z.string().trim().max(500).default(""),
     PAYMENT_PROVIDER: z.literal("fake", { error: "درگاه پرداخت معتبر نیست" }),
     SEED_ADMIN_EMAIL: z.email({ error: "ایمیل ادمین معتبر نیست" }).optional(),
     SEED_ADMIN_PASSWORD: z

@@ -1,12 +1,12 @@
 .section {
-  --product-blue: light-dark(#1556a5, #79caff);
-  --product-ink: light-dark(#162f70, #e4f4ff);
+  --product-blue: #1556a5;
+  --product-ink: #162f70;
   max-inline-size: 1560px;
   margin-inline: auto;
   padding: 24px 16px 28px;
   background: radial-gradient(
     ellipse at 50% 100%,
-    light-dark(rgb(209 235 255 / 42%), rgb(35 101 145 / 12%)),
+    rgb(209 235 255 / 42%),
     transparent 75%
   );
 }
@@ -20,18 +20,18 @@
 .panel {
   min-inline-size: 0;
   padding: 14px 12px 12px;
-  border: 1px solid light-dark(rgb(255 255 255 / 92%), rgb(153 216 247 / 30%));
+  border: 1px solid rgb(255 255 255 / 92%);
   border-radius: 24px;
   background: linear-gradient(
     135deg,
-    light-dark(rgb(255 255 255 / 72%), rgb(83 145 183 / 19%)),
-    light-dark(rgb(221 242 255 / 40%), rgb(10 32 52 / 58%))
+    rgb(255 255 255 / 72%),
+    rgb(221 242 255 / 40%)
   );
   box-shadow:
-    inset 0 1px 0 light-dark(#fff, rgb(218 243 255 / 15%)),
-    inset 0 -1px 0 light-dark(rgb(173 214 242 / 25%), rgb(63 131 175 / 12%)),
-    0 8px 18px light-dark(rgb(63 123 169 / 7%), rgb(0 0 0 / 15%)),
-    0 24px 54px -14px light-dark(rgb(43 109 159 / 22%), rgb(0 0 0 / 48%));
+    inset 0 1px 0 #fff,
+    inset 0 -1px 0 rgb(173 214 242 / 25%),
+    0 8px 18px rgb(63 123 169 / 7%),
+    0 24px 54px -14px rgb(43 109 159 / 22%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
   backdrop-filter: blur(24px) saturate(150%);
 }
@@ -50,14 +50,10 @@
   position: relative;
   min-inline-size: 0;
   padding: 10px;
-  border: 1px solid light-dark(#e0edfd, #2c4c66);
+  border: 1px solid #e0edfd;
   border-radius: 13px;
-  background: linear-gradient(
-    155deg,
-    light-dark(#fff, #102b3e),
-    light-dark(#f8fcff, #0b2032)
-  );
-  box-shadow: 0 3px 12px light-dark(rgb(63 130 193 / 4%), rgb(0 0 0 / 16%));
+  background: linear-gradient(155deg, #fff, #f8fcff);
+  box-shadow: 0 3px 12px rgb(63 130 193 / 4%);
 }
 .cardTop {
   position: absolute;
@@ -86,11 +82,11 @@
   block-size: 30px;
   margin-block-start: -5px;
   margin-inline-end: -5px;
-  color: light-dark(#3b5194, #a3d7ff);
+  color: #3b5194;
   pointer-events: auto;
 }
 .favorite[aria-pressed="true"] {
-  color: light-dark(#d32e50, #ff9db2);
+  color: #d32e50;
 }
 .body {
   display: grid;
@@ -167,7 +163,7 @@
   inset-block-end: 4px;
   block-size: 9px;
   border-radius: 50%;
-  background: light-dark(rgb(41 65 85 / 16%), rgb(0 0 0 / 38%));
+  background: rgb(41 65 85 / 16%);
   filter: blur(3px);
   z-index: -1;
 }
@@ -195,11 +191,11 @@
   white-space: nowrap;
 }
 .cart {
-  background: light-dark(#e8f4ff, #173f5b);
-  color: light-dark(#2188ff, #78ccff);
+  background: #e8f4ff;
+  color: #2188ff;
 }
 .cart[aria-pressed="true"] {
-  background: light-dark(#d1eaff, #205577);
+  background: #d1eaff;
 }
 .status {
   position: absolute;
@@ -280,26 +276,17 @@
 @media (hover: hover) {
   .favorite:hover,
   .cart:hover {
-    background: light-dark(#d7eeff, #214a66);
+    background: #d7eeff;
   }
 }
-
-.section[data-theme="light"],
-.card[data-theme="light"] {
-  color-scheme: light;
-}
-.section[data-theme="dark"],
-.card[data-theme="dark"] {
-  color-scheme: dark;
-}
 .card {
-  --product-blue: light-dark(#1556a5, #79caff);
-  --product-ink: light-dark(#162f70, #e4f4ff);
+  --product-blue: #1556a5;
+  --product-ink: #162f70;
   block-size: 100%;
 }
 .specs dt,
 .feedback {
-  color: light-dark(#526e82, #a8c2d2);
+  color: #526e82;
 }
 .info h3,
 .model,
@@ -329,7 +316,7 @@
   font-size: 11px;
 }
 .prices del {
-  color: light-dark(#526e82, #a8c2d2);
+  color: #526e82;
 }
 .cart:disabled {
   cursor: not-allowed;

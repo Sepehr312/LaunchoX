@@ -6,16 +6,16 @@
 .panel {
   min-inline-size: 0;
   padding: 10px;
-  border: 1px solid light-dark(rgb(255 255 255 / 80%), rgb(168 220 246 / 24%));
+  border: 1px solid rgb(255 255 255 / 80%);
   border-radius: 18px;
   background: linear-gradient(
     135deg,
-    light-dark(rgb(255 255 255 / 60%), rgb(125 197 230 / 14%)),
-    light-dark(rgb(226 244 255 / 22%), rgb(10 32 50 / 30%))
+    rgb(255 255 255 / 60%),
+    rgb(226 244 255 / 22%)
   );
   box-shadow:
-    inset 0 1px 0 light-dark(rgb(255 255 255 / 92%), rgb(219 244 255 / 16%)),
-    0 10px 32px light-dark(rgb(38 113 194 / 8%), rgb(0 0 0 / 20%));
+    inset 0 1px 0 rgb(255 255 255 / 92%),
+    0 10px 32px rgb(38 113 194 / 8%);
   -webkit-backdrop-filter: blur(22px) saturate(145%);
   backdrop-filter: blur(22px) saturate(145%);
 }
@@ -30,7 +30,7 @@
 }
 
 .heading h2 {
-  color: light-dark(#102b63, #edf9ff);
+  color: #102b63;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.6;
@@ -42,7 +42,7 @@
   align-items: center;
   gap: 4px;
   min-block-size: 32px;
-  color: light-dark(#1683ff, #64b1ff);
+  color: #1683ff;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -60,13 +60,13 @@
   place-items: center;
   inline-size: 44px;
   block-size: 44px;
-  border: 1px solid light-dark(rgb(255 255 255 / 90%), rgb(181 229 250 / 35%));
+  border: 1px solid rgb(255 255 255 / 90%);
   border-radius: 50%;
-  background: light-dark(rgb(248 253 255 / 80%), rgb(14 43 62 / 82%));
+  background: rgb(248 253 255 / 80%);
   color: var(--f-ink);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 20%),
-    0 4px 16px light-dark(rgb(32 100 145 / 18%), rgb(0 0 0 / 30%));
+    0 4px 16px rgb(32 100 145 / 18%);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   transform: translateY(-50%);
@@ -96,7 +96,7 @@
 
 @media (hover: hover) {
   .scrollButton:not(:disabled):hover {
-    background: light-dark(rgb(255 255 255 / 96%), rgb(27 66 89 / 96%));
+    background: rgb(255 255 255 / 96%);
     box-shadow: 0 6px 20px rgb(38 113 194 / 24%);
   }
 }
@@ -138,15 +138,15 @@
   inline-size: 100%;
   block-size: 145px;
   padding: 10px;
-  border: 1px solid light-dark(#dceaff, #31516c);
+  border: 1px solid #dceaff;
   border-radius: 12px;
   background: linear-gradient(
     145deg,
-    light-dark(rgb(255 255 255 / 46%), rgb(146 208 235 / 12%)),
-    light-dark(rgb(255 255 255 / 16%), rgb(16 43 63 / 20%))
+    rgb(255 255 255 / 46%),
+    rgb(255 255 255 / 16%)
   );
   box-shadow:
-    inset 0 1px 0 light-dark(rgb(255 255 255 / 80%), rgb(219 244 255 / 12%)),
+    inset 0 1px 0 rgb(255 255 255 / 80%),
     0 3px 10px rgb(38 113 194 / 6%);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -177,7 +177,7 @@
   align-items: center;
   justify-content: center;
   min-inline-size: 0;
-  color: light-dark(#102b63, #edf9ff);
+  color: #102b63;
   font-size: 12px;
   font-weight: 700;
   line-height: 14px;

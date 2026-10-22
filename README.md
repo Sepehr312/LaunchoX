@@ -167,6 +167,10 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- The owner-approved PR #14 integration combines maintenance commit `57c4f03` with main at `48b8676`, preserving the completed tasks 1–11 and the approved image-upload lifecycle. Integration details and validation are recorded in [the maintenance report](docs/MAINTENANCE-12-17.md).
+- Storefront production components live under `src/components/store/frostic`; the former category path re-exports the database-backed component for compatibility. Light mode is unconditional. Official footer contacts are optional validated `CONTACT_PHONE`, `CONTACT_EMAIL` and `CONTACT_ADDRESS` settings; empty values are omitted.
+- The owner's approved PR #14 integration removes dark mode and supersedes the older automatic dark-mode requirement in SPEC section 9.
+
 - Task 8: Category is the only runtime source for category names, slugs, images, descriptions, activity and ordering. Inactive categories leave public directories and routes, and explicit category filters return no products. Their active products remain available in general/brand catalogs and detail pages; category breadcrumbs become plain text. Product.category ObjectId references, Brand behavior and transactional image writes are preserved.
 - Category routes and incremental loads resolve the current active slug; old or deleted slugs return 404 (or a failed incremental request) without redirect history. Category lists are memoized only within the React server render, and existing admin layout invalidation remains in place. No migration is executed for this change.
 
@@ -213,7 +217,7 @@ npm run images:cleanup -- --apply --limit 50
 
 - The approved calm admin dashboard and product-list mockups extend step 11 using the existing light ice/blue palette and live data. Recent orders and low stock share desktop columns and stack on mobile; wide tables scroll inside their own region. Product brands use the existing resolved Brand attribute (with legacy fallback), active switches stay in the status column, and search, numbered pagination, edit and confirmed deletion reuse existing actions. Preview figures are never substituted for database values.
 
-- The requested admin fixes extend step 11 without changing its presentation: selecting an existing image preview uploads PNG/JPEG/WebP/GIF files up to 5 MiB; MongoDB stores the bytes and `/api/images/[id]` serves immutable public URLs, avoiding a new storage provider or ephemeral local files. Successful product/category/brand saves return to their list, and table surfaces support native touch scrolling and mouse dragging. Category deletion also checks legacy string references and never deletes linked products. This explicitly supersedes the earlier image-upload exclusion; unused uploads are retained for now.
+- The requested admin fixes extend step 11 without changing its presentation: selecting an existing image preview uploads PNG/JPEG/WebP/GIF files up to 5 MiB; MongoDB stores the bytes and `/api/images/[id]` serves immutable public URLs, avoiding a new storage provider or ephemeral local files. Successful product/category/brand saves return to their list, and table surfaces support native touch scrolling and mouse dragging. Category deletion also checks legacy string references and never deletes linked products. Upload is owner-approved; the current security policy, transactional image references and operator-only cleanup lifecycle are documented above and remain authoritative.
 
 
 - Shared password visibility controls retain input focus during pointer activation, use a minimum 44px touch target and 16px input text, and sit outside field labels to keep mobile taps and keyboard activation consistent across login, registration and password changes.
@@ -269,7 +273,7 @@ npm run images:cleanup -- --apply --limit 50
 - Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The historical sample definitions live in scripts/catalog-categories.ts and are used only by seed/migration scripts; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
 
 
-- The approved Arctic footer is shared by the storefront and `/test`; informational destinations use accessible local dialogs, the storefront buying guide links to the homepage section.
+- The Arctic footer is shared by storefront routes; informational destinations use accessible local dialogs and the buying guide links to the homepage section. Official contact values come from central configuration only.
 
 - Brand, price, capacity, and energy filters use independent native disclosures, initially collapsed in desktop and mobile panels; collapsing a section preserves its selected filters and supports keyboard controls. Product status switches always remain visible.
 
@@ -303,7 +307,7 @@ npm run images:cleanup -- --apply --limit 50
 
 - راهنمای مشترک طراحی صفحات فروشگاه یخچال خانگی در [docs/UI-GUIDE.md](docs/UI-GUIDE.md) ثبت شده است؛ پس‌زمینه‌های روز/شب تأییدشده و عکس منتخب یخچال در `docs/assets/` نگه‌داری می‌شوند. ذخیرهٔ این مراجع به معنی پیاده‌سازی در سایت نیست.
 
-- The previous `/test` experiments were removed at the user's request. A new standalone `/test` page is reserved for design previews; approved designs are promoted to the relevant project pages only upon the user's request.
+- Design experiments have been retired. Approved storefront components live in `src/components/store/frostic/`; production modules do not import preview components or fixtures. Legacy category and light-only header adapters and product fixtures remain solely for existing tests.
 
 - حداقل Node در SPEC و `package.json` برابر 20.19 باقی مانده است؛ برای سازگاری با Vitest فعلی، راه‌اندازی با Node.js 24 توصیه می‌شود.
 - کاتالوگ seed با حفظ نامک‌ها و قرارداد پنج دسته/۲۴ محصول به فروشگاه سرمایشی تبدیل شده است. تصاویر محلی و Hero روشن/تیره در `public/images` نگه‌داری می‌شوند؛ Hero دادهٔ نمایشی داخل کامپوننت است و مدل مدیریتی مستقل ندارد.

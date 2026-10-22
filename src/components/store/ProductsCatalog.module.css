@@ -1,14 +1,13 @@
 .page {
-  --floating-border: light-dark(rgb(255 255 255 / 85%), rgb(164 220 245 / 20%));
+  --floating-border: rgb(255 255 255 / 85%);
   --floating-surface: linear-gradient(
     120deg,
-    light-dark(rgb(255 255 255 / 64%), rgb(28 62 83 / 46%)),
-    light-dark(rgb(244 252 255 / 36%), rgb(7 26 43 / 38%))
+    rgb(255 255 255 / 64%),
+    rgb(244 252 255 / 36%)
   );
   --floating-shadow:
-    inset 0 1px 0 light-dark(rgb(255 255 255 / 95%), rgb(208 244 255 / 12%)),
-    0 4px 10px -4px light-dark(rgb(45 96 128 / 12%), rgb(0 0 0 / 22%)),
-    0 20px 46px -16px light-dark(rgb(50 104 142 / 24%), rgb(0 0 0 / 50%));
+    inset 0 1px 0 rgb(255 255 255 / 95%), 0 4px 10px -4px rgb(45 96 128 / 12%),
+    0 20px 46px -16px rgb(50 104 142 / 24%);
   min-block-size: 100vh;
   background: transparent;
 }
@@ -68,7 +67,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: light-dark(#287bb6, #70cfff);
+  color: #287bb6;
   font-size: 12px;
 }
 .titleRow {
@@ -101,7 +100,7 @@
   display: none;
   inline-size: 100px;
   block-size: 100px;
-  color: light-dark(#a0cde6, #22516b);
+  color: #a0cde6;
   stroke-width: 1;
   margin-inline-end: 24px;
 }
@@ -196,7 +195,7 @@
   display: flex;
   gap: 5px;
   align-items: center;
-  color: light-dark(#1767a8, #82d8fa);
+  color: #1767a8;
 }
 .grid {
   display: grid;
@@ -225,12 +224,12 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  color: light-dark(#1767a8, #82d8fa);
+  color: #1767a8;
   font-size: 11px;
   min-block-size: 36px;
   padding-inline: 8px;
   border-radius: 9px;
-  background: light-dark(rgb(255 255 255 / 40%), rgb(125 206 245 / 5%));
+  background: rgb(255 255 255 / 40%);
 }
 .filterSection {
   padding-block-end: 12px;
@@ -297,12 +296,12 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .filters .choice {
-  color: light-dark(#32546c, #bad3e3);
+  color: #32546c;
   padding: 9px;
   gap: 7px;
-  border: 1px solid light-dark(rgb(143 191 218 / 25%), rgb(137 201 234 / 13%));
+  border: 1px solid rgb(143 191 218 / 25%);
   border-radius: 11px;
-  background: light-dark(rgb(255 255 255 / 35%), rgb(135 202 237 / 3%));
+  background: rgb(255 255 255 / 35%);
   font-size: 11px;
   transition:
     background 160ms ease,
@@ -310,11 +309,10 @@
     color 160ms ease;
 }
 .choice:has(input:checked) {
-  color: light-dark(#15547e, #b4ebff);
-  border-color: light-dark(rgb(66 154 208 / 52%), rgb(97 203 242 / 45%));
-  background: light-dark(rgb(203 235 255 / 62%), rgb(48 143 187 / 18%));
-  box-shadow: inset 0 1px 0
-    light-dark(rgb(255 255 255 / 80%), rgb(145 222 255 / 6%));
+  color: #15547e;
+  border-color: rgb(66 154 208 / 52%);
+  background: rgb(203 235 255 / 62%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 80%);
 }
 .choice input {
   appearance: none;
@@ -322,14 +320,14 @@
   flex-shrink: 0;
   inline-size: 16px;
   block-size: 16px;
-  border: 1px solid light-dark(#709db6, #6d9ab4);
+  border: 1px solid #709db6;
   border-radius: 5px;
-  background: light-dark(rgb(255 255 255 / 65%), rgb(3 21 36 / 30%));
+  background: rgb(255 255 255 / 65%);
   cursor: pointer;
 }
 .choice input:checked {
-  border-color: light-dark(#2084b9, #68cef2);
-  background: light-dark(#2084b9, #68cef2);
+  border-color: #2084b9;
+  background: #2084b9;
 }
 .choice input[type="checkbox"]:checked::after {
   content: "";
@@ -338,7 +336,7 @@
   inset-inline-start: 5px;
   inline-size: 4px;
   block-size: 8px;
-  border: solid light-dark(#fff, #07334a);
+  border: solid #fff;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -346,7 +344,7 @@
   border-radius: 50%;
 }
 .choice input[type="radio"]:checked {
-  box-shadow: inset 0 0 0 3px light-dark(#edf9ff, #123449);
+  box-shadow: inset 0 0 0 3px #edf9ff;
 }
 .energyOptions .choice {
   justify-content: center;
@@ -366,7 +364,7 @@
   padding: 8px 10px;
   border: 1px solid var(--f-border);
   border-radius: 10px;
-  background: light-dark(rgb(255 255 255 / 36%), rgb(3 21 36 / 15%));
+  background: rgb(255 255 255 / 36%);
   font-size: 11px;
 }
 .filters input[type="range"] {
@@ -378,8 +376,8 @@
   direction: rtl;
   background: linear-gradient(
     to left,
-    light-dark(#3699cb, #62cbed) var(--range-progress),
-    light-dark(#c9e2ee, #284b60) var(--range-progress)
+    #3699cb var(--range-progress),
+    #c9e2ee var(--range-progress)
   );
   cursor: pointer;
   touch-action: pan-y;
@@ -388,18 +386,18 @@
   appearance: none;
   inline-size: 18px;
   block-size: 18px;
-  border: 4px solid light-dark(#fff, #d3f4ff);
+  border: 4px solid #fff;
   border-radius: 50%;
-  background: light-dark(#288fc2, #36a7d2);
-  box-shadow: 0 2px 9px light-dark(rgb(33 118 163 / 24%), rgb(0 0 0 / 30%));
+  background: #288fc2;
+  box-shadow: 0 2px 9px rgb(33 118 163 / 24%);
 }
 .filters input[type="range"]::-moz-range-thumb {
   inline-size: 10px;
   block-size: 10px;
-  border: 4px solid light-dark(#fff, #d3f4ff);
+  border: 4px solid #fff;
   border-radius: 50%;
-  background: light-dark(#288fc2, #36a7d2);
-  box-shadow: 0 2px 9px light-dark(rgb(33 118 163 / 24%), rgb(0 0 0 / 30%));
+  background: #288fc2;
+  box-shadow: 0 2px 9px rgb(33 118 163 / 24%);
 }
 .filters output {
   margin-inline-start: auto;
@@ -408,7 +406,7 @@
   font-weight: 600;
 }
 .filters .switchRow {
-  color: light-dark(#32546c, #bad3e3);
+  color: #32546c;
   gap: 8px;
   font-size: 11px;
 }
@@ -420,9 +418,9 @@
   margin-inline-start: auto;
   inline-size: 34px;
   block-size: 20px;
-  border: 1px solid light-dark(#b6d1df, #375d73);
+  border: 1px solid #b6d1df;
   border-radius: 99px;
-  background: light-dark(#d5e5ed, #1b3c51);
+  background: #d5e5ed;
   cursor: pointer;
   transition: background 160ms ease;
 }
@@ -434,12 +432,12 @@
   inline-size: 12px;
   block-size: 12px;
   border-radius: 50%;
-  background: light-dark(#fff, #abc6d7);
+  background: #fff;
   box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
   transition: inset-inline-start 160ms ease;
 }
 .switchRow input:checked {
-  background: light-dark(#2b93c4, #53bddf);
+  background: #2b93c4;
   border-color: transparent;
 }
 .switchRow input:checked::before {
@@ -448,7 +446,7 @@
 }
 @media (hover: hover) {
   .filters .choice:hover {
-    border-color: light-dark(#7cb9d9, #4389ac);
+    border-color: #7cb9d9;
   }
   .reset:hover {
     background: var(--f-wash);
@@ -489,7 +487,7 @@
   min-block-size: 44px;
   border: 1px solid var(--f-border);
   border-radius: 12px;
-  background: light-dark(#174c75, #165675);
+  background: #174c75;
   color: #f0fbff;
   padding: 10px 20px;
   font-size: 13px;
@@ -583,24 +581,20 @@
   block-size: 44px;
   border: 1px solid var(--f-border);
   border-radius: 12px;
-  background: light-dark(rgb(255 255 255 / 46%), rgb(125 206 245 / 9%));
+  background: rgb(255 255 255 / 46%);
 }
 .drawerFooter {
   padding: 14px 18px max(14px, env(safe-area-inset-bottom));
   border-block-start: 1px solid var(--f-border);
-  background: light-dark(rgb(225 242 251 / 88%), rgb(10 34 53 / 90%));
+  background: rgb(225 242 251 / 88%);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
 .drawerFooter button {
   inline-size: 100%;
   min-block-size: 48px;
-  border: 1px solid light-dark(rgb(255 255 255 / 65%), rgb(123 216 250 / 35%));
-  background: linear-gradient(
-    135deg,
-    light-dark(#24688f, #216787),
-    light-dark(#143e65, #12425e)
-  );
+  border: 1px solid rgb(255 255 255 / 65%);
+  background: linear-gradient(135deg, #24688f, #143e65);
   color: #fff;
   font-size: 13px;
   font-weight: 700;
