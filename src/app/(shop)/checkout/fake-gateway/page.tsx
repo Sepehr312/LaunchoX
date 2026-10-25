@@ -54,9 +54,15 @@ export default async function FakeGatewayPage({
           </div>
         </dl>
         {order.status === "pending" && order.payment.status === "unpaid" ? (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <a href={callback + "OK"} className="checkout-link">
               پرداخت موفق
+            </a>
+            <a
+              href={callback + "COD"}
+              className="checkout-link checkout-link-secondary"
+            >
+              پرداخت در محل
             </a>
             <a
               href={callback + "NOK"}

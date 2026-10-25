@@ -31,3 +31,5 @@ export interface ProductAttribute {
   key: string;
   value: string;
 }
+
+export type PaymentMethod = "online" | "cash_on_delivery";

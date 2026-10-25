@@ -1,0 +1,40 @@
+.notice {
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.error {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 4%, var(--surface));
+}
+.success {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 4%, var(--surface));
+}
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+}
+.stepper button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  color: var(--primary);
+  background: var(--surface);
+  font-size: 1.2rem;
+}
+.stepper button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.stepper output {
+  min-width: 2.5rem;
+  text-align: center;
+  font-weight: 700;
+}

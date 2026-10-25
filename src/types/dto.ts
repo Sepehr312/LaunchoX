@@ -2,6 +2,7 @@ import type {
   AddressFields,
   OrderStatus,
   PaymentStatus,
+  PaymentMethod,
   ProductAttribute,
   UserRole,
 } from "@/types/domain";
@@ -90,6 +91,7 @@ export interface OrderItemDTO extends TimestampsDTO {
 }
 export interface PaymentDTO extends TimestampsDTO {
   status: PaymentStatus;
+  method?: PaymentMethod;
   provider?: string;
   authority?: string;
   refId?: string;

@@ -32,7 +32,7 @@ export const paymentReferenceSchema = z
   .max(200, "شناسه بیش از حد طولانی است");
 export const paymentCallbackSchema = z.object({
   authority: authoritySchema,
-  status: z.enum(["OK", "NOK"], { error: "وضعیت پرداخت معتبر نیست" }),
+  status: z.enum(["OK", "NOK", "COD"], { error: "وضعیت پرداخت معتبر نیست" }),
 });
 export const orderNumberInput = z.object({
   orderNumber: z.string().regex(/^LX-\d{6,}$/, "شمارهٔ سفارش معتبر نیست"),
