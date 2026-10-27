@@ -167,6 +167,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- The approved customer dashboard lives at `/test/dashboard` inside the shop route group and uses the production StoreHeader/StoreFooter. Its server-rendered data is scoped to the authenticated customer; the development-only `npx tsx --conditions=react-server --env-file=.env.local scripts/seed-dashboard-customer.ts` provisions a dedicated customer with eight persisted orders through existing checkout/status services, keeps random credentials in ignored `tmp/dashboard-customer.json`, and never resets the catalog or existing accounts.
+
 - Authentication loading on production and preview routes reuses PremiumAuthLayout and PremiumAuthHeading; only form controls use a scoped, reduced-motion-aware skeleton matched to the approved form geometry.
 
 - Production `/login` and `/register` reuse the approved test pages' PremiumAuthLayout and premium AuthForm without a legacy layout wrapper. AuthForm linkMode keeps production navigation on `/login` and `/register` while previews retain their test links; authentication actions, validation, session handling and redirects are unchanged.

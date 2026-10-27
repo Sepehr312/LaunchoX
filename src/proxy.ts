@@ -16,7 +16,8 @@ const handleRequest: (
   event: NextFetchEvent,
 ) => Promise<NextResponse> = async (request) => {
   const { pathname, search } = request.nextUrl;
-  const protectedPath = /^\/(?:account|admin|checkout)(?:\/|$)/.test(pathname);
+  const protectedPath =
+    /^\/(?:account|admin|checkout|test\/dashboard)(?:\/|$)/.test(pathname);
   if (protectedPath && !request.auth?.user) {
     const url = new URL("/login", request.nextUrl);
     url.searchParams.set("callbackUrl", pathname + search);
@@ -73,5 +74,6 @@ export const config = {
     "/checkout/:path*",
     "/login",
     "/register",
+    "/test/dashboard/:path*",
   ],
 };
