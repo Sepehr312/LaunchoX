@@ -167,6 +167,16 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Production `/login` and `/register` reuse the approved test pages' PremiumAuthLayout and premium AuthForm without a legacy layout wrapper. AuthForm linkMode keeps production navigation on `/login` and `/register` while previews retain their test links; authentication actions, validation, session handling and redirects are unchanged.
+
+- The premium signup password checklist uses a scoped RTL two-column grid (one column below 360px), four independent live conditions and Lucide Circle/Snowflake status icons. Other PasswordGuidance consumers and the backend's Unicode letter/number rules and 72-byte password limit remain unchanged.
+
+- Both `/test/signup` and `/test/login` use PremiumAuthLayout, AuthForm and `premium-auth.module.css`. The existing signup CSS values and responsive rules are the single source for their shared appearance; the mode changes content and fields only. Signup retains native page scrolling and the owner's removal of terms acceptance.
+
+- The `/test/signup` preview shares the premium login layout, AuthForm, Input, PasswordInput and Button. It uses the existing email/password registration action and password policy; mobile and Google registration remain unsupported. Terms acceptance and its preview page were removed at the owner's request; the form uses the standard registration schema and action directly. Its approved palette is shared by both test authentication previews.
+
+- The isolated `/test/login` Arctic preview reuses AuthForm and the existing email/password action. Mobile login, Google sign-in and password recovery are omitted because the backend does not support them; the remember option retains only the email in sessionStorage until the tab closes. Login uses the exact signup presentation; production `/login` and `/register` now share the approved preview presentation.
+
 - The owner-approved PR #14 integration combines maintenance commit `57c4f03` with main at `48b8676`, preserving the completed tasks 1–11 and the approved image-upload lifecycle. Integration details and validation are recorded in [the maintenance report](docs/MAINTENANCE-12-17.md).
 - Storefront production components live under `src/components/store/frostic`; the former category path re-exports the database-backed component for compatibility. Light mode is unconditional. Official footer contacts are optional validated `CONTACT_PHONE`, `CONTACT_EMAIL` and `CONTACT_ADDRESS` settings; empty values are omitted.
 - The owner's approved PR #14 integration removes dark mode and supersedes the older automatic dark-mode requirement in SPEC section 9.
