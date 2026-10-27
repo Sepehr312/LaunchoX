@@ -504,6 +504,68 @@
   background: #eef7ff;
 }
 
+.loadingForm {
+  display: grid;
+  gap: 18px;
+}
+
+.skeleton {
+  display: block;
+  background: color-mix(in srgb, var(--border) 65%, #fbfcff);
+  animation: auth-loading-pulse 2.8s ease-in-out infinite;
+}
+
+.loadingLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.loadingLabel > span {
+  width: fit-content;
+  border-radius: 4px;
+  color: transparent;
+  clip-path: inset(4px 0 round 4px);
+}
+
+.loadingInput {
+  height: 52px;
+  border: 1px solid #dce6f3;
+  border-radius: 12px;
+}
+
+.loadingOptions {
+  display: flex;
+  min-height: 44px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loadingSubmit {
+  height: 54px;
+  border-radius: 13px;
+}
+
+.loadingFooter {
+  margin-top: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+@keyframes auth-loading-pulse {
+  50% {
+    background-color: #fbfcff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
 @media (max-width: 1023px) {
   .shared::before {
     display: none;

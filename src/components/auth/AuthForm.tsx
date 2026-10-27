@@ -8,6 +8,7 @@ import {
   Mail,
   UserRound,
 } from "lucide-react";
+import { PremiumAuthHeading } from "@/components/auth/PremiumAuthHeading";
 import { loginAction, registerAction } from "@/actions/auth.actions";
 import { loginSchema, registerSchema } from "@/validations/auth";
 import { Button } from "@/components/ui/Button";
@@ -18,8 +19,6 @@ import { SnowflakeIcon, ShieldIcon } from "@/components/store/Icons";
 import styles from "@/components/customer/customer.module.css";
 import premiumStyles from "@/components/auth/premium-auth.module.css";
 import type { AuthActionState } from "@/types/auth";
-const premiumSignupDescription =
-  "با ساخت حساب، خرید و پیگیری سفارش‌ها آسان‌تر می‌شود.";
 
 function subscribeToStorage(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -116,39 +115,20 @@ export function AuthForm({
           <span>لانچ‌اوکس</span>
         </Link>
       )}
-      <h1 className="mt-8 text-2xl font-bold">
-        {register
-          ? premium
-            ? "ایجاد حساب کاربری"
-            : "حساب خود را بسازید"
-          : premium
-            ? "ورود به حساب کاربری"
-            : "خوش آمدید"}
-      </h1>
-      <p className="mt-3 mb-8 text-sm leading-7 text-muted">
-        {register ? (
-          premium ? (
-            premiumSignupDescription
-          ) : (
-            "برای مدیریت سفارش‌ها و آدرس‌ها، ثبت‌نام کنید."
-          )
-        ) : premium ? (
-          <span className="grid">
-            {/* Keep the existing signup copy as the intrinsic width reference on small screens. */}
-            <span
-              aria-hidden="true"
-              className="invisible col-start-1 row-start-1 h-0 select-none"
-            >
-              {premiumSignupDescription}
-            </span>
-            <span className="col-start-1 row-start-1">
-              خوش آمدید! برای ادامه خرید وارد حساب خود شوید.
-            </span>
-          </span>
-        ) : (
-          "برای ورود به فضای شخصی خود، اطلاعات حسابتان را وارد کنید."
-        )}
-      </p>
+      {premium ? (
+        <PremiumAuthHeading register={register} />
+      ) : (
+        <>
+          <h1 className="mt-8 text-2xl font-bold">
+            {register ? "حساب خود را بسازید" : "خوش آمدید"}
+          </h1>
+          <p className="mt-3 mb-8 text-sm leading-7 text-muted">
+            {register
+              ? "برای مدیریت سفارش‌ها و آدرس‌ها، ثبت‌نام کنید."
+              : "برای ورود به فضای شخصی خود، اطلاعات حسابتان را وارد کنید."}
+          </p>
+        </>
+      )}
       <form
         action={action}
         noValidate

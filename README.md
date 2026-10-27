@@ -167,6 +167,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Authentication loading on production and preview routes reuses PremiumAuthLayout and PremiumAuthHeading; only form controls use a scoped, reduced-motion-aware skeleton matched to the approved form geometry.
+
 - Production `/login` and `/register` reuse the approved test pages' PremiumAuthLayout and premium AuthForm without a legacy layout wrapper. AuthForm linkMode keeps production navigation on `/login` and `/register` while previews retain their test links; authentication actions, validation, session handling and redirects are unchanged.
 
 - The premium signup password checklist uses a scoped RTL two-column grid (one column below 360px), four independent live conditions and Lucide Circle/Snowflake status icons. Other PasswordGuidance consumers and the backend's Unicode letter/number rules and 72-byte password limit remain unchanged.

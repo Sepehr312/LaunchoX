@@ -1,7 +1,5 @@
+import { AuthLoading } from "@/components/auth/AuthLoading";
+
 export default function Loading() {
-  return (
-    <main className="page-state" role="status">
-      در حال آماده‌سازی صفحهٔ ورود…
-    </main>
-  );
+  return <AuthLoading />;
 }
