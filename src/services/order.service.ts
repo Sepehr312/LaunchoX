@@ -360,6 +360,40 @@ async function listOrders(
 export async function listOrdersForUser(userId: string, input: unknown = {}) {
   return listOrders({ user: objectIdSchema.parse(userId) }, input);
 }
+
+export async function getCustomerDashboardOrders(userId: string) {
+  const user = objectIdSchema.parse(userId);
+  await connectDB();
+  await expireStaleOrders();
+  // A single facet keeps the counters and latest order on the same read.
+  const [result] = await Order.aggregate<{
+    counts: { _id: OrderStatus; count: number }[];
+    latest: IOrder[];
+  }>([
+    { $match: { user: new Types.ObjectId(user) } },
+    {
+      $facet: {
+        counts: [{ $group: { _id: "$status", count: { $sum: 1 } } }],
+        latest: [{ $sort: { createdAt: -1, _id: -1 } }, { $limit: 1 }],
+      },
+    },
+  ]);
+  const counts: Record<OrderStatus, number> = {
+    pending: 0,
+    processing: 0,
+    shipped: 0,
+    delivered: 0,
+    cancelled: 0,
+  };
+  for (const group of result?.counts ?? []) {
+    if (Object.hasOwn(counts, group._id)) counts[group._id] = group.count;
+  }
+  return {
+    counts,
+    total: Object.values(counts).reduce((sum, count) => sum + count, 0),
+    latest: result?.latest[0] ? (toDTO(result.latest[0]) as OrderDTO) : null,
+  };
+}
 export async function listOrdersAdmin(input: unknown = {}) {
   const query = adminOrderQuerySchema.parse(input);
   await expireStaleOrders();
