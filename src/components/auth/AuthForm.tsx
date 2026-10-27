@@ -1,6 +1,14 @@
 "use client";
 import { useActionState, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import {
+  ArrowLeft,
+  LoaderCircle,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from "lucide-react";
+import { PremiumAuthHeading } from "@/components/auth/PremiumAuthHeading";
 import { loginAction, registerAction } from "@/actions/auth.actions";
 import { loginSchema, registerSchema } from "@/validations/auth";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +17,9 @@ import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { PasswordInput } from "@/components/customer/PasswordInput";
 import { SnowflakeIcon, ShieldIcon } from "@/components/store/Icons";
 import styles from "@/components/customer/customer.module.css";
+import premiumStyles from "@/components/auth/premium-auth.module.css";
 import type { AuthActionState } from "@/types/auth";
+
 function subscribeToStorage(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener("launchox:remember-email", callback);
@@ -42,12 +52,17 @@ export function AuthForm({
   mode,
   callbackUrl,
   initialError,
+  appearance = "default",
+  linkMode = "production",
 }: {
   mode: "login" | "register";
   callbackUrl: string;
   initialError?: string;
+  appearance?: "default" | "premium";
+  linkMode?: "production" | "preview";
 }) {
   const register = mode === "register";
+  const premium = appearance === "premium";
   const [values, setValues] = useState<Record<string, string>>({});
   const [clientErrors, setClientErrors] = useState<Record<string, string[]>>(
     {},
@@ -93,25 +108,37 @@ export function AuthForm({
       : []),
   ];
   return (
-    <section className={styles.authCard}>
-      <Link href="/" className={styles.brand}>
-        <SnowflakeIcon />
-        <span>لانچ‌اوکس</span>
-      </Link>
-      <h1 className="mt-8 text-2xl font-bold">
-        {register ? "حساب خود را بسازید" : "خوش آمدید"}
-      </h1>
-      <p className="mt-3 mb-8 text-sm leading-7 text-muted">
-        {register
-          ? "برای مدیریت سفارش‌ها و آدرس‌ها، ثبت‌نام کنید."
-          : "برای ورود به فضای شخصی خود، اطلاعات حسابتان را وارد کنید."}
-      </p>
+    <section className={premium ? premiumStyles.card : styles.authCard}>
+      {!premium && (
+        <Link href="/" className={styles.brand}>
+          <SnowflakeIcon />
+          <span>لانچ‌اوکس</span>
+        </Link>
+      )}
+      {premium ? (
+        <PremiumAuthHeading register={register} />
+      ) : (
+        <>
+          <h1 className="mt-8 text-2xl font-bold">
+            {register ? "حساب خود را بسازید" : "خوش آمدید"}
+          </h1>
+          <p className="mt-3 mb-8 text-sm leading-7 text-muted">
+            {register
+              ? "برای مدیریت سفارش‌ها و آدرس‌ها، ثبت‌نام کنید."
+              : "برای ورود به فضای شخصی خود، اطلاعات حسابتان را وارد کنید."}
+          </p>
+        </>
+      )}
       <form
         action={action}
         noValidate
         aria-busy={pending}
         className="grid gap-5"
         onSubmit={(event) => {
+          if (pending) {
+            event.preventDefault();
+            return;
+          }
           const parsed = (register ? registerSchema : loginSchema).safeParse(
             Object.fromEntries(new FormData(event.currentTarget)),
           );
@@ -151,11 +178,15 @@ export function AuthForm({
             required: true,
             disabled: pending,
             "aria-invalid": Boolean(errors?.length),
-            "aria-describedby": errors?.length
-              ? `${field.name}-error`
-              : field.name === "password" && register
-                ? "password-hint"
-                : undefined,
+            "aria-describedby":
+              [
+                errors?.length ? `${field.name}-error` : "",
+                field.name === "password" && register && !premium
+                  ? "password-hint"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ") || undefined,
             onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
               setValues((current) => ({
                 ...current,
@@ -171,18 +202,58 @@ export function AuthForm({
           return (
             <div key={field.name} className="grid gap-2">
               <label htmlFor={field.name}>{field.label}</label>
-              {field.type === "password" ? (
-                <PasswordInput {...props} />
-              ) : (
-                <Input
-                  {...props}
-                  dir={field.name === "email" ? "ltr" : undefined}
-                  placeholder={
-                    field.name === "email" ? "name@example.com" : undefined
-                  }
-                />
-              )}
-              {field.name === "password" && register && (
+              <div className={premium ? premiumStyles.field : undefined}>
+                {premium &&
+                  (field.type === "password" ? (
+                    <LockKeyhole
+                      className={premiumStyles.fieldIcon}
+                      size={19}
+                      aria-hidden="true"
+                    />
+                  ) : field.name === "name" ? (
+                    <UserRound
+                      className={premiumStyles.fieldIcon}
+                      size={19}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Mail
+                      className={premiumStyles.fieldIcon}
+                      size={19}
+                      aria-hidden="true"
+                    />
+                  ))}
+                {field.type === "password" ? (
+                  <PasswordInput
+                    {...props}
+                    aria-label={field.label}
+                    placeholder={
+                      premium
+                        ? register
+                          ? field.name === "confirmPassword"
+                            ? "رمز عبور را دوباره وارد کنید"
+                            : "حداقل ۸ کاراکتر"
+                          : "رمز عبور خود را وارد کنید"
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <Input
+                    {...props}
+                    dir={field.name === "email" ? "ltr" : undefined}
+                    placeholder={
+                      field.name === "email"
+                        ? premium
+                          ? "example@email.com"
+                          : "name@example.com"
+                        : premium
+                          ? "نام کامل خود را وارد کنید"
+                          : undefined
+                    }
+                  />
+                )}
+              </div>
+              {field.name === "password" && register && !premium && (
                 <p id="password-hint" className="text-xs leading-6 text-muted">
                   حداقل ۸ کاراکتر، شامل یک حرف و یک عدد.
                 </p>
@@ -196,11 +267,24 @@ export function AuthForm({
                   {errors.join("؛ ")}
                 </p>
               ) : null}
+              {field.name === "confirmPassword" && premium && register && (
+                <PasswordGuidance
+                  appearance="premium"
+                  password={values.password ?? ""}
+                  confirmation={values.confirmPassword ?? ""}
+                />
+              )}
             </div>
           );
         })}
         {!register && (
-          <label className="flex items-center gap-2 text-sm">
+          <label
+            className={
+              premium
+                ? "flex min-h-11 flex-wrap items-center gap-2 text-sm"
+                : "flex items-center gap-2 text-sm"
+            }
+          >
             <input
               type="checkbox"
               checked={effectiveRemember}
@@ -216,7 +300,14 @@ export function AuthForm({
               className="size-4 min-h-0! accent-primary"
               disabled={pending}
             />
-            ایمیل را تا بسته‌شدن این تب نگه دار
+            {premium
+              ? "مرا به خاطر بسپار"
+              : "ایمیل را تا بسته‌شدن این تب نگه دار"}
+            {premium && (
+              <span className={premiumStyles.rememberHint}>
+                فقط ایمیل، تا بسته‌شدن این تب
+              </span>
+            )}
           </label>
         )}
         {(!state.ok || initialError) && (
@@ -224,29 +315,61 @@ export function AuthForm({
             {!state.ok ? state.error : initialError}
           </p>
         )}
-        {register && (
+        {register && !premium && (
           <PasswordGuidance
             password={values.password ?? ""}
             confirmation={values.confirmPassword ?? ""}
           />
         )}
-        <Button type="submit" disabled={pending} className="min-h-12 w-full">
-          {pending ? "در حال انجام…" : register ? "ساخت حساب کاربری" : "ورود"}
+        <Button
+          type="submit"
+          disabled={pending}
+          className={premium ? premiumStyles.submit : "min-h-12 w-full"}
+        >
+          {premium && pending && (
+            <LoaderCircle
+              className="motion-safe:animate-spin"
+              size={19}
+              aria-hidden="true"
+            />
+          )}
+          {pending
+            ? "در حال انجام…"
+            : register
+              ? premium
+                ? "ثبت‌نام"
+                : "ساخت حساب کاربری"
+              : "ورود"}
+          {premium && !pending && (
+            <ArrowLeft
+              className={premiumStyles.submitArrow}
+              size={20}
+              aria-hidden="true"
+            />
+          )}
         </Button>
       </form>
       <p className="mt-7 text-center text-sm text-muted">
-        {register ? "قبلاً ثبت‌نام کرده‌اید؟ " : "حساب ندارید؟ "}
+        {register
+          ? premium
+            ? "قبلاً حساب کاربری دارید؟ "
+            : "قبلاً ثبت‌نام کرده‌اید؟ "
+          : premium
+            ? "حساب کاربری ندارید؟ "
+            : "حساب ندارید؟ "}
         <Link
           className="font-semibold text-primary"
-          href={`${register ? "/login" : "/register"}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          href={`${linkMode === "preview" ? (register ? "/test/login" : "/test/signup") : register ? "/login" : "/register"}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
         >
           {register ? "وارد شوید" : "ثبت‌نام کنید"}
         </Link>
       </p>
-      <p className="mt-7 flex items-center justify-center gap-2 border-t border-border pt-5 text-xs text-muted">
-        <ShieldIcon className="size-4" />
-        ورود به حساب با ایمیل و رمز عبور
-      </p>
+      {!premium && (
+        <p className="mt-7 flex items-center justify-center gap-2 border-t border-border pt-5 text-xs text-muted">
+          <ShieldIcon className="size-4" />
+          ورود به حساب با ایمیل و رمز عبور
+        </p>
+      )}
     </section>
   );
 }

@@ -1,4 +1,5 @@
-import { PageLoading } from "@/components/ui/PageLoading";
+import { AuthLoading } from "@/components/auth/AuthLoading";
+
 export default function Loading() {
-  return <PageLoading title="در حال آماده‌سازی فرم…" view="form" />;
+  return <AuthLoading register />;
 }
