@@ -16,6 +16,7 @@ export interface IUser extends StoredDocument {
   email: string;
   mobile?: string;
   passwordHash: string;
+  sessionVersion: number;
   role: UserRole;
   addresses: IAddress[];
   isActive: boolean;
@@ -45,6 +46,12 @@ const userSchema = new Schema<IUser>(
       required: [true, "رمز عبور الزامی است"],
       select: false,
       match: [/^\$2[aby]\$12\$[./A-Za-z0-9]{53}$/, "هش رمز عبور معتبر نیست"],
+    },
+    sessionVersion: {
+      type: Number,
+      default: 0,
+      min: 0,
+      validate: Number.isSafeInteger,
     },
     role: {
       type: String,

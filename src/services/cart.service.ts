@@ -38,7 +38,7 @@ export async function getCart(owner: CartOwner): Promise<CartView> {
   const warnings: string[] = [];
   const items = (cart?.items ?? []).flatMap((item) => {
     const product = map.get(String(item.product));
-    if (!product || product.stock === 0) {
+    if (!product || product.stock === 0 || product.price === 0) {
       warnings.push("یک محصول ناموجود یا حذف‌شده از سبد کنار گذاشته شد");
       return [];
     }
@@ -76,6 +76,11 @@ async function changeItem(owner: CartOwner, input: unknown, add: boolean) {
     isActive: true,
   }).lean();
   if (!product) throw new AppError("محصول پیدا نشد", "NOT_FOUND");
+  if (product.price <= 0)
+    throw new AppError(
+      "قیمت این محصول نیاز به اصلاح فروشنده دارد",
+      "VALIDATION",
+    );
   if (!product.stock)
     throw new AppError("این محصول موجود نیست", "OUT_OF_STOCK");
   const maximum = Math.min(product.stock, 10);

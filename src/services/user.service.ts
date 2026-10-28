@@ -99,7 +99,10 @@ export async function changePassword(userId: string, input: unknown) {
     throw new AppError("رمز عبور فعلی صحیح نیست", "VALIDATION");
   const result = await User.updateOne(
     { _id: user._id, isActive: true, passwordHash: user.passwordHash },
-    { $set: { passwordHash: await hash(data.password, 12) } },
+    {
+      $set: { passwordHash: await hash(data.password, 12) },
+      $inc: { sessionVersion: 1 },
+    },
   );
   if (!result.modifiedCount)
     throw new AppError("رمز تغییر کرده است؛ دوباره تلاش کنید", "CONFLICT");

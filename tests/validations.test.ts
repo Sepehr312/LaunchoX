@@ -142,11 +142,11 @@ describe("product and query input", () => {
   ])("rejects invalid product %j", (patch) =>
     expectInvalid(productSchema, { ...productInput, ...patch }),
   );
-  it("accepts zero price and stock, eight images, and Persian slugs", () => {
+  it("accepts positive price, zero stock, eight images, and Persian slugs", () => {
     expect(
       productSchema.safeParse({
         ...productInput,
-        price: 0,
+        price: 1,
         stock: 0,
         images: Array(8).fill("https://example.com/a.png"),
       }).success,

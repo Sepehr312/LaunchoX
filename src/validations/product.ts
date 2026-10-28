@@ -19,7 +19,9 @@ export const productSchema = z
       .max(150, "عنوان باید حداکثر ۱۵۰ کاراکتر باشد"),
     slug: optionalField(slugSchema),
     description: requiredString,
-    price: moneySchema,
+    price: moneySchema.pipe(
+      z.number().positive("قیمت فروش باید بیشتر از صفر باشد"),
+    ),
     compareAtPrice: optionalField(moneySchema),
     stock: integerSchema(),
     sku: optionalField(requiredString),
