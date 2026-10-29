@@ -9,8 +9,16 @@ export async function getUserAccess(input: unknown) {
   const id = objectIdSchema.safeParse(input);
   if (!id.success) return null;
   await connectDB();
-  const user = await User.findById(id.data).select("role isActive").lean();
-  return user ? { role: user.role, isActive: user.isActive } : null;
+  const user = await User.findById(id.data)
+    .select("role isActive sessionVersion")
+    .lean();
+  return user
+    ? {
+        role: user.role,
+        isActive: user.isActive,
+        sessionVersion: user.sessionVersion ?? 0,
+      }
+    : null;
 }
 export async function authenticateUser(input: {
   email: string;
@@ -31,6 +39,7 @@ export async function authenticateUser(input: {
     name: user.name,
     email: user.email,
     role: user.role,
+    ...(user.sessionVersion ? { sessionVersion: user.sessionVersion } : {}),
   };
 }
 

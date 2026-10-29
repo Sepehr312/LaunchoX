@@ -5,7 +5,9 @@ import Credentials from "next-auth/providers/credentials";
 import { headers, cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { getAuthConfig } from "@/lib/auth.config";
-import { consumeAuthAttempt, getClientIp } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/rate-limit";
+import { getEnv } from "@/lib/env";
+import { consumeStoredAuthAttempt } from "@/services/auth-attempt.service";
 import { authenticateUser, getUserAccess } from "@/services/auth.service";
 import { loginSchema, safeCallbackUrl } from "@/validations/auth";
 import { guestIdSchema } from "@/validations/cart";
@@ -22,9 +24,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       name: "ایمیل و رمز عبور",
       credentials: { email: { type: "email" }, password: { type: "password" } },
       async authorize(credentials, request) {
-        if (!consumeAuthAttempt("login", getClientIp(request.headers)))
-          throw new TooManyAttempts();
         const parsed = loginSchema.safeParse(credentials);
+        if (
+          !(await consumeStoredAuthAttempt(
+            "login",
+            getClientIp(
+              request.headers,
+              Boolean(getEnv().AUTH_TRUST_PROXY_HEADERS),
+            ),
+            credentials?.email,
+          ))
+        )
+          throw new TooManyAttempts();
         const user = parsed.success
           ? await authenticateUser(parsed.data)
           : null;
@@ -45,12 +56,23 @@ export async function getCurrentUser() {
   if (!user) return null;
   // The JWT identifies the user; its role may predate access changes.
   const access = await getUserAccess(user.id);
-  if (!access?.isActive) return null;
+  if (
+    !access?.isActive ||
+    (user.sessionVersion ?? 0) !== (access.sessionVersion ?? 0)
+  )
+    return null;
   return { ...user, role: access.role };
 }
 
-export async function consumeCurrentAuthAttempt(scope: "login" | "register") {
-  return consumeAuthAttempt(scope, getClientIp(await headers()));
+export async function consumeCurrentAuthAttempt(
+  scope: "login" | "register",
+  identifier?: unknown,
+) {
+  return consumeStoredAuthAttempt(
+    scope,
+    getClientIp(await headers(), Boolean(getEnv().AUTH_TRUST_PROXY_HEADERS)),
+    identifier,
+  );
 }
 
 export async function requireUser() {

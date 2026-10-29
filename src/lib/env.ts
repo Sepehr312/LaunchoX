@@ -41,6 +41,10 @@ export const envSchema = z
       "نشانی MongoDB معتبر نیست",
     ),
     AUTH_SECRET: requiredText,
+    AUTH_TRUST_PROXY_HEADERS: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
     AUTH_URL: httpUrl.optional(),
     NEXT_PUBLIC_SITE_URL: httpUrl,
     IMAGE_INTERNAL_ORIGINS: z
@@ -73,6 +77,18 @@ export const envSchema = z
     FREE_SHIPPING_THRESHOLD: money,
   })
   .superRefine((value, context) => {
+    if (
+      value.NODE_ENV === "production" &&
+      (value.AUTH_SECRET.length < 32 ||
+        /replace-with|change-?me|example|test-secret/i.test(value.AUTH_SECRET))
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["AUTH_SECRET"],
+        message:
+          "کلید احراز هویت عملیاتی باید تصادفی، حداقل ۳۲ کاراکتر و غیرنمونه باشد",
+      });
+    }
     if (value.NODE_ENV === "production" && !value.AUTH_URL) {
       context.addIssue({
         code: "custom",

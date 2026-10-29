@@ -45,7 +45,11 @@ const productSchema = new Schema<IProduct>(
       match: [slugPattern, "نامک معتبر نیست"],
     },
     description: requiredText,
-    price: { ...integerField, required: [true, "قیمت الزامی است"] },
+    price: {
+      ...integerField,
+      min: [1, "قیمت فروش باید بیشتر از صفر باشد"],
+      required: [true, "قیمت الزامی است"],
+    },
     compareAtPrice: {
       ...integerField,
       validate: [

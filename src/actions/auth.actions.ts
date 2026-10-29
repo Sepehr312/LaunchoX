@@ -28,7 +28,7 @@ export async function loginAction(
 ): Promise<AuthActionState> {
   const parsed = loginSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) {
-    if (!(await consumeCurrentAuthAttempt("login")))
+    if (!(await consumeCurrentAuthAttempt("login", form.get("email"))))
       return { ok: false, error: rateLimitMessage };
     return {
       ok: false,
@@ -65,7 +65,7 @@ export async function registerAction(
   _state: AuthActionState,
   form: FormData,
 ): Promise<AuthActionState> {
-  if (!(await consumeCurrentAuthAttempt("register")))
+  if (!(await consumeCurrentAuthAttempt("register", form.get("email"))))
     return { ok: false, error: rateLimitMessage };
   const parsed = registerSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success)

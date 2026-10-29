@@ -167,6 +167,9 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Product sale prices are positive integer tomans at form, server-validation and model boundaries. Legacy zero-price records cannot enter carts or reserve checkout stock. Prices below 1,000,000 tomans or reductions of at least 80% require an explicit amount confirmation in the admin form; this is a warning, not a hard market floor.
+- Password changes atomically increment a database session version; protected server guards reject older JWT versions. Authentication attempt counters are shared in MongoDB (five attempts per account per 15-minute bucket, plus 50 per trusted IP); identifiers are HMAC-hashed and TTL-expired. `AUTH_TRUST_PROXY_HEADERS` defaults to false and may only be enabled when the hosting proxy overwrites forwarded headers. Production requires a generated, non-example `AUTH_SECRET` of at least 32 characters. Local MongoDB binds to loopback; production still needs authenticated private database access.
+
 - Authentication loading on production and preview routes reuses PremiumAuthLayout and PremiumAuthHeading; only form controls use a scoped, reduced-motion-aware skeleton matched to the approved form geometry.
 
 - Production `/login` and `/register` reuse the approved test pages' PremiumAuthLayout and premium AuthForm without a legacy layout wrapper. AuthForm linkMode keeps production navigation on `/login` and `/register` while previews retain their test links; authentication actions, validation, session handling and redirects are unchanged.

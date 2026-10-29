@@ -5,7 +5,7 @@ import { envSchema, getEnv } from "@/lib/env";
 
 const valid = {
   MONGODB_URI: "mongodb://127.0.0.1:27017/test",
-  AUTH_SECRET: "test-secret",
+  AUTH_SECRET: "a741e3f097ad580e71fd73b9df2c8410",
   NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
   NEXT_PUBLIC_SITE_NAME: "فروشگاه",
   PAYMENT_PROVIDER: "fake",

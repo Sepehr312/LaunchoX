@@ -6,7 +6,7 @@ declare global {
   var launchoxAuthAttempts:
     Map<string, { count: number; expiresAt: number }> | undefined;
 }
-// TODO: Use a shared store before running more than one server instance.
+// Legacy helper retained for compatibility; authentication uses the shared database store.
 export function consumeAuthAttempt(
   scope: "login" | "register",
   ip: string,
@@ -24,7 +24,12 @@ export function consumeAuthAttempt(
   return true;
 }
 
-export function getClientIp(headers: Headers): string {
+// Parsing alone does not establish trust; authentication passes its explicit proxy policy.
+export function getClientIp(
+  headers: Headers,
+  trustProxyHeaders = false,
+): string {
+  if (!trustProxyHeaders) return "unknown";
   const candidate =
     headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     headers.get("x-real-ip")?.trim();

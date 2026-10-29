@@ -6,7 +6,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowUp, ArrowDown, Plus, Trash2 } from "lucide-react";
 import { productAction } from "@/actions/admin/product.actions";
-import { formatDate, toPersianDigits } from "@/lib/format";
+import { formatDate, formatPrice, toPersianDigits } from "@/lib/format";
+import {
+  needsPriceReview,
+  parsePriceForReview,
+} from "@/validations/price-warning";
 import type { StoreProductDTO } from "@/types/dto";
 import {
   FormSection,
@@ -35,6 +39,8 @@ export function ProductForm({
     product?.id,
   );
   const [uploading, setUploading] = useState(false);
+  const [priceError, setPriceError] = useState<string | null>(null);
+  const [confirmedPrice, setConfirmedPrice] = useState<string | null>(null);
   const [values, setValues] = useState({
     title: product?.title ?? "",
     slug: product?.slug ?? "",
@@ -58,6 +64,12 @@ export function ProductForm({
     { key: string; value: string }[]
   >(product?.attributes.filter((item) => !isBrandAttribute(item.key)) ?? []);
   const errors = state && !state.ok ? state.fieldErrors : undefined;
+  const reviewedPrice = parsePriceForReview(values.price);
+  const originalPrice = parsePriceForReview(values.compareAtPrice);
+  const reviewKey = `${values.price}:${values.compareAtPrice}`;
+  const priceWarning =
+    reviewedPrice !== null &&
+    needsPriceReview(reviewedPrice, originalPrice ?? undefined, product?.price);
   const field = (
     name:
       | "title"
@@ -75,8 +87,11 @@ export function ProductForm({
       e: React.ChangeEvent<
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >,
-    ) => setValues({ ...values, [name]: e.target.value }),
-    error: errors?.[name],
+    ) => {
+      setValues({ ...values, [name]: e.target.value });
+      if (name === "price" || name === "compareAtPrice") setPriceError(null);
+    },
+    error: name === "price" && priceError ? [priceError] : errors?.[name],
   });
   function move(index: number, offset: number) {
     setImages((current) => {
@@ -90,6 +105,18 @@ export function ProductForm({
       action={action}
       className="admin-product-form"
       aria-busy={pending || uploading}
+      onSubmit={(event) => {
+        if (reviewedPrice === null) {
+          event.preventDefault();
+          setPriceError("قیمت فروش باید عدد صحیح و بیشتر از صفر باشد");
+          event.currentTarget
+            .querySelector<HTMLInputElement>('[name="price"]')
+            ?.focus();
+        } else if (priceWarning && confirmedPrice !== reviewKey) {
+          event.preventDefault();
+          setPriceError("مبلغ پایین را بررسی و تأیید کنید");
+        } else setPriceError(null);
+      }}
     >
       <input
         type="hidden"
@@ -265,8 +292,32 @@ export function ProductForm({
               label="قیمت فروش (تومان)"
               inputMode="numeric"
               required
+              hint="عدد صحیح مثبت به تومان؛ قیمت صفر قابل ثبت نیست."
               {...field("price")}
             />
+            {priceWarning && reviewedPrice !== null && (
+              <div
+                className="admin-span admin-notice rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-7 text-amber-950"
+                role="status"
+              >
+                <p>
+                  قیمت {formatPrice(reviewedPrice)} پایین است یا کاهش چشمگیری
+                  دارد؛ پیش از ثبت، مبلغ و تعداد صفرها را بررسی کنید.
+                </p>
+                {product && (
+                  <p>قیمت قبلی ثبت‌شده: {formatPrice(product.price)}</p>
+                )}
+                <FormToggle
+                  label={`مبلغ ${formatPrice(reviewedPrice)} را بررسی کردم و قصد ثبت همین قیمت را دارم.`}
+                  required
+                  checked={confirmedPrice === reviewKey}
+                  onChange={(event) => {
+                    setConfirmedPrice(event.target.checked ? reviewKey : null);
+                    setPriceError(null);
+                  }}
+                />
+              </div>
+            )}
             <FormField
               label="قیمت قبلی (تومان)"
               inputMode="numeric"

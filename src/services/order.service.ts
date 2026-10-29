@@ -89,14 +89,24 @@ export async function createOrderFromCart(
     for (const item of cart.items) {
       quantitySchema.parse(item.quantity);
       const product = await Product.findOneAndUpdate(
-        { _id: item.product, isActive: true, stock: { $gte: item.quantity } },
+        {
+          _id: item.product,
+          isActive: true,
+          price: { $gt: 0 },
+          stock: { $gte: item.quantity },
+        },
         { $inc: { stock: -item.quantity } },
         { returnDocument: "after" },
       ).lean();
       if (!product) {
         const unavailable = await Product.findById(item.product)
-          .select("title")
+          .select("title price")
           .lean();
+        if (unavailable && unavailable.price <= 0)
+          throw new AppError(
+            "قیمت یکی از محصولات نیاز به اصلاح فروشنده دارد؛ سبد را بررسی کنید",
+            "VALIDATION",
+          );
         throw new AppError(
           `موجودی «${unavailable?.title ?? "محصول حذف‌شده"}» کافی نیست؛ سبد را بررسی کنید`,
           "OUT_OF_STOCK",
