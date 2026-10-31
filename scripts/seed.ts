@@ -9,7 +9,7 @@ async function main() {
     await connectDB();
     const summary = await seedDatabase(options);
     console.log("Seed completed:", summary);
-    console.log(`Admin login: ${options.email} / ${options.password}`);
+    console.log(`Admin login: ${options.email} (password from SEED_ADMIN_PASSWORD)`);
   } catch {
     console.error(
       "Seed failed. Check configuration, flags and database availability. Production requires --force.",

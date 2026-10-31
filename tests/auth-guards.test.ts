@@ -80,3 +80,19 @@ it("propagates database failures instead of trusting the JWT role", async () => 
   mocks.access.mockRejectedValue(new Error("Database unavailable"));
   await expect(requireAdmin()).rejects.toThrow("Database unavailable");
 });
+it("rejects sessions issued before a password or access reset", async () => {
+  mocks.auth.mockResolvedValue({
+    user: { id: "456", role: "customer", sessionVersion: 1 },
+  });
+  mocks.access.mockResolvedValue({
+    role: "customer",
+    isActive: true,
+    sessionVersion: 2,
+  });
+  expect(await getCurrentUser()).toBeNull();
+  await expect(requireUser()).rejects.toThrow("redirect");
+  mocks.auth.mockResolvedValue({
+    user: { id: "456", role: "customer", sessionVersion: 2 },
+  });
+  expect(await requireUser()).toMatchObject({ id: "456", sessionVersion: 2 });
+});
