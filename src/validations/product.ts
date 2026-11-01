@@ -65,7 +65,9 @@ export const productQuerySchema = paginationSchema
   .extend({
     category: optionalField(objectIdSchema),
     brandSlug: optionalField(slugSchema),
-    q: optionalField(requiredString),
+   q: optionalField(
+  requiredString.max(100, "عبارت جستجو باید حداکثر ۱۰۰ کاراکتر باشد"),
+),
     minPrice: optionalField(moneySchema),
     maxPrice: optionalField(moneySchema),
     sort: z
