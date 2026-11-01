@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Vitest requires Node 22.12+ / 24+; Node 24 is the version the README recommends.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # DB tests use mongodb-memory-server (falls back to a throwaway
+      # mongo:7 Docker container, which is available on GitHub runners).
+      - name: Test
+        run: npm run test
+
+      # Dummy, non-secret values: build does not connect to the database.
+      - name: Build
+        run: npm run build
+        env:
+          MONGODB_URI: mongodb://localhost:27017/launchox-ci
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_SITE_NAME: LaunchoX
+          AUTH_SECRET: ci-only-secret-not-used-in-production-0123456789abcdef
+          AUTH_URL: http://localhost:3000
+          PAYMENT_PROVIDER: fake
