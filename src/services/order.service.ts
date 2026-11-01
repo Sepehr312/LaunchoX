@@ -25,6 +25,8 @@ import {
 import type { OrderDTO, PaginatedResult } from "@/types/dto";
 import type { OrderStatus } from "@/types/domain";
 
+export const ORDER_RESERVATION_MS = 30 * 60 * 1000;
+
 async function readOrder(filter: QueryFilter<IOrder>): Promise<OrderDTO> {
   await connectDB();
   const order = await Order.findOne(filter).lean();
