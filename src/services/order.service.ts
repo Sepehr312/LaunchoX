@@ -325,8 +325,7 @@ export async function confirmCashOnDelivery(id: string, userId: string) {
       status: "pending",
       "payment.status": "unpaid",
       "payment.provider": "fake",
-      createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) },
-    },
+createdAt: { $gte: new Date(Date.now() - ORDER_RESERVATION_MS) },
     {
       $set: { status: "processing", "payment.method": "cash_on_delivery" },
       $push: {
@@ -343,8 +342,7 @@ export async function confirmCashOnDelivery(id: string, userId: string) {
   return toDTO(order);
 }
 
-export async function markPaymentFailed(id: string) {
-  const orderId = objectIdSchema.parse(id);
+async function failUnpaidOrder(orderId: Types.ObjectId | string) {
   await connectDB();
   const order = await Order.findOneAndUpdate(
     { _id: orderId, status: "pending", "payment.status": "unpaid" },
@@ -354,22 +352,63 @@ export async function markPaymentFailed(id: string) {
     },
     { returnDocument: "after", runValidators: true },
   ).lean();
+  if (order) await restoreStock(order.items);
+  return order;
+}
+
+export async function markPaymentFailed(id: string) {
+  const orderId = objectIdSchema.parse(id);
+  const order = await failUnpaidOrder(orderId);
   if (!order) return getOrderAdmin(orderId);
-  await restoreStock(order.items);
   return toDTO(order);
 }
 
-export async function expireStaleOrders() {
+export type ExpireStaleOrdersResult = {
+  scanned: number;
+  expired: { id: string; orderNumber: string }[];
+  skipped: number;
+  failed: { id: string; orderNumber: string; message: string }[];
+};
+
+export async function expireStaleOrders(
+  options: { now?: Date; limit?: number } = {},
+): Promise<ExpireStaleOrdersResult> {
+  const limit = options.limit ?? 200;
   await connectDB();
+  const cutoff = new Date(
+    (options.now ?? new Date()).getTime() - ORDER_RESERVATION_MS,
+  );
   const stale = await Order.find({
     status: "pending",
     "payment.status": "unpaid",
-    createdAt: { $lt: new Date(Date.now() - 30 * 60 * 1000) },
+    createdAt: { $lt: cutoff },
   })
-    .select("_id")
+    .sort({ createdAt: 1, _id: 1 })
+    .limit(limit)
+    .select("_id orderNumber")
     .lean();
-  for (const order of stale) await markPaymentFailed(String(order._id));
-}
+
+  const result: ExpireStaleOrdersResult = {
+    scanned: stale.length,
+    expired: [],
+    skipped: 0,
+    failed: [],
+  };
+  for (const entry of stale) {
+    const id = String(entry._id);
+    try {
+      const order = await failUnpaidOrder(id);
+      if (order) result.expired.push({ id, orderNumber: entry.orderNumber });
+      else result.skipped += 1;
+    } catch (error) {
+      result.failed.push({
+        id,
+        orderNumber: entry.orderNumber,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return result;
 
 async function listOrders(
   filter: QueryFilter<IOrder>,
