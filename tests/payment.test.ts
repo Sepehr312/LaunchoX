@@ -1,3 +1,7 @@
+import {
+  listOrdersAdmin,
+  getOrderStatusCountsAdmin,
+} from "@/services/order.service";
 import { afterEach, expect, it, vi } from "vitest";
 import { fixture, checkoutInput } from "./order-fixture";
 import {
@@ -31,6 +35,9 @@ it("confirms cash on delivery once, preserves stock, survives expiry and ignores
   ]);
   const order = results[0];
   expect(order.status).toBe("processing");
+  const adminOrders = await listOrdersAdmin({ status: "processing" });
+  expect(adminOrders.items.some((item) => item.id === order.id)).toBe(true);
+  expect((await getOrderStatusCountsAdmin()).processing).toBe(1);
   expect(order.payment).toMatchObject({
     status: "unpaid",
     method: "cash_on_delivery",

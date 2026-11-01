@@ -167,6 +167,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- فهرست سفارش‌ها و داشبورد ادمین در تب فعال هر ۱۵ ثانیه و هنگام بازگشت به تب تازه می‌شوند؛ پرداخت در محل از پرداخت‌شده متمایز نمایش داده می‌شود.
+
 - Shared form notices and quantity-stepper styles live in `components/ui/form-controls.module.css`, so storefront, authentication, account, and checkout forms do not depend on account-specific styles.
 
 - If clipboard writing is unavailable or rejected, the order-number copy control selects only its displayed number and announces Persian manual-copy guidance; it reports success only after a successful clipboard write.
