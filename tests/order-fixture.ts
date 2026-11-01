@@ -28,7 +28,7 @@ export const fixture = {
 };
 let server: Awaited<ReturnType<typeof startTestMongo>>;
 beforeAll(async () => {
-  server = await startTestMongo();
+  server = await startTestMongo(true);
   await mongoose.connect(server.uri, {
     dbName: "launchox_order_test",
     bufferCommands: false,

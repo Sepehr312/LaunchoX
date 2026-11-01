@@ -2,7 +2,7 @@ import "server-only";
 import { withImageReferences } from "@/services/image-lifecycle.service";
 import { getEnv } from "@/lib/env";
 import { randomUUID } from "node:crypto";
-import { Types, type QueryFilter } from "mongoose";
+import { Types, type ClientSession, type QueryFilter } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { toDTO } from "@/lib/model-shared";
@@ -27,9 +27,14 @@ import type { OrderStatus } from "@/types/domain";
 
 export const ORDER_RESERVATION_MS = 30 * 60 * 1000;
 
-async function readOrder(filter: QueryFilter<IOrder>): Promise<OrderDTO> {
+async function readOrder(
+  filter: QueryFilter<IOrder>,
+  session?: ClientSession,
+): Promise<OrderDTO> {
   await connectDB();
-  const order = await Order.findOne(filter).lean();
+  const order = await Order.findOne(filter)
+    .session(session ?? null)
+    .lean();
   if (!order) throw new AppError("سفارش پیدا نشد", "NOT_FOUND");
   return toDTO(order);
 }
@@ -198,6 +203,7 @@ export async function createOrderFromCart(
 
 async function restoreStock(
   items: { product: Types.ObjectId; quantity: number }[],
+  session?: ClientSession,
 ) {
   if (items.length)
     await Product.bulkWrite(
@@ -207,6 +213,7 @@ async function restoreStock(
           update: { $inc: { stock: item.quantity } },
         },
       })),
+      { session },
     );
 }
 
@@ -241,27 +248,37 @@ async function transitionOrder(
   status: OrderStatus,
   changedBy?: string,
 ) {
-  const current = await readOrder(filter);
-  if (
-    !transitions[current.status].includes(status) ||
-    (status === "processing" && current.payment.status !== "paid")
-  )
-    throw new AppError("تغییر وضعیت سفارش مجاز نیست", "CONFLICT");
-  const updated = await Order.findOneAndUpdate(
-    {
-      ...filter,
-      status: current.status,
-      "payment.status": current.payment.status,
-    },
-    {
-      $set: { status },
-      $push: { statusHistory: { status, changedAt: new Date(), changedBy } },
-    },
-    { returnDocument: "after", runValidators: true },
-  ).lean();
-  if (!updated) throw new AppError("وضعیت سفارش تغییر کرده است", "CONFLICT");
-  if (status === "cancelled") await restoreStock(updated.items);
-  return toDTO(updated);
+  const db = await connectDB();
+  const apply = async (session?: ClientSession) => {
+    const current = await readOrder(filter, session);
+    if (
+      !transitions[current.status].includes(status) ||
+      (status === "processing" && current.payment.status !== "paid")
+    )
+      throw new AppError("تغییر وضعیت سفارش مجاز نیست", "CONFLICT");
+    const updated = await Order.findOneAndUpdate(
+      {
+        ...filter,
+        status: current.status,
+        "payment.status": current.payment.status,
+      },
+      {
+        $set: { status },
+        $push: { statusHistory: { status, changedAt: new Date(), changedBy } },
+      },
+      { returnDocument: "after", runValidators: true, session },
+    ).lean();
+    if (!updated) throw new AppError("وضعیت سفارش تغییر کرده است", "CONFLICT");
+    if (status === "cancelled") await restoreStock(updated.items, session);
+    return toDTO(updated);
+  };
+  return status === "cancelled"
+    ? db.connection.transaction(apply, {
+        readConcern: { level: "snapshot" },
+        writeConcern: { w: "majority" },
+        readPreference: "primary",
+      })
+    : apply();
 }
 
 export async function updateOrderStatus(input: unknown, changedBy: string) {
@@ -325,7 +342,8 @@ export async function confirmCashOnDelivery(id: string, userId: string) {
       status: "pending",
       "payment.status": "unpaid",
       "payment.provider": "fake",
-createdAt: { $gte: new Date(Date.now() - ORDER_RESERVATION_MS) },
+      createdAt: { $gte: new Date(Date.now() - ORDER_RESERVATION_MS) },
+    },
     {
       $set: { status: "processing", "payment.method": "cash_on_delivery" },
       $push: {
@@ -342,25 +360,36 @@ createdAt: { $gte: new Date(Date.now() - ORDER_RESERVATION_MS) },
   return toDTO(order);
 }
 
-async function failUnpaidOrder(orderId: Types.ObjectId | string) {
-  await connectDB();
-  const order = await Order.findOneAndUpdate(
-    { _id: orderId, status: "pending", "payment.status": "unpaid" },
-    {
-      $set: { status: "cancelled", "payment.status": "failed" },
-      $push: { statusHistory: { status: "cancelled", changedAt: new Date() } },
+async function failUnpaidOrder(orderId: string) {
+  const db = await connectDB();
+  return db.connection.transaction(
+    async (session) => {
+      const order = await Order.findOneAndUpdate(
+        { _id: orderId, status: "pending", "payment.status": "unpaid" },
+        {
+          $set: { status: "cancelled", "payment.status": "failed" },
+          $push: {
+            statusHistory: { status: "cancelled", changedAt: new Date() },
+          },
+        },
+        { returnDocument: "after", runValidators: true, session },
+      ).lean();
+      if (!order) return null;
+      await restoreStock(order.items, session);
+      return toDTO(order);
     },
-    { returnDocument: "after", runValidators: true },
-  ).lean();
-  if (order) await restoreStock(order.items);
-  return order;
+    {
+      readConcern: { level: "snapshot" },
+      writeConcern: { w: "majority" },
+      readPreference: "primary",
+    },
+  );
 }
 
 export async function markPaymentFailed(id: string) {
   const orderId = objectIdSchema.parse(id);
   const order = await failUnpaidOrder(orderId);
-  if (!order) return getOrderAdmin(orderId);
-  return toDTO(order);
+  return order ?? getOrderAdmin(orderId);
 }
 
 export type ExpireStaleOrdersResult = {
@@ -409,6 +438,7 @@ export async function expireStaleOrders(
     }
   }
   return result;
+}
 
 async function listOrders(
   filter: QueryFilter<IOrder>,
