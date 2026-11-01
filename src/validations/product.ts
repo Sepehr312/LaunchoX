@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isBrandAttribute } from "@/validations/brand-text";
 import {
   assetUrlSchema,
   booleanSchema,
@@ -18,7 +19,9 @@ export const productSchema = z
       .max(150, "عنوان باید حداکثر ۱۵۰ کاراکتر باشد"),
     slug: optionalField(slugSchema),
     description: requiredString,
-    price: moneySchema,
+    price: moneySchema.pipe(
+      z.number().positive("قیمت فروش باید بیشتر از صفر باشد"),
+    ),
     compareAtPrice: optionalField(moneySchema),
     stock: integerSchema(),
     sku: optionalField(requiredString),
@@ -28,7 +31,15 @@ export const productSchema = z
       .max(8, "حداکثر ۸ تصویر مجاز است"),
     category: objectIdSchema,
     attributes: z
-      .array(z.object({ key: requiredString, value: requiredString }))
+      .array(
+        z.object({
+          key: requiredString.refine(
+            (key) => !isBrandAttribute(key),
+            "برند را فقط از فهرست برند انتخاب کنید",
+          ),
+          value: requiredString,
+        }),
+      )
       .default([]),
     isActive: booleanSchema.default(true),
     isFeatured: booleanSchema.default(false),
@@ -42,9 +53,18 @@ export const productSchema = z
     },
   );
 
+export const adminProductSchema = productSchema.safeExtend({
+  brand: z
+    .string({ error: "انتخاب برند الزامی است" })
+    .trim()
+    .min(1, "انتخاب برند الزامی است")
+    .pipe(objectIdSchema),
+});
+
 export const productQuerySchema = paginationSchema
   .extend({
     category: optionalField(objectIdSchema),
+    brandSlug: optionalField(slugSchema),
     q: optionalField(requiredString),
     minPrice: optionalField(moneySchema),
     maxPrice: optionalField(moneySchema),

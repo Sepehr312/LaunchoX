@@ -6,7 +6,7 @@ import { useActionState } from "react";
 import { Check, ShoppingCart } from "lucide-react";
 import { addCartAction } from "@/actions/cart.actions";
 import { ProductLikeButton } from "@/components/store/ProductLikeButton";
-import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
+import { CompareProductButton } from "@/components/store/compare/CompareProductButton";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 import type { StoreProductDTO } from "@/types/dto";
 import styles from "./ArcticProducts.module.css";
@@ -18,32 +18,28 @@ export function ProductCard({
   product: StoreProductDTO;
   variant?: "default" | "compact";
 }) {
-  const { theme } = usePreviewTheme();
   const [state, formAction, pending] = useActionState(addCartAction, undefined);
   const model = product.attributes.find((item) => item.key === "مدل");
   const specs = product.attributes
     .filter((item) => item.key !== "برند" && item.key !== "مدل")
     .slice(0, 3);
-  const showPreviousPrice =
-    variant === "compact"
-      ? Number.isSafeInteger(product.compareAtPrice) &&
-        (product.compareAtPrice ?? 0) > product.price
-      : Boolean(product.compareAtPrice);
-  const discount =
-    showPreviousPrice && product.compareAtPrice
-      ? Math.round((1 - product.price / product.compareAtPrice) * 100)
-      : null;
+  const showPreviousPrice = product.pricing.hasDiscount;
+  const discount = showPreviousPrice ? product.pricing.discountPercent : null;
 
   return (
     <article
       className={styles.card}
-      data-theme={theme}
       data-arctic-product-card
       data-variant={variant}
     >
       {variant === "default" && (
         <div className={styles.cardTop}>
           <ProductLikeButton id={product.id} title={product.title} />
+          <CompareProductButton
+            id={product.id}
+            title={product.title}
+            iconOnly
+          />
         </div>
       )}
       {variant === "default" && (
@@ -117,8 +113,8 @@ export function ProductCard({
         <div className={styles.prices}>
           {variant === "compact" ? (
             <div className={styles.compactHistory}>
-              {showPreviousPrice && product.compareAtPrice && (
-                <del>{formatPrice(product.compareAtPrice)}</del>
+              {showPreviousPrice && (
+                <del>{formatPrice(product.pricing.originalPrice)}</del>
               )}
               {discount !== null && discount > 0 && (
                 <span className={styles.compactDiscount}>
@@ -128,13 +124,16 @@ export function ProductCard({
               {product.stock === 0 && <span>ناموجود</span>}
             </div>
           ) : (
-            product.compareAtPrice && (
-              <del>{formatPrice(product.compareAtPrice)}</del>
+            showPreviousPrice && (
+              <del>{formatPrice(product.pricing.originalPrice)}</del>
             )
           )}
-          <strong>{formatPrice(product.price)}</strong>
+          <strong>{formatPrice(product.pricing.finalPrice)}</strong>
         </div>
       </div>
+      {variant === "compact" && (
+        <CompareProductButton id={product.id} title={product.title} />
+      )}
       {state && !state.ok && (
         <p className={styles.feedback} role="alert">
           {state.error}

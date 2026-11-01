@@ -1,24 +1,26 @@
+import { cache } from "react";
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductsCatalog } from "@/components/store/ProductsCatalog";
-import { slugSchema } from "@/validations/common";
+import { routeSlugSchema } from "@/validations/common";
 import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
 import { getCategoryBySlug, listCategories } from "@/services/category.service";
 import {
   getProductFilterOptions,
   listProducts,
+  listCategoryProducts,
 } from "@/services/product.service";
 
 export const dynamic = "force-dynamic";
 
-async function resolveCategory(slug: string) {
-  const parsed = slugSchema.safeParse(slug);
+const resolveCategory = cache(async (slug: string) => {
+  const parsed = routeSlugSchema.safeParse(slug);
   if (!parsed.success) notFound();
   const category = await getCategoryBySlug(parsed.data);
   if (!category) notFound();
   return category;
-}
+});
 
 export async function generateMetadata({
   params,
@@ -42,20 +44,32 @@ export default async function CategoryPage({
   const [{ slug }, values] = await Promise.all([params, searchParams]);
   const category = await resolveCategory(slug);
   const parsed = parseProductQuery(values, { category: category.id });
+  if (
+    !parsed.success &&
+    parsed.error.issues.some((issue) => issue.path[0] === "page")
+  ) {
+    notFound();
+  }
   const query = parsed.success
     ? parsed.data
     : { page: 1, limit: 9, sort: "newest" as const, category: category.id };
   query.limit = values.limit ? query.limit : 9;
-  query.page = 1;
   const [categories, result, options] = await Promise.all([
     listCategories(),
     listProducts(query),
     getProductFilterOptions(),
   ]);
+  if (query.page > Math.max(1, result.totalPages)) notFound();
+  const routeSlug = category.slug;
+  async function loadProducts(next: StoreSearchParams) {
+    "use server";
+    return listCategoryProducts(routeSlug, next);
+  }
   return (
     <ProductsCatalog
       key={category.id}
       selectedCategory={category}
+      loadProducts={loadProducts}
       result={result}
       categories={categories}
       options={options}

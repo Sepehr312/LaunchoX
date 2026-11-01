@@ -45,7 +45,11 @@ const productSchema = new Schema<IProduct>(
       match: [slugPattern, "نامک معتبر نیست"],
     },
     description: requiredText,
-    price: { ...integerField, required: [true, "قیمت الزامی است"] },
+    price: {
+      ...integerField,
+      min: [1, "قیمت فروش باید بیشتر از صفر باشد"],
+      required: [true, "قیمت الزامی است"],
+    },
     compareAtPrice: {
       ...integerField,
       validate: [
@@ -98,6 +102,9 @@ const productSchema = new Schema<IProduct>(
 productSchema.index({ title: "text", description: "text" });
 productSchema.index({ category: 1, isActive: 1, createdAt: -1 });
 productSchema.index({ isFeatured: 1, isActive: 1 });
+
+productSchema.index({ images: 1 });
+productSchema.index({ brand: 1, isActive: 1, createdAt: -1 });
 
 export const Product: Model<IProduct> =
   (models.Product as Model<IProduct> | undefined) ??

@@ -1,0 +1,291 @@
+.page {
+  color-scheme: light;
+  color: var(--foreground);
+  min-width: 0;
+  background:
+    radial-gradient(
+      ellipse at 10% 45%,
+      color-mix(in srgb, var(--ice) 55%, transparent),
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 90% 80%,
+      color-mix(in srgb, var(--ice) 35%, transparent),
+      transparent 45%
+    ),
+    var(--surface);
+}
+.hero {
+  border-block-end: 1px solid var(--border);
+  background:
+    radial-gradient(ellipse at 12% 15%, var(--ice), transparent 55%),
+    linear-gradient(150deg, var(--surface), var(--background));
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-block: 1.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.heroCopy {
+  max-width: 50rem;
+  margin-inline: auto;
+  padding-block: 1rem 3.5rem;
+  text-align: center;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.hero h1 {
+  margin-block: 1rem 0.7rem;
+  font-size: clamp(1.65rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.6;
+}
+.hero p {
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 0.95rem;
+}
+.search {
+  position: relative;
+  max-width: 33rem;
+  margin: 1.7rem auto 0;
+}
+.search > svg {
+  position: absolute;
+  inset-inline-start: 1rem;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.search input {
+  min-height: 3.5rem;
+  padding-inline: 3.1rem 3rem;
+  border-color: var(--border-strong);
+  background: var(--surface);
+  box-shadow: 0 8px 25px color-mix(in srgb, var(--primary) 7%, transparent);
+}
+.search input::-webkit-search-cancel-button {
+  display: none;
+}
+.search button {
+  position: absolute;
+  inset-inline-end: 0.35rem;
+  inset-block-start: 0.35rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+.list {
+  padding-block: 2.5rem 3rem;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block-end: 1.6rem;
+}
+.heading h2,
+.guide h2 {
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 700;
+}
+.heading p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-block-start: 0.5rem;
+}
+.heading > span {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 2rem;
+  background: var(--background);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.4rem 0.7rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  border-radius: 1.4rem;
+  background: var(--surface);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--surface) 90%, transparent),
+    0 4px 16px color-mix(in srgb, var(--primary) 4%, transparent),
+    0 12px 32px color-mix(in srgb, var(--foreground) 3%, transparent);
+  text-align: center;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--border-strong) 80%, transparent);
+  box-shadow:
+    inset 0 1px 0 var(--surface),
+    0 6px 20px color-mix(in srgb, var(--primary) 6%, transparent),
+    0 16px 36px color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
+  .card {
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--surface) 86%, transparent),
+      color-mix(in srgb, var(--surface) 62%, transparent)
+    );
+    -webkit-backdrop-filter: blur(12px) saturate(115%);
+    backdrop-filter: blur(12px) saturate(115%);
+  }
+}
+.card:focus-visible,
+.search button:focus-visible,
+.empty button:focus-visible,
+.breadcrumb a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+.logo {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 5.5rem;
+  padding: 0.6rem;
+  color: var(--primary);
+}
+.logo img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.card h3 {
+  margin-block-start: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.card p {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-block: 0.4rem 1.2rem;
+}
+.cardLink {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-block-start: auto;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  margin-block-end: 3.5rem;
+  background: linear-gradient(120deg, var(--background), var(--surface));
+}
+.guideIcon {
+  flex-shrink: 0;
+  padding: 0.8rem;
+  border-radius: 1rem;
+  background: var(--ice);
+  color: var(--primary);
+}
+.guide p {
+  max-width: 65rem;
+  margin-block-start: 0.6rem;
+  font-size: 0.9rem;
+  line-height: 2.1;
+  color: var(--muted);
+}
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 1.4rem;
+  text-align: center;
+}
+.empty svg,
+.empty button {
+  color: var(--primary);
+}
+.empty h3 {
+  font-weight: 700;
+}
+.empty p {
+  color: var(--muted);
+  line-height: 1.9;
+}
+.empty button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    padding: 2rem 1.5rem 1.6rem;
+  }
+  .cardLink {
+    font-size: 0.85rem;
+  }
+  .guide {
+    padding: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 479px) {
+  .guide {
+    flex-direction: column;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card:hover {
+    transform: none;
+  }
+}

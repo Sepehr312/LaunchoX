@@ -1,10 +1,11 @@
 import { beforeEach, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-const { products, category, options } = vi.hoisted(() => ({
+const { products, category, options, load } = vi.hoisted(() => ({
   products: vi.fn(),
   category: vi.fn(),
   options: vi.fn(),
+  load: vi.fn(),
 }));
 vi.mock("@/lib/env", () => ({
   getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچ‌اوکس" }),
@@ -24,6 +25,7 @@ vi.mock("@/services/category.service", () => ({
 vi.mock("@/services/product.service", () => ({
   listProducts: products,
   getProductFilterOptions: options,
+  listCategoryProducts: load,
 }));
 
 import CategoryPage from "@/app/(shop)/categories/[slug]/page";
@@ -61,6 +63,27 @@ it("uses the shared catalog and enforces route category while forwarding filters
   );
   expect(page.props.selectedCategory).toEqual(selectedCategory);
   expect(options).toHaveBeenCalledOnce();
+  await page.props.loadProducts({ page: "2", category: "untrusted" });
+  expect(load).toHaveBeenCalledWith(selectedCategory.slug, {
+    page: "2",
+    category: "untrusted",
+  });
+});
+
+it("accepts encoded Persian route slugs and lets database failures reach the error boundary", async () => {
+  const slug = "دسته-تازه";
+  await CategoryPage({
+    params: Promise.resolve({ slug: encodeURIComponent(slug) }),
+    searchParams: Promise.resolve({}),
+  });
+  expect(category).toHaveBeenCalledWith(slug);
+  category.mockRejectedValueOnce(new Error("Database unavailable"));
+  await expect(
+    CategoryPage({
+      params: Promise.resolve({ slug }),
+      searchParams: Promise.resolve({}),
+    }),
+  ).rejects.toThrow("Database unavailable");
 });
 
 it("keeps the category scoped when invalid filters fall back", async () => {

@@ -1,8 +1,11 @@
-import styles from "@/components/customer/customer.module.css";
-export default function AuthLayout({
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/actions/auth.actions";
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <main className={`${styles.scope} ${styles.auth}`}>{children}</main>;
+  const user = await getCurrentUser();
+  if (user) redirect(user.role === "admin" ? "/admin" : "/account");
+  return children;
 }

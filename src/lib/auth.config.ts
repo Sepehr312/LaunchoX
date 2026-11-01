@@ -14,6 +14,7 @@ export function getAuthConfig(): NextAuthConfig {
         if (user) {
           token.id = user.id;
           token.role = user.role;
+          token.sessionVersion = user.sessionVersion ?? 0;
         }
         return token;
       },
@@ -24,6 +25,7 @@ export function getAuthConfig(): NextAuthConfig {
         ) {
           session.user.id = token.id;
           session.user.role = token.role;
+          session.user.sessionVersion = token.sessionVersion ?? 0;
         }
         return session;
       },

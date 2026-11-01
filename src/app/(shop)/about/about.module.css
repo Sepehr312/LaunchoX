@@ -1,0 +1,413 @@
+.page {
+  min-width: 0;
+  color: var(--foreground);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--surface) 48%,
+    var(--background)
+  );
+}
+
+.hero {
+  overflow: hidden;
+  border-block-end: 1px solid var(--border);
+  background: radial-gradient(ellipse at 20% 45%, var(--ice), transparent 65%);
+}
+
+.heroGrid {
+  display: grid;
+  align-items: center;
+  gap: 2rem;
+  padding-block: 3rem 2rem;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.hero h1 {
+  margin-block: 1.5rem;
+  font-size: clamp(1.75rem, 3.8vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.65;
+}
+.hero h1 span {
+  color: var(--primary);
+}
+.description {
+  max-width: 36rem;
+  color: var(--muted);
+  line-height: 2;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-block-start: 2rem;
+}
+.page :global(.hero-cta-primary),
+.page :global(.hero-cta-secondary) {
+  min-height: 3rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+.storyLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  color: var(--primary);
+  font-size: 0.875rem;
+}
+.storyLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+}
+.heroNote {
+  margin-block-start: 2rem;
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid var(--border-strong);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.heroVisual {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 360px;
+  place-items: center;
+  isolation: isolate;
+}
+.orbit {
+  position: absolute;
+  z-index: -1;
+  width: 90%;
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--surface), transparent 70%);
+}
+.orbit::before {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border: 1px solid var(--border);
+  border-radius: inherit;
+}
+.heroProduct {
+  position: relative;
+  width: auto;
+  height: clamp(320px, 38vw, 480px);
+  max-width: 88%;
+  object-fit: contain;
+  filter: drop-shadow(
+    0 16px 16px color-mix(in srgb, var(--foreground) 14%, transparent)
+  );
+}
+.visualCaption {
+  display: flex;
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 8%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--primary);
+}
+.visualCaption span {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.visualCaption small {
+  display: block;
+  margin-block-start: 0.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.section {
+  margin-block-start: 3rem;
+  scroll-margin-block-start: 7rem;
+}
+.section h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.6;
+}
+.story {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: var(--ice);
+}
+.storyCopy {
+  position: relative;
+  z-index: 1;
+  margin-block-start: 13rem;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 90%, transparent),
+    var(--surface)
+  );
+}
+.storyCopy h2 {
+  margin-block: 0.75rem 1rem;
+}
+.storyCopy > p:not(.eyebrow) {
+  margin-block-start: 1rem;
+  color: var(--muted);
+  line-height: 2;
+}
+.storyVisual {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+}
+.storyImage {
+  object-fit: cover;
+  object-position: 20% center;
+}
+.values {
+  display: grid;
+  gap: 1rem;
+}
+.valueCard {
+  min-width: 0;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 5%, transparent);
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+.iconBox {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--ice) 50%, var(--surface));
+  color: var(--primary);
+}
+.valueCard h3 {
+  margin-block: 1.5rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.8;
+  font-weight: 600;
+}
+.valueCard p {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 2;
+}
+
+.commitment {
+  display: grid;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: linear-gradient(120deg, var(--background), var(--surface));
+}
+.commitment h2 {
+  margin-block: 1rem;
+}
+.commitment :global(.hero-cta-secondary) {
+  margin-block-start: 1.5rem;
+}
+.specPanel {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--primary) 7%, transparent);
+}
+.specHeading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block: 0.5rem 1rem;
+  border-block-end: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.specHeading svg,
+.specRow > svg {
+  flex-shrink: 0;
+}
+.specRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1.25rem;
+  border-block-end: 1px solid var(--border);
+  color: var(--primary);
+}
+.specRow h3 {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.specRow p {
+  margin-block-start: 0.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.8;
+}
+.specNote {
+  padding-block-start: 1rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.8;
+}
+.finalSection {
+  margin-block-end: 4rem;
+}
+.cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse at 10% 80%, var(--ice), transparent 65%),
+    linear-gradient(120deg, var(--surface), var(--background));
+  text-align: center;
+}
+.cta .eyebrow,
+.cta .actions {
+  justify-content: center;
+}
+.cta h2 {
+  margin-block: 1rem;
+}
+.cta .description {
+  margin-inline: auto;
+}
+.ctaSnowflake {
+  position: absolute;
+  z-index: -1;
+  inset-inline-end: -2rem;
+  inset-block-end: -2rem;
+  color: var(--border);
+  opacity: 0.6;
+}
+.page a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+
+@media (hover: hover) {
+  .valueCard:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+    box-shadow: 0 12px 32px color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+}
+@media (min-width: 640px) {
+  .values {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  .specPanel {
+    padding: 1.5rem;
+  }
+}
+@media (min-width: 768px) {
+  .heroGrid {
+    grid-template-columns: 1.1fr 0.9fr;
+    padding-block: 4rem;
+    gap: 3rem;
+  }
+  .section {
+    margin-block-start: 4rem;
+  }
+  .story {
+    min-height: 34rem;
+  }
+  .storyCopy {
+    width: 58%;
+    min-height: 34rem;
+    align-content: center;
+    margin-block-start: 0;
+    padding: 3rem;
+    background: linear-gradient(
+      270deg,
+      var(--surface),
+      color-mix(in srgb, var(--surface) 96%, transparent) 75%,
+      color-mix(in srgb, var(--surface) 86%, transparent)
+    );
+  }
+  .storyImage {
+    object-position: center;
+  }
+  .commitment {
+    grid-template-columns: 1.1fr 0.9fr;
+    padding: 3rem;
+  }
+  .cta {
+    padding: 4rem 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .heroGrid {
+    min-height: 620px;
+  }
+  .values {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reveals [data-revealed="true"] {
+    animation: about-reveal 600ms ease-out;
+  }
+  @keyframes about-reveal {
+    from {
+      opacity: 0.35;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .valueCard {
+    transition: none;
+  }
+  .valueCard:hover {
+    transform: none;
+  }
+}

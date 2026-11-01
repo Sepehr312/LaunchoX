@@ -24,9 +24,12 @@ describe("authentication rate limit", () => {
       "unknown",
     );
     expect(
-      getClientIp(new Headers({ "x-forwarded-for": "127.0.0.1, 10.0.0.1" })),
+      getClientIp(
+        new Headers({ "x-forwarded-for": "127.0.0.1, 10.0.0.1" }),
+        true,
+      ),
     ).toBe("127.0.0.1");
-    expect(getClientIp(new Headers({ "x-real-ip": "::1" }))).toBe("::1");
+    expect(getClientIp(new Headers({ "x-real-ip": "::1" }), true)).toBe("::1");
   });
 });
 describe("callback destinations", () => {

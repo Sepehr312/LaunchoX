@@ -9,7 +9,7 @@ import { Product } from "@/models/product";
 import {
   catalogCategories,
   splitRefrigeratorCategory,
-} from "@/lib/catalog-categories";
+} from "./catalog-categories";
 import { syncCatalogCategories } from "./sync-catalog-categories";
 
 async function main() {

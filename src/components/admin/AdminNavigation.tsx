@@ -51,14 +51,15 @@ export function AdminNavigation({ children }: { children?: ReactNode }) {
     <>
       <div className="admin-desktop-nav">{navigation()}</div>
       <button
+        type="button"
         className="admin-menu-trigger"
         ref={trigger}
         onClick={() => dialog.current?.showModal()}
         aria-haspopup="dialog"
         aria-controls="admin-mobile-menu"
+        aria-label="باز کردن منوی مدیریت"
       >
         <Menu size={22} aria-hidden="true" />
-        منوی مدیریت
       </button>
       <dialog
         id="admin-mobile-menu"

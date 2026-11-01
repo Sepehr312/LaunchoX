@@ -17,6 +17,7 @@ vi.mock("@/services/product.service", () => ({
   deleteProduct: mocks.remove,
 }));
 import { productAction } from "@/actions/admin/product.actions";
+import { productInput, objectId } from "./fixtures";
 beforeEach(() => vi.resetAllMocks());
 it.each(["create", "edit", "active", "delete"])(
   "checks admin before parsing or mutating %s",
@@ -54,3 +55,33 @@ it("updates activity and invalidates affected pages", async () => {
   expect(mocks.active).toHaveBeenCalledWith("123456789012345678901234", false);
   expect(mocks.revalidate).toHaveBeenCalledWith("/", "layout");
 });
+
+it.each(["create", "edit"])(
+  "requires a brand for %s even without browser validation",
+  async (operation) => {
+    const form = new FormData();
+    for (const [key, value] of Object.entries(productInput)) {
+      if (Array.isArray(value)) value.forEach((item) => form.append(key, item));
+      else form.set(key, String(value));
+    }
+    form.set("operation", operation);
+    form.set("id", objectId);
+    for (const brand of [undefined, "", " ", "invalid"]) {
+      if (brand === undefined) form.delete("brand");
+      else form.set("brand", brand);
+      expect(await productAction(undefined, form)).toMatchObject({
+        ok: false,
+        fieldErrors: { brand: expect.any(Array) },
+      });
+    }
+    expect(mocks.create).not.toHaveBeenCalled();
+    expect(mocks.update).not.toHaveBeenCalled();
+    form.set("brand", objectId);
+    mocks.create.mockResolvedValue({ id: objectId });
+    mocks.update.mockResolvedValue({ id: objectId });
+    expect(await productAction(undefined, form)).toMatchObject({ ok: true });
+    expect(
+      operation === "create" ? mocks.create : mocks.update,
+    ).toHaveBeenCalled();
+  },
+);

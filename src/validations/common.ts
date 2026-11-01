@@ -12,6 +12,16 @@ export const slugSchema = requiredString.regex(
   /^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u,
   "نامک معتبر نیست",
 );
+export const routeSlugSchema = z
+  .string()
+  .transform((value) => {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  })
+  .pipe(slugSchema);
 export const urlSchema = z.url({
   protocol: /^https?$/,
   error: "نشانی اینترنتی معتبر نیست",

@@ -1,16 +1,18 @@
 import "server-only";
+import { withImageReferences } from "@/services/image-lifecycle.service";
 import { getEnv } from "@/lib/env";
 import { randomUUID } from "node:crypto";
 import { Types, type QueryFilter } from "mongoose";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { toDTO } from "@/lib/model-shared";
+import { getProductPricing } from "@/lib/product-pricing";
 import { Cart } from "@/models/cart";
 import { Counter } from "@/models/counter";
 import { Order, type IOrder } from "@/models/order";
 import { Product } from "@/models/product";
 import { User } from "@/models/user";
-import { objectIdSchema } from "@/validations/common";
+import { objectIdSchema, quantitySchema } from "@/validations/common";
 import {
   orderSchema,
   orderQuerySchema,
@@ -18,6 +20,7 @@ import {
   authoritySchema,
   paymentReferenceSchema,
   orderNumberInput,
+  adminOrderQuerySchema,
 } from "@/validations/order";
 import type { OrderDTO, PaginatedResult } from "@/types/dto";
 import type { OrderStatus } from "@/types/domain";
@@ -81,17 +84,29 @@ export async function createOrderFromCart(
   const reserved: { product: Types.ObjectId; quantity: number }[] = [];
   let createdId: Types.ObjectId | undefined;
   try {
-    const items = [];
+    const items: Omit<IOrder["items"][number], "createdAt" | "updatedAt">[] =
+      [];
     for (const item of cart.items) {
+      quantitySchema.parse(item.quantity);
       const product = await Product.findOneAndUpdate(
-        { _id: item.product, isActive: true, stock: { $gte: item.quantity } },
+        {
+          _id: item.product,
+          isActive: true,
+          price: { $gt: 0 },
+          stock: { $gte: item.quantity },
+        },
         { $inc: { stock: -item.quantity } },
         { returnDocument: "after" },
       ).lean();
       if (!product) {
         const unavailable = await Product.findById(item.product)
-          .select("title")
+          .select("title price")
           .lean();
+        if (unavailable && unavailable.price <= 0)
+          throw new AppError(
+            "قیمت یکی از محصولات نیاز به اصلاح فروشنده دارد؛ سبد را بررسی کنید",
+            "VALIDATION",
+          );
         throw new AppError(
           `موجودی «${unavailable?.title ?? "محصول حذف‌شده"}» کافی نیست؛ سبد را بررسی کنید`,
           "OUT_OF_STOCK",
@@ -103,17 +118,11 @@ export async function createOrderFromCart(
         title: product.title,
         slug: product.slug,
         image: product.images[0],
-        price: product.price,
+        price: getProductPricing(product).finalPrice,
         quantity: item.quantity,
       });
     }
     const totals = calculateCartTotals(items);
-    if (
-      ![totals.subtotal, totals.shippingFee, totals.total].every(
-        Number.isSafeInteger,
-      )
-    )
-      throw new AppError("مبلغ سفارش خارج از محدودهٔ مجاز است", "VALIDATION");
     // Initialize once, then increment atomically; gaps after failed orders are harmless.
     await Counter.updateOne(
       { _id: "orders" },
@@ -129,21 +138,33 @@ export async function createOrderFromCart(
       .orFail();
     const { _id: addressId, ...shippingAddress } = address;
     void addressId;
-    const order = await Order.create({
-      user,
-      orderNumber: `LX-${counter.seq}`,
-      items,
-      subtotal: totals.subtotal,
-      shippingFee: totals.shippingFee,
-      total: totals.total,
-      shippingAddress,
-      note: data.note,
-      status: "pending",
-      payment: { status: "unpaid" },
-      statusHistory: [
-        { status: "pending", changedAt: new Date(), changedBy: user },
-      ],
-    });
+    const order = await withImageReferences(
+      items.map((item) => item.image),
+      (session) => {
+        const fields = {
+          user,
+          orderNumber: `LX-${counter.seq}`,
+          items,
+          subtotal: totals.subtotal,
+          shippingFee: totals.shippingFee,
+          total: totals.total,
+          shippingAddress,
+          note: data.note,
+          status: "pending" as const,
+          payment: { status: "unpaid" as const },
+          statusHistory: [
+            {
+              status: "pending" as const,
+              changedAt: new Date(),
+              changedBy: user,
+            },
+          ],
+        };
+        return session
+          ? new Order(fields).save({ session })
+          : Order.create(fields);
+      },
+    );
     createdId = order._id;
     // A cart edit during checkout must not be silently discarded.
     const cleared = await Cart.updateOne(
@@ -379,8 +400,46 @@ export async function listOrdersForUser(userId: string, input: unknown = {}) {
   return listOrders({ user: objectIdSchema.parse(userId) }, input);
 }
 export async function listOrdersAdmin(input: unknown = {}) {
+  const query = adminOrderQuerySchema.parse(input);
   await expireStaleOrders();
-  return listOrders({}, input);
+  const filter: QueryFilter<IOrder> = {};
+  if (query.payment) filter["payment.status"] = query.payment;
+  if (query.period) {
+    filter.createdAt = {
+      $gte: new Date(Date.now() - Number(query.period) * 86400000),
+    };
+  }
+  if (query.q) {
+    const pattern = query.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const customers = await User.find({
+      name: { $regex: pattern, $options: "i" },
+    })
+      .select("_id")
+      .lean();
+    filter.$or = [
+      { orderNumber: { $regex: pattern, $options: "i" } },
+      { user: { $in: customers.map((customer) => customer._id) } },
+    ];
+  }
+  return listOrders(filter, query);
+}
+
+export async function getOrderStatusCountsAdmin() {
+  await connectDB();
+  const groups = await Order.aggregate<{ _id: OrderStatus; count: number }>([
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+  const counts: Record<OrderStatus, number> = {
+    pending: 0,
+    processing: 0,
+    shipped: 0,
+    delivered: 0,
+    cancelled: 0,
+  };
+  for (const group of groups) {
+    if (Object.hasOwn(counts, group._id)) counts[group._id] = group.count;
+  }
+  return counts;
 }
 
 export async function attachOrderPayment(
@@ -407,6 +466,7 @@ export async function attachOrderPayment(
 }
 
 export function calculateShipping(subtotal: number) {
+  assertSafeAmount(subtotal);
   const env = getEnv();
   return subtotal >= env.FREE_SHIPPING_THRESHOLD ? 0 : env.SHIPPING_FLAT_FEE;
 }
@@ -428,8 +488,31 @@ export async function getDashboardRevenue(from: Date, through: Date) {
 export function calculateCartTotals(
   items: { price: number; quantity: number }[],
 ) {
-  const lineTotals = items.map((item) => item.price * item.quantity);
-  const subtotal = lineTotals.reduce((sum, value) => sum + value, 0);
+  const lineTotals = items.map((item) => {
+    assertSafeAmount(item.price);
+    const quantity = quantitySchema.parse(item.quantity);
+    return safeAmount(BigInt(item.price) * BigInt(quantity));
+  });
+  const subtotal = safeAmount(
+    lineTotals.reduce((sum, value) => sum + BigInt(value), BigInt(0)),
+  );
   const shippingFee = items.length ? calculateShipping(subtotal) : 0;
-  return { lineTotals, subtotal, shippingFee, total: subtotal + shippingFee };
+  assertSafeAmount(shippingFee);
+  return {
+    lineTotals,
+    subtotal,
+    shippingFee,
+    total: safeAmount(BigInt(subtotal) + BigInt(shippingFee)),
+  };
+}
+
+function assertSafeAmount(value: number) {
+  if (!Number.isSafeInteger(value) || value < 0)
+    throw new AppError("مبلغ سفارش خارج از محدودهٔ مجاز است", "VALIDATION");
+}
+
+function safeAmount(value: bigint) {
+  if (value < BigInt(0) || value > BigInt(Number.MAX_SAFE_INTEGER))
+    throw new AppError("مبلغ سفارش خارج از محدودهٔ مجاز است", "VALIDATION");
+  return Number(value);
 }

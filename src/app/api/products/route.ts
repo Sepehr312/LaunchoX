@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     page: params.get("page") ?? undefined,
     limit: params.get("limit") ?? undefined,
     category: params.get("category") ?? undefined,
+    brandSlug: params.get("brandSlug") ?? undefined,
     q: params.get("q") ?? undefined,
     minPrice: params.get("minPrice") ?? undefined,
     maxPrice: params.get("maxPrice") ?? undefined,

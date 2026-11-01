@@ -1,3 +1,4 @@
+import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import { getEnv } from "@/lib/env";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
@@ -25,13 +26,17 @@ export default async function EditCategory({
   ]);
   if (!category) notFound();
   return (
-    <section className="admin-panel">
-      <h1>ویرایش دسته‌بندی</h1>
+    <AdminFormPage
+      title="ویرایش دسته‌بندی"
+      description="اطلاعات و تصویر دسته‌بندی و جایگاه آن در فروشگاه را مشخص کنید."
+      listLabel="دسته‌بندی‌ها"
+      listHref="/admin/categories"
+    >
       <CategoryForm
         key={category.id}
         category={category}
         categories={categories}
       />
-    </section>
+    </AdminFormPage>
   );
 }

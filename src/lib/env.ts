@@ -16,6 +16,21 @@ const money = requiredText
   .transform(Number)
   .refine(Number.isSafeInteger, "مبلغ خارج از محدودهٔ مجاز است");
 
+const imageOrigin = httpUrl
+  .refine((value) => {
+    if (!URL.canParse(value)) return false;
+    const url = new URL(value);
+    return (
+      !url.hostname.includes("*") &&
+      url.pathname === "/" &&
+      !url.search &&
+      !url.hash &&
+      !url.username &&
+      !url.password
+    );
+  }, "مبدأ تصویر باید فقط شامل پروتکل، دامنه و پورت باشد")
+  .transform((value) => new URL(value).origin);
+
 export const envSchema = z
   .object({
     NODE_ENV: z
@@ -26,9 +41,32 @@ export const envSchema = z
       "نشانی MongoDB معتبر نیست",
     ),
     AUTH_SECRET: requiredText,
+    AUTH_TRUST_PROXY_HEADERS: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
     AUTH_URL: httpUrl.optional(),
     NEXT_PUBLIC_SITE_URL: httpUrl,
+    IMAGE_INTERNAL_ORIGINS: z
+      .string()
+      .default("")
+      .transform((value) =>
+        value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(imageOrigin)),
     NEXT_PUBLIC_SITE_NAME: requiredText,
+    CONTACT_PHONE: z
+      .string()
+      .trim()
+      .regex(/^$|^\+?[0-9 ()-]{7,24}$/, "شماره تماس معتبر نیست")
+      .default(""),
+    CONTACT_EMAIL: z
+      .union([z.literal(""), z.email({ error: "ایمیل تماس معتبر نیست" })])
+      .default(""),
+    CONTACT_ADDRESS: z.string().trim().max(500).default(""),
     PAYMENT_PROVIDER: z.literal("fake", { error: "درگاه پرداخت معتبر نیست" }),
     SEED_ADMIN_EMAIL: z.email({ error: "ایمیل ادمین معتبر نیست" }).optional(),
     SEED_ADMIN_PASSWORD: z
@@ -39,6 +77,18 @@ export const envSchema = z
     FREE_SHIPPING_THRESHOLD: money,
   })
   .superRefine((value, context) => {
+    if (
+      value.NODE_ENV === "production" &&
+      (value.AUTH_SECRET.length < 32 ||
+        /replace-with|change-?me|example|test-secret/i.test(value.AUTH_SECRET))
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["AUTH_SECRET"],
+        message:
+          "کلید احراز هویت عملیاتی باید تصادفی، حداقل ۳۲ کاراکتر و غیرنمونه باشد",
+      });
+    }
     if (value.NODE_ENV === "production" && !value.AUTH_URL) {
       context.addIssue({
         code: "custom",

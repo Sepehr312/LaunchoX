@@ -3,6 +3,7 @@ import { z } from "zod";
 import { connectDB } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { toDTO } from "@/lib/model-shared";
+import { getProductPricing } from "@/lib/product-pricing";
 import { Cart } from "@/models/cart";
 import { Product } from "@/models/product";
 import { calculateCartTotals } from "@/services/order.service";
@@ -37,7 +38,7 @@ export async function getCart(owner: CartOwner): Promise<CartView> {
   const warnings: string[] = [];
   const items = (cart?.items ?? []).flatMap((item) => {
     const product = map.get(String(item.product));
-    if (!product || product.stock === 0) {
+    if (!product || product.stock === 0 || product.price === 0) {
       warnings.push("یک محصول ناموجود یا حذف‌شده از سبد کنار گذاشته شد");
       return [];
     }
@@ -49,7 +50,7 @@ export async function getCart(owner: CartOwner): Promise<CartView> {
   // Reads reflect current availability without overwriting concurrent cart mutations.
   const totals = calculateCartTotals(
     items.map((item) => ({
-      price: item.product.price,
+      price: getProductPricing(item.product).finalPrice,
       quantity: item.quantity,
     })),
   );
@@ -75,6 +76,11 @@ async function changeItem(owner: CartOwner, input: unknown, add: boolean) {
     isActive: true,
   }).lean();
   if (!product) throw new AppError("محصول پیدا نشد", "NOT_FOUND");
+  if (product.price <= 0)
+    throw new AppError(
+      "قیمت این محصول نیاز به اصلاح فروشنده دارد",
+      "VALIDATION",
+    );
   if (!product.stock)
     throw new AppError("این محصول موجود نیست", "OUT_OF_STOCK");
   const maximum = Math.min(product.stock, 10);

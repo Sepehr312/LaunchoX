@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { setTimeout } from "node:timers/promises";
+import { MongoMemoryServer, MongoMemoryReplSet } from "mongodb-memory-server";
 
 const run = promisify(execFile);
 interface TestMongoServer {
@@ -11,15 +12,23 @@ interface TestMongoServer {
   stop: () => Promise<void>;
 }
 
-export async function startTestMongo(): Promise<TestMongoServer> {
+export async function startTestMongo(
+  replicaSet = false,
+): Promise<TestMongoServer> {
   try {
-    const server = await MongoMemoryServer.create({
+    const options = {
       binary: {
         version: "7.0.24",
         downloadDir: join(tmpdir(), "launchox-mongodb-binaries"),
       },
       instance: { args: ["--setParameter", "ttlMonitorSleepSecs=1"] },
-    });
+    };
+    const server = replicaSet
+      ? await MongoMemoryReplSet.create({
+          binary: options.binary,
+          replSet: { count: 1, storageEngine: "wiredTiger" },
+        })
+      : await MongoMemoryServer.create(options);
     return {
       uri: server.getUri(),
       stop: async () => {
@@ -49,6 +58,7 @@ export async function startTestMongo(): Promise<TestMongoServer> {
     "--tmpfs",
     "/data/configdb",
     "mongo:7",
+    ...(replicaSet ? ["--replSet", "rs0", "--bind_ip_all"] : []),
     "--setParameter",
     "ttlMonitorSleepSecs=1",
   );
@@ -56,11 +66,38 @@ export async function startTestMongo(): Promise<TestMongoServer> {
     await docker("rm", "--force", name);
   };
   try {
+    const waitForMongo = async (script: string) => {
+      const deadline = Date.now() + 60000;
+      for (;;) {
+        try {
+          await docker("exec", name, "mongosh", "--quiet", "--eval", script);
+          return;
+        } catch (error) {
+          if (Date.now() >= deadline) throw error;
+          await setTimeout(250);
+        }
+      }
+    };
+    await waitForMongo("if (!db.adminCommand({ping:1}).ok) quit(1)");
     const { stdout } = await docker("port", name, "27017/tcp");
     const address = stdout.trim();
     if (!/^127\.0\.0\.1:\d+$/.test(address))
       throw new Error("Unexpected test database address");
-    return { uri: `mongodb://${address}/`, stop };
+    if (replicaSet) {
+      await docker(
+        "exec",
+        name,
+        "mongosh",
+        "--quiet",
+        "--eval",
+        'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})',
+      );
+      await waitForMongo("if (!db.hello().isWritablePrimary) quit(1)");
+    }
+    return {
+      uri: `mongodb://${address}/?directConnection=true${replicaSet ? "&replicaSet=rs0" : ""}`,
+      stop,
+    };
   } catch (error) {
     await stop();
     throw error;

@@ -2,6 +2,7 @@ import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import { z } from "zod";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { PremiumAuthLayout } from "@/components/auth/PremiumAuthLayout";
 import { safeCallbackUrl } from "@/validations/auth";
 
 export const metadata: Metadata = {
@@ -33,10 +34,13 @@ export default async function LoginPage({
           : "خطایی رخ داد، دوباره تلاش کنید"
       : undefined;
   return (
-    <AuthForm
-      mode="login"
-      callbackUrl={callbackUrl}
-      initialError={initialError}
-    />
+    <PremiumAuthLayout>
+      <AuthForm
+        mode="login"
+        appearance="premium"
+        callbackUrl={callbackUrl}
+        initialError={initialError}
+      />
+    </PremiumAuthLayout>
   );
 }

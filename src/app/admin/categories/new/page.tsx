@@ -1,3 +1,4 @@
+import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import { getEnv } from "@/lib/env";
 import { requireAdmin } from "@/lib/auth";
 import { listCategoriesAdmin } from "@/services/category.service";
@@ -10,9 +11,13 @@ export default async function NewCategory() {
   await requireAdmin();
   const categories = await listCategoriesAdmin();
   return (
-    <section className="admin-panel">
-      <h1>دسته‌بندی جدید</h1>
+    <AdminFormPage
+      title="دسته‌بندی جدید"
+      description="اطلاعات و تصویر دسته‌بندی و جایگاه آن در فروشگاه را مشخص کنید."
+      listLabel="دسته‌بندی‌ها"
+      listHref="/admin/categories"
+    >
       <CategoryForm categories={categories} />
-    </section>
+    </AdminFormPage>
   );
 }

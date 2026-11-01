@@ -12,3 +12,10 @@ export class AppError extends Error {
     this.name = "AppError";
   }
 }
+
+export class PayloadTooLargeError extends AppError {
+  constructor(message: string) {
+    super(message, "VALIDATION");
+    this.name = "PayloadTooLargeError";
+  }
+}

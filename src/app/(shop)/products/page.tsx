@@ -1,5 +1,6 @@
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { ProductsCatalog } from "@/components/store/ProductsCatalog";
 import { parseProductQuery, type StoreSearchParams } from "@/lib/product-query";
 import { listCategories } from "@/services/category.service";
@@ -20,16 +21,22 @@ export default async function ProductsPage({
 }) {
   const values = await searchParams;
   const parsed = parseProductQuery(values);
+  if (
+    !parsed.success &&
+    parsed.error.issues.some((issue) => issue.path[0] === "page")
+  ) {
+    notFound();
+  }
   const query = parsed.success
     ? parsed.data
     : { page: 1, limit: 9, sort: "newest" as const };
   query.limit = values.limit ? query.limit : 9;
-  query.page = 1;
   const [categories, result, options] = await Promise.all([
     listCategories(),
     listProducts(query),
     getProductFilterOptions(),
   ]);
+  if (query.page > Math.max(1, result.totalPages)) notFound();
   return (
     <ProductsCatalog
       result={result}

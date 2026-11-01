@@ -56,6 +56,8 @@ const brandSchema = new Schema<IBrand>(
   modelOptions,
 );
 
+brandSchema.index({ logo: 1 });
+
 export const Brand: Model<IBrand> =
   (models.Brand as Model<IBrand> | undefined) ??
   model<IBrand>("Brand", brandSchema);

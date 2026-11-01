@@ -1,0 +1,13 @@
+.theme {
+  color-scheme: light;
+  --f-accent: #38bdf8;
+  --f-ink: #102c43;
+  --f-muted: #526e82;
+  --f-background: #f1f8fc;
+  --f-glass: rgb(250 254 255 / 83%);
+  --f-panel: #f7fcff;
+  --f-border: rgb(151 198 222 / 38%);
+  --f-wash: rgb(203 235 250 / 40%);
+  --f-shadow: rgb(24 74 110 / 9%);
+  color: var(--f-ink);
+}

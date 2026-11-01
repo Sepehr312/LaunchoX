@@ -8,6 +8,7 @@ import { BestSellingProducts } from "@/components/store/BestSellingProducts";
 import { SectionHeading } from "@/components/store/SectionHeading";
 import { ChevronIcon } from "@/components/store/Icons";
 import { listProducts } from "@/services/product.service";
+import { listCategories } from "@/services/category.service";
 
 export const revalidate = 300;
 export const metadata: Metadata = {
@@ -15,13 +16,14 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [bestselling, newest] = await Promise.all([
+  const [bestselling, newest, categories] = await Promise.all([
     listProducts({ page: 1, limit: 4, sort: "bestselling" }),
     listProducts({ page: 1, limit: 8, sort: "newest" }),
+    listCategories(),
   ]);
   return (
     <main>
-      <StoreHero />
+      <StoreHero categories={categories} />
 
       <BestSellingProducts products={bestselling.items} />
 
@@ -29,7 +31,7 @@ export default async function HomePage() {
         <div className="store-shell grid items-center gap-8 lg:grid-cols-2">
           <div className="showroom-image">
             <Image
-              src="/images/arctic-showroom-dark.png"
+              src="/images/arctic-showroom-light.webp"
               alt="نمایشگاه یخچال لانچ‌اوکس در فضای قطبی"
               fill
               sizes="(max-width: 1023px) 100vw, 50vw"

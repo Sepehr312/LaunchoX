@@ -6,7 +6,16 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   { rules: { "@typescript-eslint/no-explicit-any": "error" } },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "tmp/**",
+    "test-results/**",
+    "playwright-report/**",
+    "tests/local/**",
+  ]),
 ]);
 
 export default eslintConfig;

@@ -54,3 +54,36 @@
 
 
 - [نمونهٔ خطای فرم برند](admin-review/brand-error.png)
+
+## طرح‌های تأییدشدهٔ داشبورد و محصولات
+
+- داشبورد با چهار کارت آمار واقعی و دو ستون سفارش‌های اخیر/موجودی کم در دسکتاپ پیاده شد؛ در موبایل بخش‌ها زیر هم قرار می‌گیرند. هر ده سفارش آخر و همهٔ محصولات کم‌موجودی حفظ می‌شوند.
+- جدول محصولات ستون‌های تصویر، عنوان، برند، دسته، قیمت، موجودی، وضعیت و عملیات دارد. برند از ارتباط فعلی محصول خوانده می‌شود؛ مشخصهٔ قدیمی برند و حالت «بدون برند» نیز پشتیبانی می‌شوند.
+- وضعیت محصول کلید مستقل دارد؛ ویرایش و حذف تأییددار در ستون عملیات هستند. جستجو و اندازهٔ فعلی صفحات حفظ شده و صفحه‌بندی شماره‌دار عبارت جستجو را نگه می‌دارد.
+- بررسی خودکار در دیتابیس تصادفی و مجزا انجام شد: نمایش در عرض‌های ۳۶۰، ۷۶۸، ۱۰۲۴ و ۱۴۴۰، ده سفارش اخیر، آستانهٔ موجودی، نام برند واقعی/قدیمی/خالی، ثبت تغییر وضعیت، جستجو، صفحه‌بندی، تأیید حذف، محدودیت مهمان و حالت‌های خالی. دیتابیس پروژه تغییر نکرد.
+- هر ۴۵۹ تست Vitest موفق بودند. دستور مرورگر: `node tests/admin-approved-layout-browser.mjs`؛ مانند تست مرورگر قبلی، Playwright نصب‌شدهٔ محیط را می‌توان با `LAUNCHO_PLAYWRIGHT_PATH` معرفی کرد.
+- تصاویر اجرای واقعی با دادهٔ آزمایشی: [داشبورد دسکتاپ](admin-review/dashboard-approved-desktop.png)، [داشبورد موبایل](admin-review/dashboard-approved-mobile.png)، [محصولات دسکتاپ](admin-review/products-approved-desktop.png)، [محصولات موبایل](admin-review/products-approved-mobile.png).
+
+## هماهنگی فهرست‌ها و جستجوی زنده
+
+- صفحه‌های برندها، دسته‌بندی‌ها و کاربران همان سربرگ جدا، کادر فهرست سفید، فاصلهٔ ردیف‌ها و جدول آبی روشن صفحهٔ محصولات را دارند. تصویر/لوگوی ثبت‌شده نمایش داده می‌شود و برای تصویر خالی فقط آیکون جایگزین وجود دارد.
+- چهار فهرست محصولات، برندها، دسته‌بندی‌ها و کاربران جستجوی زنده با مکث ۳۰۰ میلی‌ثانیه دارند. دکمه‌های جستجو/اعمال/پاک‌کردن حذف شده‌اند؛ خالی‌کردن ورودی همهٔ نتایج را برمی‌گرداند. فیلتر وضعیت برند حذف شده و نشانی‌های قدیمی دارای این پارامتر نیز پاک‌سازی می‌شوند.
+- عبارت جستجو در URL باقی می‌ماند، تغییر عبارت صفحه‌بندی محصول را از ابتدا شروع می‌کند و فوکوس هنگام دریافت نتایج حفظ می‌شود. جستجوی دسته‌بندی نام/نامک و جستجوی کاربران نام/ایمیل را روی همان DTOهای فعلی بررسی می‌کند؛ همهٔ ورودی‌ها روی سرور اعتبارسنجی می‌شوند.
+- وضعیت کاربران با کلید هم‌شکل محصولات تغییر می‌کند؛ حساب خود ادمین همچنان قابل غیرفعال‌سازی نیست. ویرایش و حذف تأییددار برند/دسته با آیکون‌های همان صفحهٔ محصولات نمایش داده می‌شود.
+- زیر عرض ۶۴۰ پیکسل، دکمه‌های افزودنِ سربرگ داشبورد، محصولات، برندها و دسته‌بندی‌ها فقط آیکون «+» دارند؛ نام فارسی دسترس‌پذیر، راهنمای دکمه و محدودهٔ لمس ۴۴ در ۴۴ پیکسل حفظ شده است.
+- `lint`، `typecheck`، هر ۴۵۹ تست و `build` موفق بودند. تست مرورگر پنج صفحه را در عرض‌های ۳۶۰، ۷۶۸، ۱۰۲۴ و ۱۴۴۰، جستجوی بدون بارگذاری کامل، حفظ فوکوس، برگشت نتایج پس از خالی‌کردن ورودی، حذف فیلتر برند، اعتبارسنجی query و کلید کاربران بررسی کرد. تست مرورگر قبلی نیز ساخت/ویرایش/آپلود و محدودیت حذف دستهٔ دارای محصول و اسکرول لمسی/ماوس را تأیید کرد. هر دو از دیتابیس‌های جداگانهٔ موقت استفاده کردند.
+- تصاویر جدید: [برندها دسکتاپ](admin-review/brands-approved-desktop.png)، [برندها موبایل](admin-review/brands-approved-mobile.png)، [دسته‌بندی‌ها دسکتاپ](admin-review/categories-approved-desktop.png)، [دسته‌بندی‌ها موبایل](admin-review/categories-approved-mobile.png)، [کاربران دسکتاپ](admin-review/users-approved-desktop.png)، [کاربران موبایل](admin-review/users-approved-mobile.png).
+
+
+## Approved catalog forms
+
+The product, brand and category create/edit pages now share the approved form layout: one white panel, ice-blue section headers, full-width title/name and slug fields, a desktop media/publication column and native checkboxes. Product images are grouped in that column with accessible reorder/delete buttons. Forms stack below 1200px and remain within a 360px viewport. Existing upload, validation and save/redirect behavior is preserved.
+
+Validation: lint, typecheck, all 459 Vitest tests and production build passed. The isolated browser check covers all three create forms at 360/768/1024/1440px, keyboard checkbox interaction, image reordering, attributes, uploads, create/edit saves, public product visibility, linked-category deletion guards and mobile table scrolling.
+
+Screenshots: [Product desktop](admin-review/products-form-approved-1440.png), [product mobile](admin-review/products-form-approved-360.png), [brand desktop](admin-review/brands-form-approved-1440.png), [brand mobile](admin-review/brands-form-approved-360.png), [category desktop](admin-review/categories-form-approved-1440.png), [category mobile](admin-review/categories-form-approved-360.png).
+
+
+Catalog form refinement: on mobile, product sections follow images, main information, pricing/stock, technical specifications and publication. Brand/category media also comes first. This is the DOM order for keyboard and screen-reader navigation; desktop uses grid areas to keep media and publication beside the main fields. Product brand selection is required in the browser and in admin create/edit actions, with Persian field errors and a create-brand link when no usable brand exists. Legacy products remain readable.
+
+Validation for this refinement: lint, typecheck, all 461 Vitest tests and build passed. Browser tests verify mobile order for all three forms, required brand selection with native validation bypassed, existing image controls and successful create/edit saves.

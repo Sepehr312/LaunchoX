@@ -50,7 +50,7 @@ export async function accountAction(
         fieldErrors: error.flatten().fieldErrors,
       };
     if (error instanceof AppError) return { ok: false, error: error.message };
-    console.error("Account update failed", error);
+    console.error("Account update failed");
     return { ok: false, error: "خطایی رخ داد؛ دوباره تلاش کنید" };
   }
 }

@@ -5,8 +5,7 @@ import {
   type NextFetchEvent,
 } from "next/server";
 import { getOrderForUser } from "@/services/order.service";
-import { getProductBySlug } from "@/services/product.service";
-import { objectIdSchema, slugSchema } from "@/validations/common";
+import { objectIdSchema } from "@/validations/common";
 import { AppError } from "@/lib/errors";
 import { getEnv } from "@/lib/env";
 import { getAuthConfig } from "@/lib/auth.config";
@@ -23,20 +22,7 @@ const handleRequest: (
     url.searchParams.set("callbackUrl", pathname + search);
     return NextResponse.redirect(url);
   }
-  if (
-    request.auth?.user &&
-    (pathname === "/login" || pathname === "/register")
-  ) {
-    const destination =
-      request.auth.user.role === "admin" ? "/admin" : "/account";
-    return NextResponse.redirect(new URL(destination, request.nextUrl));
-  }
-  if (
-    request.auth?.user.role === "admin" &&
-    (pathname === "/account" || pathname === "/account/")
-  ) {
-    return NextResponse.redirect(new URL("/admin", request.nextUrl));
-  }
+  // Role-based redirects run on the server with current database access.
   // Resolve ownership before React streams loading boundaries and commits HTTP 200.
   const orderPath = /^\/account\/orders\/([^/]+)\/?$/.exec(pathname);
   if (orderPath && request.auth?.user) {
@@ -75,27 +61,6 @@ export default async function proxy(
   request: NextRequest,
   event: NextFetchEvent,
 ) {
-  const productPath = /^\/products\/([^/]+)\/?$/.exec(request.nextUrl.pathname);
-  if (productPath) {
-    let slug: string;
-    try {
-      slug = decodeURIComponent(productPath[1]);
-    } catch {
-      slug = "";
-    }
-    const parsed = slugSchema.safeParse(slug);
-    if (!parsed.success || !(await getProductBySlug(parsed.data))) {
-      // Resolve missing products before loading boundaries commit HTTP 200.
-      const url = request.nextUrl.clone();
-      url.pathname = "/_not-found";
-      url.search = "";
-      return NextResponse.rewrite(url, {
-        status: 404,
-        headers: { "cache-control": "no-store" },
-      });
-    }
-    return NextResponse.next();
-  }
   // Lazy Auth.js initialization resolves the wrapped interceptor asynchronously.
   const handle = await protectRoute;
   return handle(request, event);
@@ -103,7 +68,6 @@ export default async function proxy(
 
 export const config = {
   matcher: [
-    "/products/:slug",
     "/account/:path*",
     "/admin/:path*",
     "/checkout/:path*",

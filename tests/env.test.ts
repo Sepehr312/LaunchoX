@@ -5,7 +5,7 @@ import { envSchema, getEnv } from "@/lib/env";
 
 const valid = {
   MONGODB_URI: "mongodb://127.0.0.1:27017/test",
-  AUTH_SECRET: "test-secret",
+  AUTH_SECRET: "a741e3f097ad580e71fd73b9df2c8410",
   NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
   NEXT_PUBLIC_SITE_NAME: "فروشگاه",
   PAYMENT_PROVIDER: "fake",
@@ -16,6 +16,26 @@ const valid = {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("environment validation", () => {
+  it("validates explicit image origins and normalizes default ports", () => {
+    expect(
+      envSchema.parse({
+        ...valid,
+        IMAGE_INTERNAL_ORIGINS: "https://old.test:443, http://legacy.test:8080",
+      }).IMAGE_INTERNAL_ORIGINS,
+    ).toEqual(["https://old.test", "http://legacy.test:8080"]);
+    for (const origin of [
+      "https://old.test/path",
+      "https://*.test",
+      "https://user:pass@old.test",
+      "https://old.test?v=1",
+      "invalid",
+    ]) {
+      expect(
+        envSchema.safeParse({ ...valid, IMAGE_INTERNAL_ORIGINS: origin })
+          .success,
+      ).toBe(false);
+    }
+  });
   it("parses integer fees and allows omitted seed credentials", () => {
     const result = envSchema.parse(valid);
     expect(result.SHIPPING_FLAT_FEE).toBe(50000);

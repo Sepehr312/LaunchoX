@@ -1,0 +1,77 @@
+.dialog {
+  width: min(440px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 24px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: 0 16px 60px rgb(16 36 90 / 20%);
+  text-align: start;
+  white-space: normal;
+}
+.dialog::backdrop {
+  background: rgb(16 36 60 / 45%);
+}
+.dialog h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.dialog p {
+  margin-block: 0 16px;
+  overflow-wrap: anywhere;
+}
+.dialog[open] .form {
+  display: grid;
+  gap: 16px;
+}
+.password {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.dialog[open] .password button {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+}
+.dialog[open] .password button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.dialog[open] .buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dialog[open] .buttons button {
+  min-height: 44px;
+  flex: 1 1 auto;
+  padding: 10px 16px;
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  background: var(--primary);
+  color: var(--color-primary-foreground);
+  font: inherit;
+  cursor: pointer;
+}
+.dialog[open] .buttons .cancel {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+.dialog[open] .buttons button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.dialog[open] .error {
+  color: var(--color-danger);
+  margin: 0;
+}

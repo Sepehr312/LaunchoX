@@ -8,6 +8,9 @@ import {
   vi,
 } from "vitest";
 import mongoose from "mongoose";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ArcticProductCategories } from "@/components/preview/frostic/ArcticProductCategories";
 import { startTestMongo } from "./mongo-server";
 
 vi.mock("server-only", () => ({}));
@@ -23,6 +26,7 @@ import {
   getCategoryBySlug,
   getCategoryTree,
   listCategories,
+  listStoreCategories,
   listCategoriesAdmin,
   getCategoryAdmin,
   updateCategory,
@@ -106,6 +110,50 @@ async function createFixtureCatalog() {
 }
 
 describe("public catalog queries", () => {
+  it("reads product details once and reflects deletion without a stale service cache", async () => {
+    const { products } = await createFixtureCatalog();
+    const lookup = vi.spyOn(Product, "findOne");
+    try {
+      const product = await getProductBySlug(products[0].slug);
+      expect(product).toMatchObject({
+        id: String(products[0]._id),
+        category: { slug: "refrigerators" },
+      });
+      expect(JSON.parse(JSON.stringify(product))).toEqual(product);
+      expect(lookup).toHaveBeenCalledTimes(1);
+      expect(lookup).toHaveBeenCalledWith({
+        slug: products[0].slug,
+        isActive: true,
+      });
+      await deleteProduct(String(products[0]._id));
+      expect(await getProductBySlug(products[0].slug)).toBeNull();
+      expect(await getProductBySlug("never-existed")).toBeNull();
+      expect(await getProductBySlug(products[2].slug)).toBeNull();
+      expect(await getProductBySlug(products[1].slug)).toMatchObject({
+        stock: 0,
+      });
+    } finally {
+      lookup.mockRestore();
+    }
+  });
+
+  it("lists active categories with only active product counts and includes empty categories", async () => {
+    const { refrigerators, freezers } = await createFixtureCatalog();
+    await Category.create({
+      name: "Hidden category",
+      slug: "hidden",
+      isActive: false,
+    });
+    const result = await listStoreCategories();
+    expect(
+      result.map(({ id, productCount }) => ({ id, productCount })),
+    ).toEqual([
+      { id: String(refrigerators._id), productCount: 2 },
+      { id: String(freezers._id), productCount: 0 },
+    ]);
+    expect(JSON.parse(JSON.stringify(result))).toEqual(result);
+  });
+
   it("filters inactive products and supports URL query semantics", async () => {
     const { refrigerators } = await createFixtureCatalog();
     const result = await listProducts({
@@ -160,6 +208,48 @@ describe("public catalog queries", () => {
 });
 
 describe("catalog management services", () => {
+  it("updates homepage cards after category edits, deactivation and deletion without restoring static categories", async () => {
+    const category = await createCategory({
+      name: "دستهٔ آزمایشی",
+      slug: "twin",
+      order: 1,
+      isActive: true,
+    });
+    const renderCategories = async () =>
+      renderToStaticMarkup(
+        createElement(ArcticProductCategories, {
+          categories: await listCategories(),
+        }),
+      );
+    expect(await renderCategories()).toContain('href="/categories/twin"');
+    expect(await renderCategories()).not.toContain(
+      'href="/categories/digital"',
+    );
+    await updateCategory(category.id, {
+      name: "نام ویرایش‌شده",
+      slug: "twin",
+      order: 2,
+      isActive: false,
+    });
+    const hidden = await renderCategories();
+    expect(hidden).not.toContain('href="/categories/twin"');
+    expect(hidden).toContain("هنوز دسته‌بندی‌ای برای نمایش وجود ندارد");
+    await updateCategory(category.id, {
+      name: "نام ویرایش‌شده",
+      slug: "custom-category",
+      order: 2,
+      isActive: true,
+    });
+    const updated = await renderCategories();
+    expect(updated).toContain("نام ویرایش‌شده");
+    expect(updated).toContain('href="/categories/custom-category"');
+    expect(updated).not.toContain('href="/categories/twin"');
+    await deleteCategory(category.id);
+    expect(await renderCategories()).not.toContain(
+      'href="/categories/custom-category"',
+    );
+  });
+
   it("lists inactive categories, clears optional fields and enforces parent depth", async () => {
     const root = await createCategory({
       name: "ریشه",
@@ -226,6 +316,25 @@ describe("catalog management services", () => {
       });
       expect(await getCategoryAdmin(category.id)).not.toBeNull();
     }
+  });
+  it("rejects deleting categories referenced by legacy string IDs", async () => {
+    const category = await createCategory({
+      name: "Legacy",
+      order: 0,
+      isActive: true,
+    });
+    const collection = mongoose.connection.db!.collection("products");
+    const product = await collection.insertOne({
+      category: category.id,
+      isActive: false,
+    });
+    await expect(deleteCategory(category.id)).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+    expect(await getCategoryAdmin(category.id)).not.toBeNull();
+    expect(
+      await collection.findOne({ _id: product.insertedId }),
+    ).not.toBeNull();
   });
   it("creates category trees and prevents deleting non-empty categories", async () => {
     const parent = await createCategory({

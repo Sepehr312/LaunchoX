@@ -1,4 +1,4 @@
-import { catalogCategories } from "@/lib/catalog-categories";
+import { catalogCategories } from "./catalog-categories";
 
 const categoryImages: Record<string, string> = Object.fromEntries(
   catalogCategories.map((category) => [category.slug, category.image]),

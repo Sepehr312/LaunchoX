@@ -12,6 +12,29 @@ import { GET } from "@/app/api/products/route";
 describe("GET /api/products", () => {
   beforeEach(() => listProductsMock.mockReset());
 
+  it("validates and forwards the stable brand slug filter", async () => {
+    listProductsMock.mockResolvedValue({ items: [], total: 0 });
+    expect(
+      (
+        await GET(
+          new NextRequest("http://localhost/api/products?brandSlug=samsung"),
+        )
+      ).status,
+    ).toBe(200);
+    expect(listProductsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ brandSlug: "samsung" }),
+    );
+    listProductsMock.mockClear();
+    expect(
+      (
+        await GET(
+          new NextRequest("http://localhost/api/products?brandSlug=..%2Fadmin"),
+        )
+      ).status,
+    ).toBe(400);
+    expect(listProductsMock).not.toHaveBeenCalled();
+  });
+
   it("validates and forwards public product query parameters", async () => {
     listProductsMock.mockResolvedValue({
       items: [],

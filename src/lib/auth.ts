@@ -1,11 +1,14 @@
 import "server-only";
+import { cache } from "react";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { headers, cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { getAuthConfig } from "@/lib/auth.config";
-import { consumeAuthAttempt, getClientIp } from "@/lib/rate-limit";
-import { authenticateUser } from "@/services/auth.service";
+import { getClientIp } from "@/lib/rate-limit";
+import { getEnv } from "@/lib/env";
+import { consumeStoredAuthAttempt } from "@/services/auth-attempt.service";
+import { authenticateUser, getUserAccess } from "@/services/auth.service";
 import { loginSchema, safeCallbackUrl } from "@/validations/auth";
 import { guestIdSchema } from "@/validations/cart";
 import { mergeGuestCart } from "@/services/cart.service";
@@ -21,9 +24,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
       name: "ایمیل و رمز عبور",
       credentials: { email: { type: "email" }, password: { type: "password" } },
       async authorize(credentials, request) {
-        if (!consumeAuthAttempt("login", getClientIp(request.headers)))
-          throw new TooManyAttempts();
         const parsed = loginSchema.safeParse(credentials);
+        if (
+          !(await consumeStoredAuthAttempt(
+            "login",
+            getClientIp(
+              request.headers,
+              Boolean(getEnv().AUTH_TRUST_PROXY_HEADERS),
+            ),
+            credentials?.email,
+          ))
+        )
+          throw new TooManyAttempts();
         const user = parsed.success
           ? await authenticateUser(parsed.data)
           : null;
@@ -40,11 +52,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
 }));
 
 export async function getCurrentUser() {
-  return (await auth())?.user ?? null;
+  const user = (await auth())?.user;
+  if (!user) return null;
+  // The JWT identifies the user; its role may predate access changes.
+  const access = await getUserAccess(user.id);
+  if (
+    !access?.isActive ||
+    (user.sessionVersion ?? 0) !== (access.sessionVersion ?? 0)
+  )
+    return null;
+  return { ...user, role: access.role };
 }
 
-export async function consumeCurrentAuthAttempt(scope: "login" | "register") {
-  return consumeAuthAttempt(scope, getClientIp(await headers()));
+export async function consumeCurrentAuthAttempt(
+  scope: "login" | "register",
+  identifier?: unknown,
+) {
+  return consumeStoredAuthAttempt(
+    scope,
+    getClientIp(await headers(), Boolean(getEnv().AUTH_TRUST_PROXY_HEADERS)),
+    identifier,
+  );
 }
 
 export async function requireUser() {
@@ -58,8 +86,8 @@ export async function requireUser() {
   return user;
 }
 
-export async function requireAdmin() {
+export const requireAdmin = cache(async function requireAdmin() {
   const user = await requireUser();
   if (user.role !== "admin") notFound();
   return user;
-}
+});

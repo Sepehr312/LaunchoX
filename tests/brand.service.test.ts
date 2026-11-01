@@ -14,16 +14,114 @@ import {
   createProduct,
   updateProduct,
   getProductAdmin,
+  listProducts,
 } from "@/services/product.service";
 import {
   createBrand,
   deleteBrand,
   getBrand,
   listBrands,
+  listStoreBrands,
   updateBrand,
 } from "@/services/brand.service";
+import { productQuerySchema } from "@/validations/product";
 
 let server: Awaited<ReturnType<typeof startTestMongo>> | undefined;
+
+it("publishes only active brands with active reference-based counts and public fields", async () => {
+  const brand = await createBrand({
+    name: "سامسونگ",
+    slug: "samsung",
+    logo: "/images/samsung.svg",
+  });
+  await createBrand({ name: "Hidden", isActive: false });
+  const empty = await createBrand({ name: "Empty" });
+  await Product.create([
+    { ...productInput, slug: "linked", brand: brand.id, isActive: true },
+    { ...productInput, slug: "inactive", brand: brand.id, isActive: false },
+    {
+      ...productInput,
+      slug: "legacy",
+      attributes: [{ key: "برند", value: brand.name }],
+      isActive: true,
+    },
+  ]);
+  const brands = await listStoreBrands();
+  expect(brands).toHaveLength(2);
+  expect(brands.find((item) => item.id === brand.id)).toEqual({
+    id: brand.id,
+    name: brand.name,
+    slug: "samsung",
+    logo: brand.logo,
+    productCount: 1,
+  });
+  expect(brands.find((item) => item.id === empty.id)?.productCount).toBe(0);
+  expect(brands[0]).not.toHaveProperty("isFeatured");
+  expect(brands[0]).not.toHaveProperty("website");
+});
+
+it("preserves product links and counts after renaming and excludes inactive or missing slugs", async () => {
+  const category = await Category.create({ name: "Rename", slug: "rename" });
+  const brand = await createBrand({ name: "Old", slug: "stable" });
+  const product = await Product.create({
+    ...productInput,
+    category: category._id,
+    brand: brand.id,
+  });
+  const query = productQuerySchema.parse({ brandSlug: "stable" });
+  expect((await listProducts(query)).items.map((item) => item.id)).toEqual([
+    String(product._id),
+  ]);
+  await updateBrand(brand.id, { name: "New", slug: "stable" });
+  expect((await listProducts(query)).items.map((item) => item.id)).toEqual([
+    String(product._id),
+  ]);
+  expect((await listStoreBrands())[0]).toMatchObject({
+    name: "New",
+    productCount: 1,
+  });
+  await updateBrand(brand.id, { name: "New", slug: "stable", isActive: false });
+  expect(await listStoreBrands()).toEqual([]);
+  expect((await listProducts(query)).total).toBe(0);
+  expect(
+    (await listProducts(productQuerySchema.parse({ brandSlug: "missing" })))
+      .total,
+  ).toBe(0);
+  expect((await Product.findById(product._id).orFail()).brand?.toString()).toBe(
+    brand.id,
+  );
+});
+
+it("blocks new inactive assignments while preserving existing assignments on edits", async () => {
+  const category = await Category.create({
+    name: "Inactive",
+    slug: "inactive-brand",
+  });
+  const brand = await createBrand({ name: "Inactive brand", isActive: false });
+  const input = {
+    ...productInput,
+    category: String(category._id),
+    attributes: [],
+    isActive: true,
+    isFeatured: false,
+  };
+  await expect(createProduct({ ...input, brand: brand.id })).rejects.toThrow(
+    "برند غیرفعال",
+  );
+  const product = await Product.create({ ...input, brand: brand.id });
+  await expect(
+    updateProduct(String(product._id), { ...input, brand: brand.id }),
+  ).resolves.toBeDefined();
+  const other = await Product.create({ ...input, slug: "other-product" });
+  await expect(
+    updateProduct(String(other._id), {
+      ...input,
+      slug: "other-product",
+      brand: brand.id,
+    }),
+  ).rejects.toThrow("برند غیرفعال");
+  expect((await getProductAdmin(String(product._id)))?.brand).toBe(brand.id);
+});
 
 it("links, switches and clears the product brand and rejects missing brands", async () => {
   const category = await Category.create({

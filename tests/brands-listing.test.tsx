@@ -1,0 +1,134 @@
+import { expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { BrandsListing } from "@/components/store/BrandsListing";
+import { ProductForm } from "@/components/admin/ProductForm";
+import { brandSearchSchema } from "@/validations/brand";
+import { parseProductQuery } from "@/lib/product-query";
+import BrandsPage, { metadata } from "@/app/(shop)/brands/page";
+import { getProductPricing } from "@/lib/product-pricing";
+
+vi.mock("server-only", () => ({}));
+
+import type { StoreProductDTO } from "@/types/dto";
+
+const mocks = vi.hoisted(() => ({ list: vi.fn() }));
+vi.mock("@/services/brand.service", () => ({ listStoreBrands: mocks.list }));
+vi.mock("@/actions/admin/product.actions", () => ({ productAction: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
+
+it("initializes the brand only from its reference and excludes historical brand inputs", () => {
+  const product: StoreProductDTO = {
+    id: "product",
+    title: "محصول",
+    slug: "product",
+    description: "توضیح",
+    price: 100,
+    pricing: getProductPricing({ price: 100 }),
+    stock: 1,
+    images: ["/image.png"],
+    category: { id: "category", name: "دسته", slug: "category" },
+    attributes: [{ key: "برند", value: "قدیمی", createdAt: "", updatedAt: "" }],
+    isActive: true,
+    isFeatured: false,
+    soldCount: 0,
+    createdAt: "2026-01-01",
+    updatedAt: "2026-01-01",
+  };
+  const brands = [
+    { id: "old", name: "قدیمی", isActive: true },
+    { id: "current", name: "فعلی", isActive: true },
+  ];
+  const markup = renderToStaticMarkup(
+    <ProductForm
+      product={product}
+      categories={[]}
+      brands={brands}
+      brandId="current"
+    />,
+  );
+  expect(markup).toContain('<option value="current" selected="">');
+  expect(markup).not.toContain('name="attributeKey"');
+  const unassigned = renderToStaticMarkup(
+    <ProductForm product={product} categories={[]} brands={brands} />,
+  );
+  expect(unassigned).not.toContain('<option value="old" selected="">');
+  expect(unassigned).toContain('<option value="" selected="">');
+});
+
+it("disables inactive brands for new assignments and retains the existing inactive selection", () => {
+  const brands = [{ id: "inactive", name: "برند غیرفعال", isActive: false }];
+  const newForm = renderToStaticMarkup(
+    <ProductForm categories={[]} brands={brands} />,
+  );
+  expect(newForm).toMatch(/<option[^>]*disabled=""[^>]*>برند غیرفعال/);
+  const editForm = renderToStaticMarkup(
+    <ProductForm categories={[]} brands={brands} brandId="inactive" />,
+  );
+  expect(editForm).toMatch(/<option value="inactive" selected="">/);
+  expect(editForm).toMatch(
+    /<select(?=[^>]*name="brand")(?=[^>]*required="")[^>]*>/,
+  );
+});
+
+it("renders alphabetically sorted cards, logos, counts and encoded slug links", () => {
+  const markup = renderToStaticMarkup(
+    <BrandsListing
+      brands={[
+        {
+          id: "b",
+          name: "سامسونگ",
+          slug: "سامسونگ",
+          logo: "/images/samsung.svg",
+          productCount: 2,
+        },
+        { id: "a", name: "اسنوا", slug: "snowa", productCount: 0 },
+      ]}
+    />,
+  );
+  expect(markup.indexOf("<h3>اسنوا")).toBeLessThan(
+    markup.indexOf("<h3>سامسونگ"),
+  );
+  expect(markup).toContain("لوگوی سامسونگ");
+  expect(markup).toContain("/images/samsung.svg");
+  expect(markup).toContain("۲ محصول");
+  expect(markup).toContain("۰ محصول");
+  expect(markup).toContain(`/brands/${encodeURIComponent("سامسونگ")}`);
+  expect(markup).toContain("/brands/snowa");
+  expect(markup).toContain('aria-live="polite"');
+});
+
+it("renders a Persian empty state", () => {
+  const markup = renderToStaticMarkup(<BrandsListing brands={[]} />);
+  expect(markup).toContain("هنوز برندی برای نمایش وجود ندارد");
+  expect(markup).toContain("۰ برند");
+});
+
+it.each([
+  ["  SAM SUNG ", "samsung"],
+  ["ال‌ جی", "الجی"],
+  ["سامسونگ", "سامسونگ"],
+  ["يخچال ك", "یخچالک"],
+  ["general-electric", "generalelectric"],
+])("normalizes Persian and English search %s", (value, expected) => {
+  expect(brandSearchSchema.parse(value)).toBe(expected);
+});
+
+it("validates slug queries and keeps legacy filters compatible", () => {
+  expect(
+    parseProductQuery({ brandSlug: "samsung", brands: "Legacy" }),
+  ).toMatchObject({
+    success: true,
+    data: { brandSlug: "samsung", brands: ["Legacy"] },
+  });
+  expect(parseProductQuery({ brandSlug: "../admin" }).success).toBe(false);
+  expect(brandSearchSchema.safeParse("a".repeat(121)).success).toBe(false);
+});
+
+it("uses the public service without a session and exposes the production route", async () => {
+  mocks.list.mockResolvedValue([]);
+  const page = await BrandsPage();
+  expect(page.props.brands).toEqual([]);
+  expect(metadata.robots).toBeUndefined();
+  mocks.list.mockRejectedValue(new Error("database offline"));
+  await expect(BrandsPage()).rejects.toThrow("database offline");
+});

@@ -20,7 +20,7 @@ with sync_playwright() as p:
     for width in [360, 768, 1440]:
         page.set_viewport_size({'width':width,'height':900}); assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
     page.goto(BASE+'/admin/categories')
-    row = page.locator('tbody tr').filter(has=page.locator('td:first-child').filter(has_text='والد آزمایشی'))
+    row = page.locator('tbody tr').filter(has=page.locator('td:nth-child(2)').filter(has_text='والد آزمایشی'))
     page.once('dialog', lambda d:d.accept()); row.get_by_role('button', name='حذف دسته‌بندی').click(); expect(row.get_by_role('alert')).to_contain_text('قابل حذف نیست')
     child = page.locator('tbody tr').filter(has=page.get_by_text('فرزند آزمایشی', exact=True))
     child.get_by_role('link', name='ویرایش', exact=True).click(); page.set_viewport_size({'width':360,'height':900}); assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'); page.get_by_label('دستهٔ والد', exact=True).select_option(''); page.get_by_label('دسته‌بندی فعال', exact=True).uncheck()

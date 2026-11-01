@@ -1,19 +1,17 @@
 "use client";
 
-import { FrosticHeroSlider } from "@/components/preview/frostic/FrosticHeroSlider";
-import { ArcticBenefitsBar } from "@/components/preview/frostic/ArcticBenefitsBar";
-import { ArcticProductCategories } from "@/components/preview/frostic/ArcticProductCategories";
-import { usePreviewTheme } from "@/components/preview/frostic/use-preview-theme";
-import themeStyles from "@/components/preview/frostic/frostic-theme.module.css";
+import { FrosticHeroSlider } from "@/components/store/frostic/FrosticHeroSlider";
+import { ArcticBenefitsBar } from "@/components/store/frostic/ArcticBenefitsBar";
+import { ArcticProductCategories } from "@/components/store/frostic/ArcticProductCategories";
+import themeStyles from "@/components/store/frostic/frostic-theme.module.css";
+import type { CategoryDTO } from "@/types/dto";
 
-export function StoreHero() {
-  const { theme } = usePreviewTheme();
-
+export function StoreHero({ categories }: { categories: CategoryDTO[] }) {
   return (
-    <div className={themeStyles.theme} data-theme={theme}>
-      <FrosticHeroSlider mobileControls />
+    <div className={themeStyles.theme}>
+      <FrosticHeroSlider autoPlay mobileControls />
       <ArcticBenefitsBar />
-      <ArcticProductCategories />
+      <ArcticProductCategories categories={categories} />
     </div>
   );
 }

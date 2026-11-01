@@ -14,10 +14,81 @@ import {
   getOrderForUser,
   listOrdersAdmin,
   listOrdersForUser,
+  getOrderStatusCountsAdmin,
 } from "@/services/order.service";
+import { adminOrderQuerySchema } from "@/validations/order";
 import { addAddress, getCheckoutAddresses } from "@/services/user.service";
 import { addressInput } from "./fixtures";
 import { orderStatuses } from "@/types/domain";
+
+it("combines admin literal search, payment, status, rolling dates and pagination without widening customer access", async () => {
+  await Product.updateMany({}, { stock: 100 });
+  const first = await createOrderFromCart(fixture.user, checkoutInput());
+  await Order.updateOne(
+    { _id: first.id },
+    { status: "processing", "payment.status": "paid" },
+  );
+  await refillCart(1);
+  const second = await createOrderFromCart(fixture.user, checkoutInput());
+  await Order.updateOne(
+    { _id: second.id },
+    { status: "shipped", "payment.status": "paid" },
+  );
+  await Order.collection.updateOne(
+    { _id: new Types.ObjectId(second.id) },
+    {
+      $set: { createdAt: new Date(Date.now() - 40 * 86400000) },
+    },
+  );
+  expect(
+    (
+      await listOrdersAdmin({
+        q: "علی",
+        payment: "paid",
+        status: "processing",
+        period: "7",
+      })
+    ).items.map((order) => order.id),
+  ).toEqual([first.id]);
+  expect(
+    (await listOrdersAdmin({ q: "lx-۱۰۰۰۰۱" })).items.map((order) => order.id),
+  ).toEqual([first.id]);
+  expect((await listOrdersAdmin({ q: ".*" })).total).toBe(0);
+  expect((await listOrdersAdmin({ q: "[" })).total).toBe(0);
+  expect((await listOrdersAdmin({ payment: "failed" })).total).toBe(0);
+  expect((await listOrdersAdmin({ period: "30" })).total).toBe(1);
+  expect((await listOrdersAdmin({ period: "90" })).total).toBe(2);
+  expect(
+    (await listOrdersAdmin({ q: "علی", limit: 1, page: 2 })).items,
+  ).toHaveLength(1);
+  expect(await getOrderStatusCountsAdmin()).toEqual({
+    pending: 0,
+    processing: 1,
+    shipped: 1,
+    delivered: 0,
+    cancelled: 0,
+  });
+  expect((await listOrdersForUser(fixture.other, { q: "علی" })).total).toBe(0);
+  await User.deleteOne({ _id: fixture.user });
+  expect((await listOrdersAdmin({ q: first.orderNumber })).total).toBe(1);
+  expect((await listOrdersAdmin({ q: "علی" })).total).toBe(0);
+});
+
+it("validates admin filters before querying or expiring orders", async () => {
+  for (const input of [
+    { payment: "invalid" },
+    { period: "365" },
+    { q: ["a", "b"] },
+    { status: ["pending"] },
+    { q: "a".repeat(101) },
+  ]) {
+    expect(adminOrderQuerySchema.safeParse(input).success).toBe(false);
+    await expect(listOrdersAdmin(input)).rejects.toThrow();
+  }
+  expect(
+    adminOrderQuerySchema.parse({ status: "", payment: "", period: "" }),
+  ).toMatchObject({ q: "", page: 1 });
+});
 
 it("enforces every SPEC transition for paid and unpaid orders without mutating rejected orders", async () => {
   const allowed = {

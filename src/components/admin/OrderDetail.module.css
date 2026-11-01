@@ -1,0 +1,447 @@
+.page {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block-end: 8px;
+}
+.hint {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--primary);
+  font-size: 14px;
+}
+.columns {
+  display: grid;
+  min-width: 0;
+  gap: 24px;
+  grid-template-areas: "action" "items" "customer" "payment" "history";
+}
+.main,
+.side {
+  display: contents;
+}
+.items {
+  grid-area: items;
+  min-width: 0;
+}
+.history {
+  grid-area: history;
+  min-width: 0;
+}
+.customer {
+  grid-area: customer;
+  min-width: 0;
+}
+.payment {
+  grid-area: payment;
+  min-width: 0;
+}
+.action {
+  grid-area: action;
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+}
+.page h2,
+.action h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-end: 20px;
+}
+.page h2 svg,
+.action h2 svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.action h2 {
+  margin: 0;
+}
+.page :global(.admin-badge),
+.action :global(.admin-badge) {
+  margin: 0;
+}
+.progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+}
+.progress li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+.progress li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 13px;
+  inset-inline-start: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+}
+.progress li.completed::after {
+  background: var(--primary);
+}
+.dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  background: white;
+}
+.progress .completed .dot,
+.progress .current .dot {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+.progress .current {
+  color: var(--foreground);
+  font-weight: 700;
+}
+.dot > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+.cancelled {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-danger);
+}
+.cancelled time {
+  font-size: 14px;
+}
+.itemHead {
+  display: none;
+}
+.item {
+  display: grid;
+  gap: 12px;
+  padding-block: 16px;
+  border-block-end: 1px solid var(--border);
+  font-size: 14px;
+}
+.product {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.product h3 {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.productImage {
+  width: 64px;
+  height: 80px;
+  flex-shrink: 0;
+  object-fit: contain;
+  background: #f7fbff;
+  border-radius: 8px;
+  padding: 4px;
+}
+.mobileLabel {
+  color: var(--muted);
+}
+.totals {
+  display: grid;
+  gap: 16px;
+  margin-block-start: 24px;
+  font-size: 14px;
+}
+.totals > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+.totals dt {
+  color: var(--muted);
+}
+.totals dd {
+  font-weight: 600;
+}
+.totals > div:last-child {
+  border-block-start: 1px solid var(--border);
+  padding-block-start: 20px;
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+.totals > div:last-child dt {
+  color: inherit;
+}
+.timeline {
+  list-style: none;
+  padding: 0;
+  display: grid;
+}
+.timeline li {
+  position: relative;
+  border-inline-start: 1px solid var(--border);
+  margin-inline-start: 7px;
+  padding-inline-start: 24px;
+  padding-block-end: 24px;
+}
+.timeline li:last-child {
+  border-color: transparent;
+  padding-block-end: 0;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -6px;
+  inset-block-start: 7px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  box-shadow: 0 0 0 4px white;
+}
+.timeline li:first-child::before {
+  background: var(--primary);
+}
+.timeline strong {
+  font-size: 14px;
+}
+.timeline p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-block-start: 6px;
+}
+.customerName {
+  font-weight: 700;
+}
+.contact {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  margin-block-start: 8px;
+  overflow-wrap: anywhere;
+}
+.contact > :first-child {
+  min-width: 0;
+}
+.contact a {
+  color: var(--foreground);
+}
+.address {
+  margin-block-start: 16px;
+  font-size: 14px;
+}
+.note {
+  background: var(--ice);
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 13px;
+  margin-block-start: 16px;
+  overflow-wrap: anywhere;
+}
+.paymentFields {
+  display: grid;
+  gap: 12px;
+  margin-block-start: 16px;
+  font-size: 13px;
+}
+.paymentFields > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+.paymentFields dt {
+  color: var(--muted);
+}
+.paymentFields dd {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.paymentDetails {
+  border-block-start: 1px solid var(--border);
+  margin-block-start: 20px;
+  padding-block-start: 12px;
+  font-size: 13px;
+}
+.paymentDetails summary {
+  color: var(--primary);
+  cursor: pointer;
+  min-height: 44px;
+  padding-block: 10px;
+}
+.paymentDetails p {
+  overflow-wrap: anywhere;
+  margin-block-start: 12px;
+}
+.copyControl {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.copyControl .copyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+}
+.copyStatus {
+  max-width: 140px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.actionForm {
+  display: grid;
+  width: 100%;
+  gap: 16px;
+}
+.actionForm button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.actionForm .cancelButton {
+  border: 0;
+  border-block-start: 1px solid var(--border);
+  border-radius: 0;
+  padding-block-start: 16px;
+  color: var(--color-danger);
+  background: transparent;
+}
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  background: white;
+  color: var(--foreground);
+  box-shadow: 0 24px 64px rgb(16 36 90 / 18%);
+}
+.dialog::backdrop {
+  background: rgb(16 36 90 / 32%);
+}
+.dialog p {
+  margin-block: 16px 24px;
+  line-height: 1.9;
+}
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 12px;
+}
+.dialogActions .confirmCancel {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: white;
+}
+@media (min-width: 640px) {
+  .itemHead,
+  .item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px minmax(130px, auto);
+    gap: 12px;
+    align-items: center;
+  }
+  .itemHead {
+    padding: 12px;
+    background: var(--ice);
+    border-radius: 12px 12px 0 0;
+    font-size: 12px;
+  }
+  .item {
+    padding: 16px 12px;
+  }
+  .item > :last-child {
+    text-align: end;
+  }
+  .mobileLabel {
+    display: none;
+  }
+  .progress li {
+    font-size: 14px;
+  }
+}
+@media (min-width: 1280px) {
+  .columns {
+    grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr);
+    grid-template-areas: none;
+    align-items: start;
+  }
+  .main,
+  .side {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 24px;
+  }
+  .side {
+    gap: 16px;
+  }
+  .items,
+  .history,
+  .customer,
+  .payment,
+  .action {
+    grid-area: auto;
+  }
+}

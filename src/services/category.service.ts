@@ -1,4 +1,7 @@
 import "server-only";
+import { cache } from "react";
+import { routeSlugSchema, slugSchema } from "@/validations/common";
+import { withImageReferences } from "@/services/image-lifecycle.service";
 
 import { Types } from "mongoose";
 import { connectDB } from "@/lib/db";
@@ -7,7 +10,11 @@ import { toDTO } from "@/lib/model-shared";
 import { createUniqueSlug } from "@/lib/slug";
 import { Category } from "@/models/category";
 import { Product } from "@/models/product";
-import type { CategoryDTO, CategoryTreeDTO } from "@/types/dto";
+import type {
+  CategoryDTO,
+  CategoryTreeDTO,
+  StoreCategoryDTO,
+} from "@/types/dto";
 import type { CategoryInput } from "@/validations/category";
 
 function asCategoryDTO(record: object): CategoryDTO {
@@ -50,12 +57,43 @@ export async function getCategoryAdmin(
   return record ? asCategoryDTO(record) : null;
 }
 
-export async function listCategories(): Promise<CategoryDTO[]> {
+export const listCategories = cache(async (): Promise<CategoryDTO[]> => {
   await connectDB();
   const records = await Category.find({ isActive: true })
-    .sort({ order: 1, name: 1 })
+    .select(
+      "name slug parent description image order isActive createdAt updatedAt",
+    )
+    .sort({ order: 1, name: 1, _id: 1 })
     .lean();
-  return records.map(asCategoryDTO);
+  return records
+    .filter((record) => slugSchema.safeParse(record.slug).success)
+    .map(asCategoryDTO);
+});
+
+export async function listStoreCategories(): Promise<StoreCategoryDTO[]> {
+  const categories = await listCategories();
+  if (!categories.length) return [];
+  const counts = await Product.aggregate<{
+    _id: Types.ObjectId;
+    count: number;
+  }>([
+    {
+      $match: {
+        isActive: true,
+        category: {
+          $in: categories.map((category) => new Types.ObjectId(category.id)),
+        },
+      },
+    },
+    { $group: { _id: "$category", count: { $sum: 1 } } },
+  ]);
+  const countById = new Map(
+    counts.map((item) => [String(item._id), item.count]),
+  );
+  return categories.map((category) => ({
+    ...category,
+    productCount: countById.get(category.id) ?? 0,
+  }));
 }
 
 export async function getCategoryTree(): Promise<CategoryTreeDTO[]> {
@@ -76,10 +114,16 @@ export async function getCategoryTree(): Promise<CategoryTreeDTO[]> {
 }
 
 export async function getCategoryBySlug(
-  slug: string,
+  input: unknown,
 ): Promise<CategoryDTO | null> {
+  const parsed = routeSlugSchema.safeParse(input);
+  if (!parsed.success) return null;
   await connectDB();
-  const record = await Category.findOne({ slug, isActive: true }).lean();
+  const record = await Category.findOne({ slug: parsed.data, isActive: true })
+    .select(
+      "name slug parent description image order isActive createdAt updatedAt",
+    )
+    .lean();
   return record ? asCategoryDTO(record) : null;
 }
 
@@ -94,7 +138,9 @@ export async function createCategory(
       Category.exists({ slug: candidate }).then(Boolean),
     ));
   try {
-    const category = await Category.create({ ...input, slug });
+    const category = await withImageReferences([input.image], (session) =>
+      new Category({ ...input, slug }).save({ session }),
+    );
     return asCategoryDTO(category.toObject());
   } catch (error) {
     if (
@@ -120,20 +166,22 @@ export async function updateCategory(
       Category.exists({ slug: candidate, _id: { $ne: id } }).then(Boolean),
     ));
   try {
-    const category = await Category.findByIdAndUpdate(
-      id,
-      {
-        $set: { ...input, slug },
-        $unset: Object.fromEntries(
-          (["parent", "description", "image"] as const)
-            .filter((field) => input[field] === undefined)
-            .map((field) => [field, 1]),
-        ),
-      },
-      { returnDocument: "after", runValidators: true },
-    )
-      .lean()
-      .orFail(() => new AppError("دسته‌بندی پیدا نشد", "NOT_FOUND"));
+    const category = await withImageReferences([input.image], (session) =>
+      Category.findByIdAndUpdate(
+        id,
+        {
+          $set: { ...input, slug },
+          $unset: Object.fromEntries(
+            (["parent", "description", "image"] as const)
+              .filter((field) => input[field] === undefined)
+              .map((field) => [field, 1]),
+          ),
+        },
+        { session, returnDocument: "after", runValidators: true },
+      )
+        .lean()
+        .orFail(() => new AppError("دسته‌بندی پیدا نشد", "NOT_FOUND")),
+    );
     return asCategoryDTO(category);
   } catch (error) {
     if (error instanceof AppError) throw error;
@@ -153,7 +201,12 @@ export async function deleteCategory(id: string): Promise<void> {
   const categoryId = new Types.ObjectId(id);
   const [child, product] = await Promise.all([
     Category.exists({ parent: categoryId }),
-    Product.exists({ category: categoryId }),
+    // Aggregation preserves legacy string references instead of casting them to ObjectId.
+    Product.aggregate<{ _id: Types.ObjectId }>([
+      { $match: { category: { $in: [categoryId, id] } } },
+      { $limit: 1 },
+      { $project: { _id: 1 } },
+    ]).then((products) => products.length > 0),
   ]);
   if (child || product)
     throw new AppError(
