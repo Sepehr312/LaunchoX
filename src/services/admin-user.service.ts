@@ -46,7 +46,9 @@ export async function getUserManagementPermissions() {
 }
 
 type AccessChange = { id: string; confirmationPassword?: string } & (
-  { role: "admin" | "customer" } | { isActive: boolean }
+  | { role: "admin" | "customer" }
+  | { isActive: boolean }
+  | { revokeSessions: true }
 );
 
 async function changeUserAccess(
@@ -63,6 +65,11 @@ async function changeUserAccess(
         throw new AppError("دسترسی مدیریت معتبر نیست", "FORBIDDEN");
       const target = await User.findById(data.id).session(session).lean();
       if (!target) throw new AppError("کاربر پیدا نشد", "NOT_FOUND");
+      if ("revokeSessions" in data && target.role !== "customer")
+        throw new AppError(
+          "خروج اجباری فقط برای مشتریان مجاز است",
+          "FORBIDDEN",
+        );
       const ownership = await AdminOwnership.findById("store-owner")
         .session(session)
         .lean();
@@ -118,9 +125,17 @@ async function changeUserAccess(
       const before = { role: target.role, isActive: target.isActive };
       const after = {
         ...before,
-        ...("role" in data ? { role: data.role } : { isActive: data.isActive }),
+        ...("role" in data
+          ? { role: data.role }
+          : "isActive" in data
+            ? { isActive: data.isActive }
+            : {}),
       };
-      if (before.role === after.role && before.isActive === after.isActive)
+      if (
+        !("revokeSessions" in data) &&
+        before.role === after.role &&
+        before.isActive === after.isActive
+      )
         return { id: String(target._id) };
       if (
         before.role === "admin" &&
@@ -144,7 +159,12 @@ async function changeUserAccess(
         );
       await User.updateOne(
         { _id: target._id },
-        { $set: after },
+        {
+          $set: after,
+          ...("revokeSessions" in data || !after.isActive
+            ? { $inc: { sessionVersion: 1 } }
+            : {}),
+        },
         { session, runValidators: true },
       );
       await UserAccessAudit.create(
@@ -153,8 +173,13 @@ async function changeUserAccess(
             actor: actor._id,
             actorEmail: actor.email,
             target: target._id,
-            before,
-            after,
+            before: { ...before, sessionVersion: target.sessionVersion ?? 0 },
+            after: {
+              ...after,
+              sessionVersion:
+                (target.sessionVersion ?? 0) +
+                ("revokeSessions" in data || !after.isActive ? 1 : 0),
+            },
           },
         ],
         { session },
@@ -176,4 +201,12 @@ export async function setUserRole(input: unknown): Promise<{ id: string }> {
   const admin = await requireAdmin();
   const data = userRoleSchema.parse(input);
   return changeUserAccess(admin.id, data);
+}
+
+export async function revokeCustomerSessions(
+  input: unknown,
+): Promise<{ id: string }> {
+  const admin = await requireAdmin();
+  const { id } = userActiveSchema.pick({ id: true }).parse(input);
+  return changeUserAccess(admin.id, { id, revokeSessions: true });
 }

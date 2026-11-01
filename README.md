@@ -366,3 +366,13 @@ npm run images:cleanup -- --apply --limit 50
 - Product.brand is the sole brand source for storefront display, comparison, search and filters. Historical brand attributes are retained only as audit data; new writes reject independent brand attributes. Admin forms still require a brand, while service-level unbranded products remain supported. The old linking command now uses the safe migration without creating brands. See [brand migration and required deployment order](docs/BRAND-MIGRATION.md); complete the migration and data review before deploying the reference-only readers.
 
 - Task 11 centralizes product price validation and discount presentation in the server-only `src/lib/product-pricing.ts`; DTO pricing is derived, never persisted. `price` remains the final integer-toman selling price and optional `compareAtPrice` must exceed it. Invalid stored pricing fails validation rather than displaying fabricated amounts. Percentage badges use exact integer half-up rounding; database discount sorting retains its existing unrounded ratio. Cart and checkout totals remain in `order.service.ts`, reject unsafe amounts, and checkout snapshots the current database price even if it changed after cart display. Historical order snapshots and payment amounts are unchanged.
+
+### رفع خطای ذخیره‌سازی پنل در localhost
+
+اگر آپلود تصویر انجام می‌شود ولی ذخیرهٔ محصول، دسته‌بندی یا برند و تغییر دسترسی کاربران شکست می‌خورد، وضعیت MongoDB را با `db.hello()` در mongosh بررسی کنید. باید `setName` و `isWritablePrimary: true` داشته باشد. پاسخ موفق `ping` به‌تنهایی پشتیبانی تراکنش را ثابت نمی‌کند. Compose فعلی پروژه replica set را راه‌اندازی می‌کند.
+
+برای نصب قدیمی standalone، ابتدا از دیتابیس و فایل Compose پشتیبان بگیرید. در همان فایل Compose و با همان نام پروژه و volume قبلی، فرمان `mongod --replSet rs0 --bind_ip_all` و healthcheck مقداردهی replica set موجود در Compose این مخزن را اعمال کنید؛ سپس سرویس mongo را بازسازی کنید و تا primary شدن صبر کنید. `down -v` یا seed با reset اجرا نکنید. تغییر پوشه/نام پروژهٔ Compose ممکن است volume جدید و دیتابیس خالی ایجاد کند. آدرس نمونهٔ اتصال محلی: `mongodb://127.0.0.1:27017/launchox?replicaSet=rs0&directConnection=true`. پس از تغییر متغیرهای محیطی، برنامه را دوباره اجرا کنید.
+
+تغییر نقش فقط برای مالک ثبت‌شدهٔ فروشگاه مجاز است؛ نداشتن مالک به‌طور خودکار به همهٔ ادمین‌ها مجوز نمی‌دهد. راهنمای مدیریت مالک در همین README را دنبال کنید.
+
+- Decision: خروج اجباری مشتری و غیرفعال‌سازی، sessionVersion را در همان تراکنش ثبت دسترسی افزایش می‌دهند؛ فعال‌سازی مجدد نشست قدیمی را معتبر نمی‌کند. ابطال در درخواست محافظت‌شدهٔ بعدی اعمال می‌شود و صفحهٔ باز بدون درخواست شبکه فوراً تغییر ظاهر نمی‌دهد. خروج اجباری مستقل فقط برای مشتریان ارائه شده است و نسخهٔ نشست قبل/بعد در سابقه ثبت می‌شود.

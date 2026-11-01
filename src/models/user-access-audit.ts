@@ -7,14 +7,15 @@ interface IUserAccessAudit extends StoredDocument {
   actor: Types.ObjectId;
   actorEmail: string;
   target: Types.ObjectId;
-  before: { role: UserRole; isActive: boolean };
-  after: { role: UserRole; isActive: boolean };
+  before: { role: UserRole; isActive: boolean; sessionVersion?: number };
+  after: { role: UserRole; isActive: boolean; sessionVersion?: number };
 }
 
 const state = new Schema(
   {
     role: { type: String, enum: userRoles, required: true },
     isActive: { type: Boolean, required: true },
+    sessionVersion: { type: Number, min: 0 },
   },
   { _id: false },
 );
