@@ -61,7 +61,7 @@ MONGODB_URI=mongodb://localhost:27017/launchox
 | ادمین | مقدار `SEED_ADMIN_EMAIL` در `.env.local`؛ نمونهٔ فایل: `admin@launchox.local` | مقدار انتخابی `SEED_ADMIN_PASSWORD` در `.env.local` |
 | مشتری نمونه | `customer@launchox.local` | `Customer123!` |
 
-رمز مشتری بالا یک مقدار عمومی و ثابت در کد seed برای توسعه است. هیچ رمز واقعی ادمین یا کلید محیطی در این مستند درج نشده است. رمز ادمین seed باید حداقل ۸ کاراکتر و حداکثر ۷۲ بایت باشد و ایمیل آن با ایمیل مشتری نمونه متفاوت باشد. seed در پایان خلاصهٔ تعدادها و اطلاعات ورود ادمین را چاپ می‌کند؛ خروجی شامل رمز انتخابی شماست و نباید منتشر شود.
+رمز مشتری بالا یک مقدار عمومی و ثابت در کد seed برای توسعه است. هیچ رمز واقعی ادمین یا کلید محیطی در این مستند درج نشده است. رمز ادمین seed باید حداقل ۸ کاراکتر و حداکثر ۷۲ بایت باشد و ایمیل آن با ایمیل مشتری نمونه متفاوت باشد. seed در پایان خلاصهٔ تعدادها و ایمیل ادمین را چاپ می‌کند؛ رمز فقط از `SEED_ADMIN_PASSWORD` خوانده می‌شود و در خروجی نمایش داده نمی‌شود.
 
 اجرای مجدد seed کاربران را با ایمیل و دسته‌ها و محصولات را با نامک به‌روزرسانی می‌کند. شناسهٔ کاربران و آدرس‌های موجود حفظ می‌شوند؛ نام، نقش، وضعیت فعال و رمز دو حساب نمونه مطابق seed تنظیم می‌شوند. هش منطبق دوباره تولید نمی‌شود. seed داده‌های نمونهٔ کاتالوگ را نیز به‌روزرسانی می‌کند و رکوردهای اضافی را در اجرای عادی حذف نمی‌کند.
 
@@ -166,6 +166,10 @@ npm run images:cleanup -- --apply --limit 50
 در خروجی Cleanup علاوه بر نتیجهٔ هر شناسه، `counts` تعداد هر وضعیت از جمله `ambiguous` و `failed` را نشان می‌دهد. تراکنش و write مشترک روی سند تصویر حفظ شده‌اند و اجرای هم‌زمان دو job به حذف دوباره منجر نمی‌شود. استفاده از `find` و cursor محدودیت `distinct` روی مجموعهٔ sharded را حذف می‌کند؛ بااین‌حال محیط sharded در این پروژه آزمایش عملی نشده است. پیش از اجرای آن، تراکنش cross-shard، دسترسی‌ها، ایندکس‌های هر shard و timeoutها در staging بررسی شوند؛ replica set بدون sharding محیط تست فعلی است. برای انتقال باینری به S3، `image.service.ts` نقطهٔ اتصال آینده است.
 
 ## Decisions
+
+- خطاهای ناشناختهٔ عملیات حساب فقط با نام عملیات ثبت می‌شوند؛ شیء خطای خام ممکن است حاوی اطلاعات حساس باشد و وارد لاگ نمی‌شود.
+
+- برای جلوگیری از افشای اطلاعات ورود در لاگ‌ها، seed رمز ادمین را چاپ نمی‌کند.
 
 - Product sale prices are positive integer tomans at form, server-validation and model boundaries. Legacy zero-price records cannot enter carts or reserve checkout stock. Prices below 1,000,000 tomans or reductions of at least 80% require an explicit amount confirmation in the admin form; this is a warning, not a hard market floor.
 - Password changes atomically increment a database session version; protected server guards reject older JWT versions. Authentication attempt counters are shared in MongoDB (five attempts per account per 15-minute bucket, plus 50 per trusted IP); identifiers are HMAC-hashed and TTL-expired. `AUTH_TRUST_PROXY_HEADERS` defaults to false and may only be enabled when the hosting proxy overwrites forwarded headers. Production requires a generated, non-example `AUTH_SECRET` of at least 32 characters. Local MongoDB binds to loopback; production still needs authenticated private database access.
