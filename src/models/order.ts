@@ -17,7 +17,6 @@ import {
   type AddressFields,
   type OrderStatus,
   type PaymentStatus,
-  type PaymentMethod,
 } from "@/types/domain";
 
 export interface IOrderItem extends Timestamps {
@@ -30,7 +29,6 @@ export interface IOrderItem extends Timestamps {
 }
 export interface IPayment extends Timestamps {
   status: PaymentStatus;
-  method?: PaymentMethod;
   provider?: string;
   authority?: string;
   refId?: string;
@@ -84,11 +82,6 @@ const paymentSchema = new Schema<IPayment>(
       enum: { values: paymentStatuses, message: "وضعیت پرداخت معتبر نیست" },
       default: "unpaid",
       required: [true, "وضعیت پرداخت الزامی است"],
-    },
-    method: {
-      type: String,
-      enum: ["online", "cash_on_delivery"],
-      default: "online",
     },
     provider: optionalText,
     authority: optionalText,

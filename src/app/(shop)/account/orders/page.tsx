@@ -46,19 +46,11 @@ export default async function OrdersPage({
               ثبت در {formatDate(order.createdAt)}
             </span>
             <span>{formatPrice(order.total)}</span>
-            <div className="flex flex-wrap gap-2">
-              <OrderBadge status={order.status} />
-              <OrderBadge
-                status={order.payment.status}
-                method={order.payment.method}
-                payment
-              />
-            </div>
+            <OrderBadge status={order.status} />
             <span className="text-xs leading-6 text-muted">
               <OrderDelivery
                 status={order.status}
                 paymentStatus={order.payment.status}
-                paymentMethod={order.payment.method}
               />
             </span>
             <Link

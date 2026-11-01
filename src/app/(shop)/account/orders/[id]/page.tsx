@@ -68,7 +68,6 @@ export default async function OrderPage({
           <OrderDelivery
             status={order.status}
             paymentStatus={order.payment.status}
-            paymentMethod={order.payment.method}
           />
         </p>
       </section>
@@ -111,12 +110,7 @@ export default async function OrderPage({
             ))}
           </dl>
           <p className="mt-5">
-            وضعیت پرداخت:{" "}
-            <OrderBadge
-              status={order.payment.status}
-              method={order.payment.method}
-              payment
-            />
+            وضعیت پرداخت: <OrderBadge status={order.payment.status} payment />
           </p>
           {order.payment.refId && (
             <p className="mt-3 break-all">
