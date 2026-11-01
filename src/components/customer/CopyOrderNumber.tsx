@@ -1,8 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toPersianDigits } from "@/lib/format";
 export function CopyOrderNumber({ number }: { number: string }) {
-  const [status, setStatus] = useState<"" | "copied" | "error">("");
+  const numberRef = useRef<HTMLSpanElement>(null);
+  const [status, setStatus] = useState<"" | "copied" | "selected" | "error">(
+    "",
+  );
   useEffect(() => {
     if (!status) return;
     const timer = setTimeout(() => setStatus(""), 3500);
@@ -10,7 +13,7 @@ export function CopyOrderNumber({ number }: { number: string }) {
   }, [status]);
   return (
     <span className="inline-flex max-w-full flex-wrap items-center gap-2">
-      <span dir="ltr" className="break-all">
+      <span ref={numberRef} dir="ltr" className="break-all select-text">
         {toPersianDigits(number)}
       </span>
       <button
@@ -22,6 +25,19 @@ export function CopyOrderNumber({ number }: { number: string }) {
             await navigator.clipboard.writeText(number);
             setStatus("copied");
           } catch {
+            try {
+              const selection = window.getSelection();
+              if (selection && numberRef.current) {
+                const range = document.createRange();
+                range.selectNodeContents(numberRef.current);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                setStatus("selected");
+                return;
+              }
+            } catch {
+              // Selection may also be unavailable in restricted browsers.
+            }
             setStatus("error");
           }
         }}
@@ -40,13 +56,15 @@ export function CopyOrderNumber({ number }: { number: string }) {
       </button>
       <span
         role="status"
-        className={`text-xs font-normal ${status === "error" ? "text-danger" : "text-success"}`}
+        className={`text-xs font-normal ${status === "error" ? "text-danger" : status === "copied" ? "text-success" : "text-muted"}`}
       >
         {status === "copied"
           ? "کپی شد"
-          : status === "error"
-            ? "کپی ممکن نشد؛ شماره را دستی کپی کنید."
-            : ""}
+          : status === "selected"
+            ? "کپی خودکار ممکن نشد؛ شماره انتخاب شده را کپی کنید."
+            : status === "error"
+              ? "کپی ممکن نشد؛ شماره را دستی کپی کنید."
+              : ""}
       </span>
     </span>
   );

@@ -167,6 +167,15 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Shared form notices and quantity-stepper styles live in `components/ui/form-controls.module.css`, so storefront, authentication, account, and checkout forms do not depend on account-specific styles.
+
+- If clipboard writing is unavailable or rejected, the order-number copy control selects only its displayed number and announces Persian manual-copy guidance; it reports success only after a successful clipboard write.
+
+- Profile reads use a shared React `cache()` wrapper to deduplicate the account layout and profile page queries for the same user within one server render request. Each new request reads fresh data, keeping the account greeting current after profile edits without a persistent user-data cache.
+
+- The test gateway offers separate online success, cash-on-delivery, and cancellation choices. Cash-on-delivery orders enter processing with unpaid status and a persisted payment method; they retain reserved stock, do not expire as pending online payments, and do not count as paid revenue or paid sales. Existing orders without a method are treated as online.
+
+- Customer account navigation uses an expanded right sidebar from 1024px, collapsible to a small control; smaller viewports use a right-side modal drawer. Desktop expansion lasts within the account layout, and mobile navigation closes the drawer after a link, Escape, backdrop click, or transition to desktop.
 - خطاهای ناشناختهٔ عملیات حساب فقط با نام عملیات ثبت می‌شوند؛ شیء خطای خام ممکن است حاوی اطلاعات حساس باشد و وارد لاگ نمی‌شود.
 
 - برای جلوگیری از افشای اطلاعات ورود در لاگ‌ها، seed رمز ادمین را چاپ نمی‌کند.

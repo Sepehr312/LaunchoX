@@ -6,7 +6,7 @@ import { addressSchema } from "@/validations/address";
 import { FieldErrorsContext } from "@/components/customer/CustomerField";
 import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { Button } from "@/components/ui/Button";
-import styles from "@/components/customer/customer.module.css";
+import styles from "@/components/ui/form-controls.module.css";
 export function AccountForm({
   operation,
   id,

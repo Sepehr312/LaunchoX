@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { AddressFields } from "@/components/account/AddressFields";
 import { FieldErrorsContext } from "@/components/customer/CustomerField";
-import styles from "@/components/customer/customer.module.css";
+import styles from "@/components/ui/form-controls.module.css";
 import { addressSchema } from "@/validations/address";
 import { toPersianDigits } from "@/lib/format";
 import type { AddressDTO } from "@/types/dto";

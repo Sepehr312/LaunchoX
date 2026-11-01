@@ -7,7 +7,7 @@ import {
   removeCartAction,
 } from "@/actions/cart.actions";
 import { Button } from "@/components/ui/Button";
-import styles from "@/components/customer/customer.module.css";
+import styles from "@/components/ui/form-controls.module.css";
 import { toPersianDigits } from "@/lib/format";
 
 export function CartForm({

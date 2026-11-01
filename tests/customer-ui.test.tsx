@@ -220,7 +220,7 @@ describe("customer page composition", () => {
     const list = renderToStaticMarkup(
       await Orders({ searchParams: Promise.resolve({}) }),
     );
-    expect(list).toContain("زمان تحویل پس از پرداخت موفق مشخص می‌شود");
+    expect(list).toContain("پرداخت این سفارش هنوز تأیید نشده است");
     expect(list).not.toContain("حدود ۱ هفته");
     const { default: Details } =
       await import("@/app/(shop)/account/orders/[id]/page");
@@ -288,13 +288,38 @@ describe("customer interaction cues", () => {
 });
 
 describe("order delivery messages", () => {
+  it("renders cash on delivery with a yellow payment badge and an estimate", () => {
+    const badge = renderToStaticMarkup(
+      <OrderBadge status="unpaid" payment method="cash_on_delivery" />,
+    );
+    expect(badge).toContain("پرداخت در محل");
+    expect(badge).toContain("pending");
+    expect(badge).not.toContain("text-success");
+    const delivery = renderToStaticMarkup(
+      <OrderDelivery
+        status="processing"
+        paymentStatus="unpaid"
+        paymentMethod="cash_on_delivery"
+      />,
+    );
+    expect(delivery).toContain("حدود ۱ هفته");
+    expect(delivery).not.toContain("پس از تأیید");
+  });
+  it("shows dispatched delivery information before unpaid payment messaging", () => {
+    const html = renderToStaticMarkup(
+      <OrderDelivery status="shipped" paymentStatus="unpaid" />,
+    );
+    expect(html).toContain("سفارش شما ارسال شده است");
+    expect(html).toContain("حدود ۱ هفته");
+    expect(html).not.toContain("پس از تأیید");
+  });
   it.each(["unpaid", "failed", "refunded"] as const)(
     "does not estimate delivery for %s payments",
     (paymentStatus) => {
       const html = renderToStaticMarkup(
         <OrderDelivery status="pending" paymentStatus={paymentStatus} />,
       );
-      expect(html).toContain("پس از پرداخت موفق");
+      expect(html).toContain("پرداخت این سفارش هنوز تأیید نشده است");
       expect(html).not.toContain("هفته");
     },
   );

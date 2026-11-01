@@ -17,6 +17,7 @@ import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
 import { PasswordInput } from "@/components/customer/PasswordInput";
 import { SnowflakeIcon, ShieldIcon } from "@/components/store/Icons";
 import styles from "@/components/customer/customer.module.css";
+import formStyles from "@/components/ui/form-controls.module.css";
 import premiumStyles from "@/components/auth/premium-auth.module.css";
 import type { AuthActionState } from "@/types/auth";
 
@@ -311,7 +312,10 @@ export function AuthForm({
           </label>
         )}
         {(!state.ok || initialError) && (
-          <p role="alert" className={`${styles.notice} ${styles.error}`}>
+          <p
+            role="alert"
+            className={`${formStyles.notice} ${formStyles.error}`}
+          >
             {!state.ok ? state.error : initialError}
           </p>
         )}

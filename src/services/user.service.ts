@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { compare, hash } from "bcryptjs";
 import { profileSchema, changePasswordSchema } from "@/validations/account";
 import { Types } from "mongoose";
@@ -54,7 +55,7 @@ export async function addAddress(
   );
 }
 
-export async function getProfile(userId: string) {
+export const getProfile = cache(async (userId: string) => {
   await connectDB();
   const user = await User.findOne({
     _id: objectIdSchema.parse(userId),
@@ -62,7 +63,7 @@ export async function getProfile(userId: string) {
   }).lean();
   if (!user) throw new AppError("کاربر پیدا نشد", "NOT_FOUND");
   return toDTO(user);
-}
+});
 export async function updateProfile(userId: string, input: unknown) {
   const data = profileSchema.parse(input);
   await connectDB();

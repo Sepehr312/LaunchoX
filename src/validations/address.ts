@@ -33,7 +33,10 @@ export const addressSchema = z
         (value) => addressProvinces.includes(value),
         "استان را از فهرست انتخاب کنید",
       ),
-    city: requiredString.transform(normalizeLocation),
+    city: z
+      .string({ error: "شهر را انتخاب کنید" })
+      .transform(normalizeLocation)
+      .pipe(z.string().min(1, "شهر را انتخاب کنید")),
     postalCode: postalCodeSchema,
     addressLine: requiredString,
     isDefault: booleanSchema.default(false),

@@ -8,6 +8,29 @@ import {
 import { addressInput } from "./fixtures";
 
 describe("address entry", () => {
+  it.each([undefined, null, 123, "", "   "])(
+    "shows actionable city guidance for an unselected or invalid value: %s",
+    (city) => {
+      const result = addressSchema.safeParse({ ...addressInput, city });
+      expect(result.success).toBe(false);
+      if (result.success) throw new Error("Invalid city was accepted");
+      expect(
+        result.error.issues.find((issue) => issue.path[0] === "city")?.message,
+      ).toBe("شهر را انتخاب کنید");
+    },
+  );
+  it("still rejects a city outside the selected province", () => {
+    const result = addressSchema.safeParse({
+      ...addressInput,
+      province: "تهران",
+      city: "شیراز",
+    });
+    expect(result.success).toBe(false);
+    if (result.success) throw new Error("Mismatched city was accepted");
+    expect(
+      result.error.issues.find((issue) => issue.path[0] === "city")?.message,
+    ).toBe("شهر را از فهرست شهرهای استان انتخاب کنید");
+  });
   it("keeps Persian names, spaces and half spaces while removing Latin letters, digits and symbols", () => {
     expect(filterAddressInput("recipientName", "Aliعلي ۱۲3!رضايي")).toBe(
       "علی رضایی",
