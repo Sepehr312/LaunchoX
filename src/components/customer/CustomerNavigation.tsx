@@ -10,6 +10,11 @@ export function CustomerNavigation() {
       {[
         { href: "/account", label: "پروفایل و امنیت", Icon: UserIcon },
         { href: "/account/addresses", label: "آدرس‌های من", Icon: ControlIcon },
+        {
+          href: "/account/favorites",
+          label: "علاقه‌مندی‌های من",
+          Icon: UserIcon,
+        },
         { href: "/account/orders", label: "سفارش‌های من", Icon: TruckIcon },
       ].map(({ href, label, Icon }) => (
         <Link

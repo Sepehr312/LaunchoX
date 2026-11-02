@@ -176,6 +176,7 @@ try {
         .locator('textarea[name="description"]')
         .fill("توضیحات محصول آزمایشی");
       await page.locator('input[name="price"]').fill("۱۰۰۰۰۰");
+      await page.getByRole("checkbox", { name: /قصد ثبت همین قیمت/ }).check();
       const category = await db.collection("categories").findOne({});
       await page
         .locator('select[name="category"]')
@@ -276,14 +277,11 @@ try {
         response.url().endsWith("/api/admin/images") &&
         response.request().method() === "POST",
     );
-    await page
-      .locator('input[type="file"]')
-      .first()
-      .setInputFiles({
-        name: "replacement.png",
-        mimeType: "image/png",
-        buffer: replacement,
-      });
+    await page.locator('input[type="file"]').first().setInputFiles({
+      name: "replacement.png",
+      mimeType: "image/png",
+      buffer: replacement,
+    });
     const replaced = await replacing;
     assert.equal(replaced.status(), 201);
     const replacementUrl = (await replaced.json()).data.url;
@@ -295,6 +293,8 @@ try {
       replacementUrl,
     );
     const editUrl = page.url();
+    if (entity === "products")
+      await page.getByRole("checkbox", { name: /قصد ثبت همین قیمت/ }).check();
     await page.locator('.admin-product-form button[type="submit"]').click();
     await page.waitForURL(`${base}/admin/${entity}`);
     await page.goto(editUrl);

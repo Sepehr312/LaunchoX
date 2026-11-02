@@ -166,7 +166,10 @@ export default async function AdminPage() {
                                 : undefined,
                           )}
                         >
-                          {paymentLabels[order.paymentStatus]}
+                          {order.paymentMethod === "cash_on_delivery" &&
+                          order.paymentStatus === "unpaid"
+                            ? "پرداخت در محل"
+                            : paymentLabels[order.paymentStatus]}
                         </span>
                       </td>
                     </tr>

@@ -1,4 +1,5 @@
 "use server";
+import { databaseActionError } from "@/lib/database-error";
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
@@ -54,6 +55,8 @@ export async function productAction(
         fieldErrors: error.flatten().fieldErrors,
       };
     if (error instanceof AppError) return { ok: false, error: error.message };
+    const databaseError = databaseActionError(error);
+    if (databaseError) return { ok: false, error: databaseError };
     console.error("Product administration failed", error);
     return { ok: false, error: "ذخیرهٔ تغییرات انجام نشد؛ دوباره تلاش کنید" };
   }

@@ -1,3 +1,4 @@
+import { AdminOrderRefresh } from "@/components/admin/AdminOrderRefresh";
 import { requireAdmin } from "@/actions/auth.actions";
 import { logoutAction } from "@/actions/auth.actions";
 import { AdminNavigation } from "@/components/admin/AdminNavigation";
@@ -15,6 +16,7 @@ export default async function AdminLayout({
   await requireAdmin();
   return (
     <div className={styles.scope}>
+      <AdminOrderRefresh />
       <div className="admin-shell">
         <aside className="admin-sidebar">
           <Link href="/admin" className="admin-logo">

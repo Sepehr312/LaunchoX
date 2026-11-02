@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRef, type ReactNode } from "react";
 const links = [
+  { href: "/admin/content", label: "محتوای فروشگاه", icon: LayoutDashboard },
   { href: "/admin", label: "نمای کلی", icon: LayoutDashboard },
   { href: "/admin/products", label: "محصولات", icon: Package },
   { href: "/admin/categories", label: "دسته‌بندی‌ها", icon: FolderTree },

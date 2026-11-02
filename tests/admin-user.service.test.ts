@@ -20,6 +20,7 @@ import {
   setUserActive,
   setUserRole,
   getUserManagementPermissions,
+  revokeCustomerSessions,
 } from "@/services/admin-user.service";
 
 let server: Awaited<ReturnType<typeof startTestMongo>>;
@@ -85,8 +86,36 @@ it("guards every panel entry before using invalid input", async () => {
     () => getUserManagementPermissions(),
     () => setUserRole({}),
     () => setUserActive({}),
+    () => revokeCustomerSessions({}),
   ])
     await expect(call()).rejects.toThrow("denied");
+});
+
+it("revokes customer sessions without disabling the account and audits the version", async () => {
+  await revokeCustomerSessions({ id: targetId });
+  expect(await User.findById(targetId).lean()).toMatchObject({
+    isActive: true,
+    sessionVersion: 1,
+  });
+  expect(
+    await UserAccessAudit.findOne({ target: targetId }).lean(),
+  ).toMatchObject({
+    before: { sessionVersion: 0 },
+    after: { sessionVersion: 1 },
+  });
+  await expect(revokeCustomerSessions({ id: actorId })).rejects.toMatchObject({
+    code: "FORBIDDEN",
+  });
+  await expect(revokeCustomerSessions({ id: "invalid" })).rejects.toThrow();
+});
+
+it("does not restore an old session when a customer is reactivated", async () => {
+  await active(targetId, false);
+  await active(targetId, true);
+  expect(await User.findById(targetId).lean()).toMatchObject({
+    isActive: true,
+    sessionVersion: 1,
+  });
 });
 it("rejects invalid IDs, missing fields, invalid roles and oversized passwords", async () => {
   for (const input of [

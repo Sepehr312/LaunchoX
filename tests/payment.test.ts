@@ -1,3 +1,7 @@
+import {
+  listOrdersAdmin,
+  getOrderStatusCountsAdmin,
+} from "@/services/order.service";
 import { afterEach, expect, it, vi } from "vitest";
 import { fixture, checkoutInput } from "./order-fixture";
 import {
@@ -19,6 +23,7 @@ import { zarinpalProvider } from "@/services/payment/zarinpal.provider";
 
 it("rejects the unsupported cash-on-delivery callback without confirming or cancelling the order", async () => {
   const payment = await startCheckout(fixture.user, checkoutInput());
+
   await expect(
     completePayment(fixture.user, {
       authority: payment.authority,
@@ -28,6 +33,25 @@ it("rejects the unsupported cash-on-delivery callback without confirming or canc
   const order = await getOrderByAuthority(payment.authority, fixture.user);
   expect(order.status).toBe("pending");
   expect(order.payment.status).toBe("unpaid");
+
+  const params = { authority: payment.authority, status: "COD" };
+  await expect(completePayment(fixture.other, params)).rejects.toMatchObject({
+    code: "NOT_FOUND",
+  });
+  const results = await Promise.all([
+    completePayment(fixture.user, params),
+    completePayment(fixture.user, params),
+  ]);
+  const order = results[0];
+  expect(order.status).toBe("processing");
+  const adminOrders = await listOrdersAdmin({ status: "processing" });
+  expect(adminOrders.items.some((item) => item.id === order.id)).toBe(true);
+  expect((await getOrderStatusCountsAdmin()).processing).toBe(1);
+  expect(order.payment).toMatchObject({
+    status: "unpaid",
+    method: "cash_on_delivery",
+  });
+
   expect(order.payment.paidAt).toBeUndefined();
   expect((await Product.findById(fixture.first).lean())?.stock).toBe(3);
   expect((await Product.findById(fixture.first).lean())?.soldCount).toBe(0);

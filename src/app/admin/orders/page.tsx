@@ -192,7 +192,10 @@ export default async function OrdersAdmin({
                                 : undefined,
                         )}
                       >
-                        {paymentLabels[order.payment.status]}
+                        {order.payment.method === "cash_on_delivery" &&
+                        order.payment.status === "unpaid"
+                          ? "پرداخت در محل"
+                          : paymentLabels[order.payment.status]}
                       </span>
                     </td>
                     <td>

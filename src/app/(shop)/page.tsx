@@ -1,3 +1,4 @@
+import { readContent } from "@/services/content.service";
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -16,6 +17,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
+  const content = await readContent("slides");
+  const slides =
+    content?.key === "slides"
+      ? content.data.filter((s) => s.isActive)
+      : undefined;
   const [bestselling, newest, categories] = await Promise.all([
     listProducts({ page: 1, limit: 4, sort: "bestselling" }),
     listProducts({ page: 1, limit: 8, sort: "newest" }),
@@ -23,7 +29,7 @@ export default async function HomePage() {
   ]);
   return (
     <main>
-      <StoreHero categories={categories} />
+      <StoreHero categories={categories} slides={slides} />
 
       <BestSellingProducts products={bestselling.items} />
 

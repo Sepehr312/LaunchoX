@@ -7,6 +7,7 @@ import { AdminListSearch } from "@/components/admin/AdminListSearch";
 import { AdminTableScroll } from "@/components/admin/AdminTableScroll";
 import { UserActiveForm } from "@/components/admin/UserActiveForm";
 import { UserRoleForm } from "@/components/admin/UserRoleForm";
+import { UserLogoutForm } from "@/components/admin/UserLogoutForm";
 import {
   listUsersAdmin,
   getUserManagementPermissions,
@@ -66,11 +67,13 @@ export default async function Users({
               <caption className="sr-only">حساب‌های کاربران فروشگاه</caption>
               <thead>
                 <tr>
-                  {["کاربر", "ایمیل", "نقش", "وضعیت"].map((label) => (
-                    <th scope="col" key={label}>
-                      {label}
-                    </th>
-                  ))}
+                  {["کاربر", "ایمیل", "نقش", "وضعیت", "نشست‌ها"].map(
+                    (label) => (
+                      <th scope="col" key={label}>
+                        {label}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -114,6 +117,13 @@ export default async function Users({
                           }
                           isSelf={user.id === admin.id}
                         />
+                      )}
+                    </td>
+                    <td>
+                      {user.role === "customer" ? (
+                        <UserLogoutForm id={user.id} />
+                      ) : (
+                        "—"
                       )}
                     </td>
                   </tr>

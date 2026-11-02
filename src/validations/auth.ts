@@ -1,13 +1,20 @@
 import { z } from "zod";
 import { emailSchema, requiredString } from "@/validations/common";
 
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_BYTES = 72;
+
+export function passwordByteLength(value: string) {
+  return new TextEncoder().encode(value).length;
+}
+
 export const passwordSchema = z
   .string()
-  .min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد")
+  .min(PASSWORD_MIN_LENGTH, "رمز عبور باید حداقل ۸ کاراکتر باشد")
   .regex(/\p{L}/u, "رمز عبور باید دست‌کم یک حرف داشته باشد")
   .regex(/\p{N}/u, "رمز عبور باید دست‌کم یک رقم داشته باشد")
   .refine(
-    (value) => new TextEncoder().encode(value).length <= 72,
+    (value) => passwordByteLength(value) <= PASSWORD_MAX_BYTES,
     "رمز عبور نباید بیش از ۷۲ بایت باشد",
   );
 export const loginSchema = z.object({
