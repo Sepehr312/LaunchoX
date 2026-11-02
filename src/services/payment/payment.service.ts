@@ -4,7 +4,6 @@ import { AppError } from "@/lib/errors";
 import { getPaymentProvider } from "@/services/payment";
 import {
   attachOrderPayment,
-  confirmCashOnDelivery,
   createOrderFromCart,
   getOrderByAuthority,
   markOrderPaid,
@@ -45,11 +44,6 @@ export async function completePayment(userId: string, input: unknown) {
     return order;
   if (Date.now() - new Date(order.createdAt).getTime() > 30 * 60 * 1000)
     return markPaymentFailed(order.id);
-  if (data.status === "COD") {
-    if (provider.name !== "fake")
-      throw new AppError("روش پرداخت معتبر نیست", "VALIDATION");
-    return confirmCashOnDelivery(order.id, userId);
-  }
   const result = await provider.verifyPayment({
     authority: data.authority,
     amount: order.total,

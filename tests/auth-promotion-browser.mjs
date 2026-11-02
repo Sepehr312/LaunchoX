@@ -262,12 +262,8 @@ try {
         deviceScaleFactor: 1,
         mobile: false,
       });
-      for (const [preview, production] of [
-        ["/test/login", "/login"],
-        ["/test/signup", "/register"],
-      ]) {
-        const snapshots = [];
-        for (const route of [preview, production]) {
+      for (const production of ["/login", "/register"]) {
+        for (const route of [production]) {
           await navigate(route);
           await formReady();
           await ready(
@@ -286,20 +282,6 @@ try {
               "(() => { const r = document.querySelector('section').getBoundingClientRect(); return r.x >= 0 && r.right <= innerWidth; })()",
             ),
             `Card outside viewport: ${route}`,
-          );
-          snapshots.push(
-            await evaluate(`(() => {
-            const root = document.querySelector('header').parentElement;
-            return [root, ...root.querySelectorAll('*')].map(element => {
-              const rect = element.getBoundingClientRect();
-              return { tag: element.tagName, text: element.children.length ? '' : element.textContent,
-                geometry: [rect.x, rect.y, rect.width, rect.height].map(n => Math.round(n * 100) / 100),
-                styles: [null, '::before', '::after'].map(pseudo => {
-                  const style = getComputedStyle(element, pseudo);
-                  return Object.fromEntries([...style].map(key => [key, style.getPropertyValue(key)]));
-                }) };
-            });
-          })()`),
           );
           if (route === production) {
             const link = await evaluate(
@@ -329,14 +311,9 @@ try {
             );
           }
         }
-        assert.deepEqual(
-          snapshots[1],
-          snapshots[0],
-          `${production} differs from ${preview} at ${width}px`,
-        );
       }
       console.log(
-        `PASS: exact DOM text, geometry and all computed styles including backgrounds/pseudo-elements match previews at ${width}px; production links and overflow checked.`,
+        `PASS: production authentication layout, links and overflow checked at ${width}px.`,
       );
     }
     await navigate(

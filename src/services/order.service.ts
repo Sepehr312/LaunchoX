@@ -331,35 +331,6 @@ export async function markOrderPaid(id: string, refId: string) {
   return toDTO(order);
 }
 
-export async function confirmCashOnDelivery(id: string, userId: string) {
-  const orderId = objectIdSchema.parse(id);
-  const user = objectIdSchema.parse(userId);
-  await connectDB();
-  const order = await Order.findOneAndUpdate(
-    {
-      _id: orderId,
-      user,
-      status: "pending",
-      "payment.status": "unpaid",
-      "payment.provider": "fake",
-      createdAt: { $gte: new Date(Date.now() - ORDER_RESERVATION_MS) },
-    },
-    {
-      $set: { status: "processing", "payment.method": "cash_on_delivery" },
-      $push: {
-        statusHistory: {
-          status: "processing",
-          changedAt: new Date(),
-          changedBy: user,
-        },
-      },
-    },
-    { returnDocument: "after", runValidators: true },
-  ).lean();
-  if (!order) return getOrderForUser(user, orderId);
-  return toDTO(order);
-}
-
 async function failUnpaidOrder(orderId: string) {
   const db = await connectDB();
   return db.connection.transaction(
@@ -378,6 +349,7 @@ async function failUnpaidOrder(orderId: string) {
       await restoreStock(order.items, session);
       return toDTO(order);
     },
+
     {
       readConcern: { level: "snapshot" },
       writeConcern: { w: "majority" },

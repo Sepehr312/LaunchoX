@@ -34,8 +34,6 @@ export default async function CheckoutResultPage({
     throw error;
   });
   if (!order) notFound();
-  const cashOnDelivery =
-    order.payment.method === "cash_on_delivery" && order.status !== "cancelled";
   const paid = order.payment.status === "paid";
   const failed =
     order.payment.status === "failed" || order.status === "cancelled";
@@ -44,11 +42,7 @@ export default async function CheckoutResultPage({
       <section className="checkout-panel mx-auto max-w-2xl">
         <p className="section-kicker">نتیجهٔ سفارش شما</p>
         <div className="mt-4">
-          <OrderBadge
-            status={order.payment.status}
-            method={order.payment.method}
-            payment
-          />
+          <OrderBadge status={order.payment.status} payment />
         </div>
         <div
           aria-hidden="true"
@@ -88,22 +82,18 @@ export default async function CheckoutResultPage({
           </svg>
         </div>
         <h1 className="mb-4 text-2xl font-bold">
-          {cashOnDelivery
-            ? "سفارش با موفقیت ثبت شد"
-            : paid
-              ? "پرداخت با موفقیت انجام شد"
-              : failed
-                ? "پرداخت انجام نشد"
-                : "سفارش در انتظار پرداخت است"}
+          {paid
+            ? "پرداخت با موفقیت انجام شد"
+            : failed
+              ? "پرداخت انجام نشد"
+              : "سفارش در انتظار پرداخت است"}
         </h1>
         <p className="text-sm leading-7 text-muted">
-          {cashOnDelivery
-            ? "سفارش شما در حال آماده‌سازی است؛ مبلغ سفارش هنگام تحویل دریافت می‌شود."
-            : paid
-              ? "سفارش شما ثبت شد و در حال آماده‌سازی است."
-              : failed
-                ? "سفارش لغو شد و موجودی محصولات آزاد شد. می‌توانید دوباره خرید کنید."
-                : "پرداخت این سفارش هنوز تأیید نشده است."}
+          {paid
+            ? "سفارش شما ثبت شد و در حال آماده‌سازی است."
+            : failed
+              ? "سفارش لغو شد و موجودی محصولات آزاد شد. می‌توانید دوباره خرید کنید."
+              : "پرداخت این سفارش هنوز تأیید نشده است."}
         </p>
         <dl className="my-8 grid gap-4 rounded-xl border border-border p-5 text-sm">
           <div className="flex flex-wrap justify-between gap-2">

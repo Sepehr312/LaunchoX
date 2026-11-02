@@ -1,7 +1,3 @@
-import {
-  listOrdersAdmin,
-  getOrderStatusCountsAdmin,
-} from "@/services/order.service";
 import { afterEach, expect, it, vi } from "vitest";
 import { fixture, checkoutInput } from "./order-fixture";
 import {
@@ -13,8 +9,6 @@ import {
   getOrderByAuthority,
   getOrderByNumberForUser,
   markPaymentFailed,
-  expireStaleOrders,
-  updateOrderStatus,
 } from "@/services/order.service";
 import { Product } from "@/models/product";
 import { Order } from "@/models/order";
@@ -23,64 +17,22 @@ afterEach(() => vi.restoreAllMocks());
 import { getEnv } from "@/lib/env";
 import { zarinpalProvider } from "@/services/payment/zarinpal.provider";
 
-it("confirms cash on delivery once, preserves stock, survives expiry and ignores later callbacks", async () => {
+it("rejects the unsupported cash-on-delivery callback without confirming or cancelling the order", async () => {
   const payment = await startCheckout(fixture.user, checkoutInput());
-  const params = { authority: payment.authority, status: "COD" };
-  await expect(completePayment(fixture.other, params)).rejects.toMatchObject({
-    code: "NOT_FOUND",
-  });
-  const results = await Promise.all([
-    completePayment(fixture.user, params),
-    completePayment(fixture.user, params),
-  ]);
-  const order = results[0];
-  expect(order.status).toBe("processing");
-  const adminOrders = await listOrdersAdmin({ status: "processing" });
-  expect(adminOrders.items.some((item) => item.id === order.id)).toBe(true);
-  expect((await getOrderStatusCountsAdmin()).processing).toBe(1);
-  expect(order.payment).toMatchObject({
-    status: "unpaid",
-    method: "cash_on_delivery",
-  });
+
+  await expect(
+    completePayment(fixture.user, {
+      authority: payment.authority,
+      status: "COD",
+    }),
+  ).rejects.toThrow();
+  const order = await getOrderByAuthority(payment.authority, fixture.user);
+  expect(order.status).toBe("pending");
+  expect(order.payment.status).toBe("unpaid");
+
   expect(order.payment.paidAt).toBeUndefined();
-  expect(order.payment.refId).toBeUndefined();
   expect((await Product.findById(fixture.first).lean())?.stock).toBe(3);
   expect((await Product.findById(fixture.first).lean())?.soldCount).toBe(0);
-  for (const status of ["COD", "OK", "NOK"]) {
-    expect(
-      (await completePayment(fixture.user, { ...params, status })).status,
-    ).toBe("processing");
-  }
-  await Order.collection.updateOne(
-    { "payment.authority": payment.authority },
-    { $set: { createdAt: new Date(Date.now() - 31 * 60 * 1000) } },
-  );
-  await expireStaleOrders();
-  expect(
-    (await getOrderByAuthority(payment.authority, fixture.user)).statusHistory,
-  ).toHaveLength(2);
-  await updateOrderStatus({ id: order.id, status: "shipped" }, fixture.user);
-  await updateOrderStatus({ id: order.id, status: "delivered" }, fixture.user);
-  expect(
-    (await getOrderByAuthority(payment.authority, fixture.user)).payment.status,
-  ).toBe("unpaid");
-});
-
-it("does not revive cancelled or expired orders through cash on delivery", async () => {
-  const payment = await startCheckout(fixture.user, checkoutInput());
-  await completePayment(fixture.user, {
-    authority: payment.authority,
-    status: "NOK",
-  });
-  expect(
-    (
-      await completePayment(fixture.user, {
-        authority: payment.authority,
-        status: "COD",
-      })
-    ).status,
-  ).toBe("cancelled");
-  expect((await Product.findById(fixture.first).lean())?.stock).toBe(5);
 });
 
 it("pays once, uses database amount, increases soldCount once even under concurrent callbacks", async () => {
