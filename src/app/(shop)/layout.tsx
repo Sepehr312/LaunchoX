@@ -1,3 +1,5 @@
+import { FavoritesProvider } from "@/components/store/FavoritesProvider";
+import { favoriteIds } from "@/services/favorite.service";
 import { getCurrentUser } from "@/actions/auth.actions";
 import { StoreFooter } from "@/components/store/StoreFooter";
 import { StoreHeader } from "@/components/store/StoreHeader";
@@ -15,7 +17,11 @@ export default async function ShopLayout({
   const cart = await getCurrentCart();
   const user = await getCurrentUser();
   return (
-    <>
+    <FavoritesProvider
+      key={user?.id ?? "guest"}
+      userId={user?.id}
+      initial={user ? await favoriteIds(user.id) : []}
+    >
       <StoreHeader
         categories={categories}
         cartCount={cart.count}
@@ -23,6 +29,6 @@ export default async function ShopLayout({
       />
       <div className="flex flex-1 flex-col">{children}</div>
       <StoreFooter />
-    </>
+    </FavoritesProvider>
   );
 }

@@ -1,3 +1,4 @@
+import "server-only";
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 // تعریف ساختار تایپ‌اسکریپت برای محتوای صفحه
@@ -30,11 +31,12 @@ const pageContentSchema = new Schema<IPageContent>(
     ],
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true } // این گزینه خودکار زمان ساخت و آپدیت را ثبت می‌کند
+  { timestamps: true }, // این گزینه خودکار زمان ساخت و آپدیت را ثبت می‌کند
 );
 
 // جلوگیری از خطای ساخت مجدد مدل هنگام رفرش شدن (مخصوص Next.js)
 const PageContent: Model<IPageContent> =
-  mongoose.models.PageContent || mongoose.model<IPageContent>("PageContent", pageContentSchema);
+  mongoose.models.PageContent ||
+  mongoose.model<IPageContent>("PageContent", pageContentSchema);
 
 export default PageContent;

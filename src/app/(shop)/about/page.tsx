@@ -1,3 +1,5 @@
+import { readContent } from "@/services/content.service";
+import { ManagedPage } from "@/components/store/ManagedPage";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -64,7 +66,11 @@ const considerations = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const saved = await readContent("about");
+  if (saved && (saved.key === "about" || saved.key === "services"))
+    return <ManagedPage page={saved.data} />;
+
   return (
     <main className={styles.page}>
       <section className={styles.hero} aria-labelledby="about-title">

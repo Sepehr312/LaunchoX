@@ -671,3 +671,14 @@ export async function setProductActive(
   const result = await Product.updateOne({ _id: id }, { $set: { isActive } });
   if (!result.matchedCount) throw new AppError("محصول پیدا نشد", "NOT_FOUND");
 }
+
+export async function getFavoriteProducts(
+  ids: string[],
+): Promise<StoreProductDTO[]> {
+  await connectDB();
+  return withCategories(
+    await Product.find({ _id: { $in: ids }, isActive: true })
+      .sort({ createdAt: -1 })
+      .lean(),
+  );
+}

@@ -1,3 +1,8 @@
+vi.mock("@/actions/favorite.actions", () => ({
+  mergeFavoritesAction: vi.fn(),
+  setFavoriteAction: vi.fn(),
+  readFavoritesAction: vi.fn(),
+}));
 import { afterEach, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { fixture, checkoutInput } from "./order-fixture";

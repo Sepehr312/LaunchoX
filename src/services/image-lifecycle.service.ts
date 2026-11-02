@@ -1,5 +1,7 @@
+import PageContent from "@/models/page-content";
 import "server-only";
 
+import { ManagedContent } from "@/models/managed-content";
 import mongoose, { type ClientSession } from "mongoose";
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
@@ -76,6 +78,42 @@ async function referenceStatus(
   const canonical = `/api/images/${id}`;
   const pattern = imageIdPattern(id);
   const sources = [
+    {
+      exact: () =>
+        PageContent.exists({ "sections.imageUrl": canonical })
+          .session(session ?? null)
+          .maxTimeMS(10000),
+      legacy: () =>
+        PageContent.find({ "sections.imageUrl": pattern })
+          .select("sections -_id")
+          .session(session ?? null)
+          .maxTimeMS(10000)
+          .lean()
+          .cursor({ batchSize: 16 }),
+    },
+    {
+      exact: () =>
+        ManagedContent.exists({
+          $or: [
+            { "data.sections.imageUrl": canonical },
+            { "data.dayImage": canonical },
+          ],
+        })
+          .session(session ?? null)
+          .maxTimeMS(10000),
+      legacy: () =>
+        ManagedContent.find({
+          $or: [
+            { "data.sections.imageUrl": pattern },
+            { "data.dayImage": pattern },
+          ],
+        })
+          .select("data -_id")
+          .session(session ?? null)
+          .maxTimeMS(10000)
+          .lean()
+          .cursor({ batchSize: 16 }),
+    },
     {
       exact: () =>
         Product.exists({ images: canonical })

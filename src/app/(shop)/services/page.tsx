@@ -1,3 +1,6 @@
+import { readContent } from "@/services/content.service";
+import { ManagedPage } from "@/components/store/ManagedPage";
+import { getSiteSettings } from "@/services/site.service";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -102,7 +105,11 @@ const questions = [
   },
 ];
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const saved = await readContent("services");
+  if (saved && (saved.key === "about" || saved.key === "services"))
+    return <ManagedPage page={saved.data} />;
+  const site = await getSiteSettings();
   return (
     <main className={styles.page}>
       <div className="store-shell">
@@ -284,19 +291,19 @@ export default function ServicesPage() {
             </p>
           </div>
           <address className={styles.contactLinks}>
-            <a href="tel:0711735628">
+            <a href={"tel:" + site.phone}>
               <Phone size={21} aria-hidden="true" />
               <span>
                 <small>تماس با پشتیبانی</small>
-                <bdi>{toPersianDigits("071-1735628")}</bdi>
+                <bdi>{toPersianDigits(site.phone)}</bdi>
               </span>
               <ArrowLeft size={18} aria-hidden="true" />
             </a>
-            <a href="mailto:info@sermayesh.ir">
+            <a href={"mailto:" + site.email}>
               <Mail size={21} aria-hidden="true" />
               <span>
                 <small>ایمیل پشتیبانی</small>
-                <bdi>info@sermayesh.ir</bdi>
+                <bdi>{site.email}</bdi>
               </span>
               <ArrowLeft size={18} aria-hidden="true" />
             </a>

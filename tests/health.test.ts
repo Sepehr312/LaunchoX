@@ -38,9 +38,9 @@ describe("health route", () => {
         ping.mockRejectedValue(new Error("Ping failed"));
       }
       const response = await GET();
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(503);
       expect(await response.json()).toEqual({
-        data: { status: "ok", db: "down" },
+        data: { status: "degraded", db: "down" },
       });
     },
   );
