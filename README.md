@@ -169,6 +169,10 @@ npm run images:cleanup -- --apply --limit 50
 
 - Checkout follows SPEC section 10: only online test-payment success or cancellation is supported. The unapproved cash-on-delivery option and callback are removed; delivered and cancelled order messages take precedence over payment status. Existing database records are not migrated or deleted.
 
+- The customer sidebar stays sticky below the storefront header on desktop, with a viewport-based height and internal scrolling on short displays; mobile keeps the expandable account menu in the page flow.
+
+- The approved customer dashboard replaces `/account`; orders, addresses, and profile use `/account/orders`, `/account/addresses`, and `/account/profile` with the shared storefront header and footer. Experimental pages have been removed at the owner's request and return 404. Account actions and customer ownership checks remain shared with checkout and order details.
+
 - Shared form notices and quantity-stepper styles live in `components/ui/form-controls.module.css`, so storefront, authentication, account, and checkout forms do not depend on account-specific styles.
 
 - If clipboard writing is unavailable or rejected, the order-number copy control selects only its displayed number and announces Persian manual-copy guidance; it reports success only after a successful clipboard write.
@@ -183,17 +187,17 @@ npm run images:cleanup -- --apply --limit 50
 - Product sale prices are positive integer tomans at form, server-validation and model boundaries. Legacy zero-price records cannot enter carts or reserve checkout stock. Prices below 1,000,000 tomans or reductions of at least 80% require an explicit amount confirmation in the admin form; this is a warning, not a hard market floor.
 - Password changes atomically increment a database session version; protected server guards reject older JWT versions. Authentication attempt counters are shared in MongoDB (five attempts per account per 15-minute bucket, plus 50 per trusted IP); identifiers are HMAC-hashed and TTL-expired. `AUTH_TRUST_PROXY_HEADERS` defaults to false and may only be enabled when the hosting proxy overwrites forwarded headers. Production requires a generated, non-example `AUTH_SECRET` of at least 32 characters. Local MongoDB binds to loopback; production still needs authenticated private database access.
 
-- Authentication loading on production and preview routes reuses PremiumAuthLayout and PremiumAuthHeading; only form controls use a scoped, reduced-motion-aware skeleton matched to the approved form geometry.
+- Authentication loading reuses PremiumAuthLayout and PremiumAuthHeading; only form controls use a scoped, reduced-motion-aware skeleton matched to the approved form geometry.
 
-- Production `/login` and `/register` reuse the approved test pages' PremiumAuthLayout and premium AuthForm without a legacy layout wrapper. AuthForm linkMode keeps production navigation on `/login` and `/register` while previews retain their test links; authentication actions, validation, session handling and redirects are unchanged.
+- Production `/login` and `/register` use the approved PremiumAuthLayout and premium AuthForm without a legacy layout wrapper. Authentication links stay on these production routes; actions, validation, session handling and redirects are unchanged.
 
-- The premium signup password checklist uses a scoped RTL two-column grid (one column below 360px), four independent live conditions and Lucide Circle/Snowflake status icons. Other PasswordGuidance consumers and the backend's Unicode letter/number rules and 72-byte password limit remain unchanged.
+- Signup and account password hints show passed conditions with blue Snowflake icons. The premium signup checklist uses a scoped RTL two-column grid (one column below 360px) and four independent live conditions. The backend's Unicode letter/number rules and 72-byte password limit remain unchanged.
 
-- Both `/test/signup` and `/test/login` use PremiumAuthLayout, AuthForm and `premium-auth.module.css`. The existing signup CSS values and responsive rules are the single source for their shared appearance; the mode changes content and fields only. Signup retains native page scrolling and the owner's removal of terms acceptance.
+- Login and registration share PremiumAuthLayout, AuthForm and `premium-auth.module.css`; the mode changes content and fields only. Signup retains native page scrolling and the owner's removal of terms acceptance.
 
-- The `/test/signup` preview shares the premium login layout, AuthForm, Input, PasswordInput and Button. It uses the existing email/password registration action and password policy; mobile and Google registration remain unsupported. Terms acceptance and its preview page were removed at the owner's request; the form uses the standard registration schema and action directly. Its approved palette is shared by both test authentication previews.
+- Registration shares the premium login layout, AuthForm, Input, PasswordInput and Button. It uses the existing email/password registration action and password policy; mobile and Google registration remain unsupported. Terms acceptance was removed at the owner's request; the form uses the standard registration schema and action directly.
 
-- The isolated `/test/login` Arctic preview reuses AuthForm and the existing email/password action. Mobile login, Google sign-in and password recovery are omitted because the backend does not support them; the remember option retains only the email in sessionStorage until the tab closes. Login uses the exact signup presentation; production `/login` and `/register` now share the approved preview presentation.
+- Login uses AuthForm and the existing email/password action. Mobile login, Google sign-in and password recovery are omitted because the backend does not support them; the remember option retains only the email in sessionStorage until the tab closes. Login and registration share the approved presentation.
 
 - The owner-approved PR #14 integration combines maintenance commit `57c4f03` with main at `48b8676`, preserving the completed tasks 1–11 and the approved image-upload lifecycle. Integration details and validation are recorded in [the maintenance report](docs/MAINTENANCE-12-17.md).
 - Storefront production components live under `src/components/store/frostic`; the former category path re-exports the database-backed component for compatibility. Light mode is unconditional. Official footer contacts are optional validated `CONTACT_PHONE`, `CONTACT_EMAIL` and `CONTACT_ADDRESS` settings; empty values are omitted.

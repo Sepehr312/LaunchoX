@@ -54,13 +54,11 @@ export function AuthForm({
   callbackUrl,
   initialError,
   appearance = "default",
-  linkMode = "production",
 }: {
   mode: "login" | "register";
   callbackUrl: string;
   initialError?: string;
   appearance?: "default" | "premium";
-  linkMode?: "production" | "preview";
 }) {
   const register = mode === "register";
   const premium = appearance === "premium";
@@ -363,7 +361,7 @@ export function AuthForm({
             : "حساب ندارید؟ "}
         <Link
           className="font-semibold text-primary"
-          href={`${linkMode === "preview" ? (register ? "/test/login" : "/test/signup") : register ? "/login" : "/register"}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          href={`${register ? "/login" : "/register"}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
         >
           {register ? "وارد شوید" : "ثبت‌نام کنید"}
         </Link>

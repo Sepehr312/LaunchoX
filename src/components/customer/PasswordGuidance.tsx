@@ -72,22 +72,21 @@ export function PasswordGuidance({
       {rules.map((rule) => (
         <li
           key={rule.label}
-          className={`flex items-center gap-2 ${rule.passed ? "text-success" : "text-muted"}`}
+          className={`flex items-center gap-2 ${rule.passed ? "text-primary" : "text-muted"}`}
         >
-          <svg
-            className="size-4 shrink-0"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            aria-hidden="true"
-          >
-            {rule.passed ? (
-              <path d="m4 10 4 4 8-8" />
-            ) : (
-              <circle cx="10" cy="10" r="6" />
-            )}
-          </svg>
+          {rule.passed ? (
+            <Snowflake
+              className="size-4 shrink-0"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+          ) : (
+            <Circle
+              className="size-4 shrink-0"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+          )}
           <span>
             {rule.label}
             <span className="sr-only">

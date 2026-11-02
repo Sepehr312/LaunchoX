@@ -50,6 +50,18 @@ function request(
   } as unknown as Parameters<typeof proxy>[0];
 }
 const event = {} as Parameters<typeof proxy>[1];
+it("protects the customer order list and preserves its filters after login", async () => {
+  const response = await proxy(
+    request("/account/orders?status=shipped"),
+    event,
+  );
+  expect(config.matcher).toContain("/account/:path*");
+  const location = new URL(response!.headers.get("location")!);
+  expect(location.pathname).toBe("/login");
+  expect(location.searchParams.get("callbackUrl")).toBe(
+    "/account/orders?status=shipped",
+  );
+});
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.product.mockReset();

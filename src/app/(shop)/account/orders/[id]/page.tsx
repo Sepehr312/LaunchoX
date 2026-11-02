@@ -50,9 +50,9 @@ export default async function OrderPage({
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold">
+        <h1 className="text-2xl font-bold">
           سفارش <CopyOrderNumber number={order.orderNumber} />
-        </h2>
+        </h1>
         <OrderBadge status={order.status} />
       </div>
       <section className="checkout-panel">

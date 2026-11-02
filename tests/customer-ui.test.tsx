@@ -132,6 +132,14 @@ vi.mock("@/lib/env", () => ({
   getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچ‌اوکس" }),
 }));
 vi.mock("@/actions/account.actions", () => ({ accountAction: vi.fn() }));
+vi.mock("@/services/customer-dashboard.service", () => ({
+  getCustomerOrderCounts: async () => ({
+    total: 1,
+    processing: 0,
+    shipped: 0,
+    delivered: 0,
+  }),
+}));
 vi.mock("@/services/user.service", () => ({
   getProfile: async () => ({
     name: "نام تازهٔ مشتری",
@@ -201,24 +209,45 @@ describe("customer page composition", () => {
     const html = renderToStaticMarkup(
       await AccountLayout({ children: <p>محتوای حساب</p> }),
     );
-    expect(html).toContain("نام تازهٔ مشتری، خوش آمدید");
-    expect(html).not.toContain("مشتری نمونه، خوش آمدید");
+    expect(html).toContain("نام تازهٔ مشتری");
+    expect(html).not.toContain("مشتری نمونه");
+    const { CustomerDashboard } =
+      await import("@/components/customer/CustomerDashboard");
+    const dashboard = renderToStaticMarkup(
+      await CustomerDashboard({ searchParams: Promise.resolve({}) }),
+    );
+    expect(dashboard).toContain("نام تازهٔ مشتری عزیز، خوش آمدید");
+    expect(dashboard).not.toContain("مشتری نمونه عزیز، خوش آمدید");
   });
   it("renders profile, address management and order details with their existing actions", async () => {
-    const { default: Profile } = await import("@/app/(shop)/account/page");
-    const profile = renderToStaticMarkup(await Profile());
-    expect(profile).toContain("ایمیل حساب (غیرقابل ویرایش)");
+    const { CustomerDashboard } =
+      await import("@/components/customer/CustomerDashboard");
+    const { default: Profile } =
+      await import("@/app/(shop)/account/profile/page");
+    const profilePage = Profile();
+    expect(profilePage.props.view).toBe("profile");
+    const profile = renderToStaticMarkup(
+      await CustomerDashboard(profilePage.props),
+    );
+    expect(profile).toContain("ایمیل حساب");
+    expect(profile).toContain("غیرقابل ویرایش");
     expect(profile).toContain('name="currentPassword"');
     const { default: Addresses } =
       await import("@/app/(shop)/account/addresses/page");
-    const addresses = renderToStaticMarkup(await Addresses());
+    const addressesPage = Addresses();
+    expect(addressesPage.props.view).toBe("addresses");
+    const addresses = renderToStaticMarkup(
+      await CustomerDashboard(addressesPage.props),
+    );
     expect(addresses).toContain("ویرایش آدرس");
     expect(addresses).toContain("حذف آدرس");
     expect(addresses).toContain("پیش‌فرض");
     const { default: Orders } =
       await import("@/app/(shop)/account/orders/page");
+    const ordersPage = Orders({ searchParams: Promise.resolve({}) });
+    expect(ordersPage.props.view).toBe("orders");
     const list = renderToStaticMarkup(
-      await Orders({ searchParams: Promise.resolve({}) }),
+      await CustomerDashboard(ordersPage.props),
     );
     expect(list).toContain("زمان تحویل پس از پرداخت موفق مشخص می‌شود");
     expect(list).not.toContain("حدود ۱ هفته");
@@ -270,20 +299,23 @@ describe("customer interaction cues", () => {
     const valid = renderToStaticMarkup(
       <PasswordGuidance password="Customer123!" confirmation="Customer123!" />,
     );
-    expect(valid.match(/text-success/g)).toHaveLength(4);
+    expect(valid.match(/text-primary/g)).toHaveLength(4);
+    expect(valid.match(/lucide-snowflake/g)).toHaveLength(4);
+    expect(valid).not.toContain("text-success");
     const mismatch = renderToStaticMarkup(
       <PasswordGuidance password="Customer123!" confirmation="different" />,
     );
-    expect(mismatch.match(/text-success/g)).toHaveLength(3);
+    expect(mismatch.match(/text-primary/g)).toHaveLength(3);
     const long = "A1".repeat(40);
     const oversized = renderToStaticMarkup(
       <PasswordGuidance password={long} confirmation={long} />,
     );
-    expect(oversized.match(/text-success/g)).toHaveLength(3);
+    expect(oversized.match(/text-primary/g)).toHaveLength(3);
     const empty = renderToStaticMarkup(
       <PasswordGuidance password="" confirmation="" />,
     );
-    expect(empty).not.toContain("text-success");
+    expect(empty).not.toContain("text-primary");
+    expect(empty).not.toContain("lucide-snowflake");
   });
 });
 
