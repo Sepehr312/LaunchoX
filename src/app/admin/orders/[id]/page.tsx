@@ -147,10 +147,7 @@ export default async function OrderPage({
               {orderLabels[order.status]}
             </span>
             <span className={cn("admin-badge", paymentClass)}>
-              {order.payment.method === "cash_on_delivery" &&
-              order.payment.status === "unpaid"
-                ? "پرداخت در محل"
-                : paymentLabels[order.payment.status]}
+              {paymentLabels[order.payment.status]}
             </span>
           </div>
         </div>
@@ -347,10 +344,7 @@ export default async function OrderPage({
               اطلاعات پرداخت
             </h2>
             <span className={cn("admin-badge", paymentClass)}>
-              {order.payment.method === "cash_on_delivery" &&
-              order.payment.status === "unpaid"
-                ? "پرداخت در محل"
-                : paymentLabels[order.payment.status]}
+              {paymentLabels[order.payment.status]}
             </span>
             <dl className={styles.paymentFields}>
               <div>

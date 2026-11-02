@@ -44,7 +44,7 @@ export async function getDashboardStats() {
     Product.countDocuments({ stock: { $lt: 5 } }),
     Order.find()
       .select(
-        "orderNumber shippingAddress.recipientName createdAt total status payment.status payment.method",
+        "orderNumber shippingAddress.recipientName createdAt total status payment.status",
       )
       .sort({ createdAt: -1, _id: -1 })
       .limit(3)
@@ -67,7 +67,6 @@ export async function getDashboardStats() {
       total: order.total,
       status: order.status,
       paymentStatus: order.payment.status,
-      paymentMethod: order.payment.method,
     })),
     lowStockProducts: lowStockProducts.map((product) => ({
       id: String(product._id),

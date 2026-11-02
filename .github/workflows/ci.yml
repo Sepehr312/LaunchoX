@@ -48,3 +48,5 @@ jobs:
           AUTH_SECRET: ci-only-secret-not-used-in-production-0123456789abcdef
           AUTH_URL: http://localhost:3000
           PAYMENT_PROVIDER: fake
+          SHIPPING_FLAT_FEE: "50000"
+          FREE_SHIPPING_THRESHOLD: "1000000"
