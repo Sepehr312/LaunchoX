@@ -1,0 +1,20 @@
+# فایل‌های حساس — هرگز کامیت نشوند
+02-env.production.txt
+02-env.production.local.txt
+*-env.local.txt
+*.env
+.env
+.env.*
+
+# خروجی اجرای ابزارها
+last-result.txt
+wizard/state.json
+
+# لاگ و فایل‌های موقت
+*.log
+~$*
+.DS_Store
+Thumbs.db
+
+# بستهٔ آمادهٔ انتشار (حجم اضافه، در گیت لازم نیست)
+*.zip
