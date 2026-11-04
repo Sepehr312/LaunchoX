@@ -167,7 +167,7 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
-- Product static path discovery falls back to an empty list when the database is unavailable to build workers; runtime lookups still fail normally. Storefront rendering is explicitly dynamic because managed content and sessions require runtime data. Missing or malformed MONGODB_URI is replaced with an unreachable placeholder only during the Next.js production build phase; runtime validation remains strict. Other required environment variables must still be configured.
+- Product static path discovery falls back to an empty list when the database is unavailable to build workers; runtime lookups still fail normally. Storefront rendering is explicitly dynamic because managed content and sessions require runtime data. Missing or malformed MONGODB_URI is replaced with an unreachable placeholder only during the Next.js production build phase; runtime validation remains strict. Other required environment variables must still be configured. CI builds against empty, malformed, and unreachable database URIs without an application database service. Standalone deployment JavaScript helpers retain CommonJS imports through a scoped ESLint override; application TypeScript rules remain unchanged.
 
 - Checkout follows SPEC section 10: only online test-payment success or cancellation is supported. The unapproved cash-on-delivery option and callback are removed; delivered and cancelled order messages take precedence over payment status. Existing database records are not migrated or deleted.
 
