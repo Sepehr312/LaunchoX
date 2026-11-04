@@ -102,6 +102,7 @@ try {
     await p.waitForURL((url) => url.pathname === target);
   }
   await login(page, "admin@example.com", "/admin/content");
+  await page.goto(base + "/admin/content?section=about");
   await page.getByLabel("عنوان صفحه", { exact: true }).fill("درباره ما از پنل");
   await page.getByLabel("متن معرفی").fill("متن قابل مدیریت");
   await page.getByRole("button", { name: "افزودن بخش", exact: true }).click();
