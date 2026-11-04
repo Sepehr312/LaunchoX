@@ -54,10 +54,10 @@ describe("environment validation", () => {
       ).toBe(false);
     },
   );
-  it("requires AUTH_URL in production", () => {
+  it("defaults AUTH_URL to the site URL in production", () => {
     expect(
       envSchema.safeParse({ ...valid, NODE_ENV: "production" }).success,
-    ).toBe(false);
+    ).toBe(true);
     expect(
       envSchema.safeParse({
         ...valid,
@@ -81,4 +81,27 @@ describe("environment validation", () => {
     expect(getEnv).toThrow("MONGODB_URI");
     expect(getEnv).not.toThrow("private-invalid-value");
   });
+});
+
+it.each(["", "   "])("normalizes optional blank settings %j", (blank) => {
+  const parsed = envSchema.parse({
+    ...valid,
+    AUTH_TRUST_PROXY_HEADERS: blank,
+    AUTH_URL: blank,
+    SEED_ADMIN_EMAIL: blank,
+    SEED_ADMIN_PASSWORD: blank,
+    CONTACT_EMAIL: blank,
+  });
+  expect(parsed.AUTH_TRUST_PROXY_HEADERS).toBe(false);
+  expect(parsed.AUTH_URL).toBe(valid.NEXT_PUBLIC_SITE_URL);
+  expect(parsed.SEED_ADMIN_EMAIL).toBeUndefined();
+  expect(parsed.SEED_ADMIN_PASSWORD).toBeUndefined();
+});
+it.each([
+  "MONGODB_URI",
+  "AUTH_SECRET",
+  "NEXT_PUBLIC_SITE_URL",
+  "NEXT_PUBLIC_SITE_NAME",
+])("rejects blank required %s", (key) => {
+  expect(envSchema.safeParse({ ...valid, [key]: "" }).success).toBe(false);
 });

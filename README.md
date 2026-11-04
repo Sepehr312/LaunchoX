@@ -394,3 +394,24 @@ API `/api/pages/[slug]` فقط درباره‌ما و خدمات را می‌پ�
 
 - Decisions: ترتیب بخش‌ها، پرسش‌ها و اسلایدها همان ترتیب آرایهٔ ذخیره‌شده است. محتوای مدیریتی از قالب سادهٔ مشترک استفاده می‌کند؛ صفحات طراحی‌شدهٔ قبلی تا اولین ذخیره باقی می‌مانند. اختیار تکمیل مدیریت محتوا و علاقه‌مندی پایدار در این تغییر، درخواست صریح مالک پروژه برای موارد ۱ تا ۴ گزارش بازبینی است.
 - Verification: `tests/content-favorites.test.ts` ذخیره، جداسازی حساب‌ها، ادغام تکراری و محافظت تصاویر؛ `tests/content-favorite-guards.test.ts` کنترل دسترسی؛ `tests/content-favorites-browser.mjs` مسیر مدیریت تا نمایش عمومی و انتقال علاقه‌مندی به حساب و دستگاه دوم را روی دیتابیس ایزوله بررسی می‌کنند. اجرای تست مرورگر مانند اسکریپت کاتالوگ با `LAUNCHO_PLAYWRIGHT_PATH` و MongoDB آزمایشی است.
+
+## Deployment (Runflare)
+
+Set MONGODB_URI, AUTH_SECRET (random, at least 32 characters), NEXT_PUBLIC_SITE_URL,
+NEXT_PUBLIC_SITE_NAME, PAYMENT_PROVIDER=fake, SHIPPING_FLAT_FEE and
+FREE_SHIPPING_THRESHOLD. Empty optional settings are treated as omitted;
+AUTH_URL defaults to the validated NEXT_PUBLIC_SITE_URL. Proxy header trust defaults
+to false and must only be enabled behind a trusted proxy.
+NEXT_PUBLIC_* values are embedded during build: rebuild after changing them.
+Image attachment/cleanup and transactional order operations require a MongoDB replica set.
+The deployment environment must provide this; standalone database behavior is unchanged.
+
+### Decisions
+
+Database-backed shop layout, home and product pages render per request so builds do
+not require database connectivity. This deliberately removes their 300-second ISR
+cache; database reads happen at runtime. The sitemap also runs at request time and
+propagates database failures rather than publishing a misleading partial sitemap.
+Remote image optimization is disabled until a specific trusted CDN is selected;
+local uploaded /api/images URLs remain supported. Existing external image URLs
+must be migrated to local uploads or an explicitly reviewed host allowlist.

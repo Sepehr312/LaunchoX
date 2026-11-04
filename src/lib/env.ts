@@ -31,7 +31,10 @@ const imageOrigin = httpUrl
   }, "مبدأ تصویر باید فقط شامل پروتکل، دامنه و پورت باشد")
   .transform((value) => new URL(value).origin);
 
-export const envSchema = z
+const emptyToUndefined = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? undefined : value;
+
+const rawEnvSchema = z
   .object({
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -76,6 +79,10 @@ export const envSchema = z
     SHIPPING_FLAT_FEE: money,
     FREE_SHIPPING_THRESHOLD: money,
   })
+  .transform((value) => ({
+    ...value,
+    AUTH_URL: value.AUTH_URL ?? value.NEXT_PUBLIC_SITE_URL,
+  }))
   .superRefine((value, context) => {
     if (
       value.NODE_ENV === "production" &&
@@ -97,6 +104,24 @@ export const envSchema = z
       });
     }
   });
+
+export const envSchema = z.preprocess((input) => {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+  const values = { ...input } as Record<string, unknown>;
+  for (const key of [
+    "NODE_ENV",
+    "AUTH_TRUST_PROXY_HEADERS",
+    "AUTH_URL",
+    "IMAGE_INTERNAL_ORIGINS",
+    "CONTACT_PHONE",
+    "CONTACT_EMAIL",
+    "CONTACT_ADDRESS",
+    "SEED_ADMIN_EMAIL",
+    "SEED_ADMIN_PASSWORD",
+  ])
+    values[key] = emptyToUndefined(values[key]);
+  return values;
+}, rawEnvSchema);
 
 export type Env = z.infer<typeof envSchema>;
 

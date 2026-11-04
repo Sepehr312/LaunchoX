@@ -48,11 +48,11 @@ jobs:
       - name: Test
         run: npm run test
 
-      # Product static paths are generated against the disposable MongoDB service.
+      # Building must not require a reachable database.
       - name: Build
         run: npm run build
         env:
-          MONGODB_URI: mongodb://127.0.0.1:27017/launchox-ci
+          MONGODB_URI: mongodb://127.0.0.1:1/none
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
           NEXT_PUBLIC_SITE_NAME: LaunchoX
           AUTH_SECRET: ci-only-secret-not-used-in-production-0123456789abcdef

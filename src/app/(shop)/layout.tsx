@@ -6,7 +6,8 @@ import { StoreHeader } from "@/components/store/StoreHeader";
 import { listCategories } from "@/services/category.service";
 import { getCurrentCart } from "@/actions/cart.actions";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function ShopLayout({
   children,
