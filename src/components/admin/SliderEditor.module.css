@@ -196,11 +196,30 @@
   gap: 20px;
   min-width: 0;
 }
+.editColumns {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
 .editPanel,
 .previewPanel {
   display: grid;
   gap: 20px;
   min-width: 0;
+}
+.editPanel > h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shortFields {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.page .titleField :global(.field-input) {
+  font-size: 18px;
+  font-weight: 750;
 }
 .fields {
   display: grid;
@@ -222,7 +241,7 @@
   border-radius: 8px;
 }
 .page .fields textarea {
-  min-height: 88px;
+  min-height: 180px;
   resize: vertical;
 }
 .toggle {
@@ -266,8 +285,8 @@
   gap: 16px;
 }
 .imageRow :global(.admin-image-preview) {
-  width: 112px;
-  height: 80px;
+  width: 100%;
+  height: 145px;
 }
 .imageRow :global(.admin-image-picker) {
   min-width: 0;
@@ -302,11 +321,6 @@
   padding-inline: 5px;
   font-size: 14px;
   font-weight: 700;
-}
-.previewColumn {
-  display: grid;
-  min-width: 0;
-  gap: 16px;
 }
 .previewPanel {
   gap: 14px;
@@ -363,27 +377,27 @@
 }
 .heroCopy {
   position: relative;
-  width: 75%;
-  padding: 24px 16px;
+  width: 100%;
+  padding: 24px;
   display: grid;
   gap: 10px;
   overflow-wrap: anywhere;
 }
 .heroCopy small {
-  font-size: 10px;
+  font-size: 13px;
   color: var(--primary);
 }
 .heroCopy h3 {
-  font-size: 23px;
+  font-size: clamp(22px, 2.6vw, 34px);
   font-weight: 850;
   line-height: 1.6;
 }
 .heroCopy p {
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.9;
 }
 .heroCopy p + p {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 .heroActions {
@@ -393,8 +407,8 @@
   margin-block-start: 4px;
 }
 .heroActions span {
-  font-size: 9px;
-  padding: 6px 8px;
+  font-size: 12px;
+  padding: 8px 14px;
   border: 1px solid var(--primary);
   border-radius: 6px;
   background: var(--primary);
@@ -417,6 +431,13 @@
 }
 .mobilePreview .heroCopy {
   width: 100%;
+  padding: 20px 16px;
+}
+.mobilePreview .heroCopy h3 {
+  font-size: 22px;
+}
+.mobilePreview .heroCopy p {
+  font-size: 12px;
 }
 .inactive {
   display: block;
@@ -444,21 +465,6 @@
   text-align: center;
   font-size: 11px;
   color: var(--muted);
-}
-.tip {
-  display: flex;
-  align-items: start;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 12px;
-  background: #e4f2ff;
-  font-size: 12px;
-  line-height: 2;
-}
-.tip > svg {
-  flex-shrink: 0;
-  color: var(--primary);
-  margin-block-start: 3px;
 }
 .empty {
   min-height: 160px;
@@ -496,6 +502,16 @@
   flex-wrap: wrap;
   gap: 10px;
 }
+.publication {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer > p {
+  flex: 1 1 220px;
+  font-size: 12px;
+}
 @media (min-width: 640px) {
   .tabs {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -504,36 +520,28 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .imageRow {
-    grid-template-columns: minmax(0, 1fr) 150px;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
   }
-  .buttonGrid {
+  .buttonGrid,
+  .shortFields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .preview:not(.mobilePreview) .heroCopy {
+    width: 65%;
+    min-height: 260px;
+    align-content: center;
   }
 }
 @media (min-width: 1200px) {
-  .page .fields :global(.admin-field) {
-    grid-template-columns: 100px minmax(0, 1fr);
-    align-items: start;
-    gap: 10px;
-  }
-  .page .fields :global(.admin-field) > label {
-    padding-block-start: 8px;
-    font-size: 13px;
-  }
-  .page .fields :global(.admin-field) > div {
-    grid-column: 2;
-  }
-  .page .imageRow :global(.admin-field) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .page .imageRow :global(.admin-field) > div {
-    grid-column: 1;
-  }
   .slideGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .workspace {
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  .editColumns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+  .editPanel {
+    align-content: start;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -552,9 +560,12 @@
     flex: 1;
   }
   .heroCopy {
-    width: 90%;
+    padding: 20px 16px;
   }
   .heroCopy h3 {
     font-size: 20px;
+  }
+  .publication {
+    width: 100%;
   }
 }

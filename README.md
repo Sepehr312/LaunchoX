@@ -167,6 +167,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- The approved slider authoring layout keeps the homepage slide list above a full-width preview, two equal editing columns, and a bottom publication bar. Existing plain-text content, active-state publishing, transactional image references, and explicit Save/Cancel behavior remain the data contract.
+
 - The store content screen opens on the slider tab. Its editor reuses the existing validated content action and image uploader, keeps edits local until Save, supports drag sorting plus keyboard-accessible move buttons, and shows an approximate desktop/mobile preview without following draft links.
 
 - Product static path discovery falls back to an empty list when the database is unavailable to build workers; runtime lookups still fail normally. Storefront rendering is explicitly dynamic because managed content and sessions require runtime data. Missing or malformed MONGODB_URI is replaced with an unreachable placeholder only during the Next.js production build phase; runtime validation remains strict. Other required environment variables must still be configured. CI builds against empty, malformed, and unreachable database URIs without an application database service. Standalone deployment JavaScript helpers retain CommonJS imports through a scoped ESLint override; application TypeScript rules remain unchanged.

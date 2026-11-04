@@ -8,7 +8,7 @@ import {
   Eye,
   GripVertical,
   Images,
-  Info,
+  FileText,
   Layers,
   Monitor,
   Plus,
@@ -262,67 +262,138 @@ export function SliderEditor({ initial }: { initial: SlidesContent }) {
         {selected && (
           <div className={styles.workspace}>
             <section
-              className={`admin-panel ${styles.editPanel}`}
-              aria-labelledby="slide-edit-title"
+              className={`admin-panel ${styles.previewPanel}`}
+              aria-labelledby="slide-preview-title"
             >
               <div className={styles.heading}>
-                <h2 id="slide-edit-title">
-                  ویرایش اسلاید{" "}
+                <h2 id="slide-preview-title">
+                  <Eye size={20} aria-hidden="true" />
+                  پیش‌نمایش اسلاید
+                </h2>
+                <div
+                  className={styles.devices}
+                  role="group"
+                  aria-label="اندازه پیش‌نمایش"
+                >
+                  <button
+                    type="button"
+                    aria-label="پیش‌نمایش دسکتاپ"
+                    aria-pressed={!mobile}
+                    onClick={() => setMobile(false)}
+                  >
+                    <Monitor size={18} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="پیش‌نمایش موبایل"
+                    aria-pressed={mobile}
+                    onClick={() => setMobile(true)}
+                  >
+                    <Smartphone size={18} aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+              <div
+                className={`${styles.preview} ${mobile ? styles.mobilePreview : ""}`}
+              >
+                <SlideImage
+                  src={selected.dayImage}
+                  alt="پیش‌نمایش تصویر بنر"
+                  className={styles.heroImage}
+                />
+                <div className={styles.heroCopy}>
+                  <small>{selected.eyebrow}</small>
+                  <h3>{selected.title}</h3>
+                  <p>{selected.subtitle}</p>
+                  <p>{selected.description}</p>
+                  <div className={styles.heroActions}>
+                    <span>{selected.primary.label}</span>
+                    <span>{selected.secondary.label}</span>
+                  </div>
+                </div>
+                {!selected.isActive && (
+                  <span className={styles.inactive}>
+                    این اسلاید در فروشگاه نمایش داده نمی‌شود.
+                  </span>
+                )}
+              </div>
+              <div className={styles.dots} aria-hidden="true">
+                {slides.map((slide) => (
+                  <span
+                    key={slide.id}
+                    className={
+                      slide.id === selectedId ? styles.activeDot : undefined
+                    }
+                  />
+                ))}
+              </div>
+              <p className={styles.caption}>نمایش تقریبی در صفحه اصلی</p>
+            </section>
+            <div className={styles.editColumns}>
+              <section
+                className={`admin-panel ${styles.editPanel}`}
+                aria-labelledby="slide-edit-title"
+              >
+                <div className={styles.heading}>
+                  <h2 id="slide-edit-title">
+                    <FileText size={20} aria-hidden="true" />
+                    محتوای اسلاید
+                  </h2>
                   <span className="admin-badge">
                     اسلاید {toPersianDigits(selectedIndex + 1)}
                   </span>
+                </div>
+                <div className={styles.fields}>
+                  <div className={styles.titleField}>
+                    <FormField
+                      label="عنوان اصلی"
+                      value={selected.title}
+                      maxLength={5000}
+                      onChange={(event) =>
+                        update({ title: event.target.value })
+                      }
+                    />
+                  </div>
+                  <div className={styles.shortFields}>
+                    <FormField
+                      label="عنوان کوتاه"
+                      value={selected.eyebrow}
+                      maxLength={5000}
+                      onChange={(event) =>
+                        update({ eyebrow: event.target.value })
+                      }
+                    />
+                    <FormField
+                      label="زیرعنوان"
+                      value={selected.subtitle}
+                      maxLength={5000}
+                      onChange={(event) =>
+                        update({ subtitle: event.target.value })
+                      }
+                    />
+                  </div>
+                  <FormTextarea
+                    label="توضیحات"
+                    value={selected.description}
+                    maxLength={5000}
+                    onChange={(event) =>
+                      update({ description: event.target.value })
+                    }
+                  />
+                  <p className="admin-hint">
+                    متنی ساده و خوانا برای معرفی اسلاید بنویسید.
+                  </p>
+                </div>
+              </section>
+              <section
+                className={`admin-panel ${styles.editPanel}`}
+                aria-labelledby="slide-media-title"
+              >
+                <h2 id="slide-media-title">
+                  <Images size={20} aria-hidden="true" />
+                  تصویر و دکمه‌های اسلاید
                 </h2>
-                <label className={styles.toggle}>
-                  <input
-                    type="checkbox"
-                    role="switch"
-                    aria-label="نمایش اسلاید در فروشگاه"
-                    checked={selected.isActive}
-                    onChange={(event) =>
-                      update({ isActive: event.target.checked })
-                    }
-                  />
-                  <span>{selected.isActive ? "فعال" : "غیرفعال"}</span>
-                </label>
-              </div>
-              <div className={styles.fields}>
-                <FormField
-                  label="عنوان کوتاه"
-                  value={selected.eyebrow}
-                  maxLength={5000}
-                  onChange={(event) => update({ eyebrow: event.target.value })}
-                />
-                <FormField
-                  label="عنوان اصلی"
-                  value={selected.title}
-                  maxLength={5000}
-                  onChange={(event) => update({ title: event.target.value })}
-                />
-                <FormField
-                  label="زیرعنوان"
-                  value={selected.subtitle}
-                  maxLength={5000}
-                  onChange={(event) => update({ subtitle: event.target.value })}
-                />
-                <FormTextarea
-                  label="توضیحات"
-                  value={selected.description}
-                  maxLength={5000}
-                  onChange={(event) =>
-                    update({ description: event.target.value })
-                  }
-                />
                 <div className={styles.imageRow}>
-                  <FormField
-                    label="نشانی تصویر"
-                    value={selected.dayImage}
-                    dir="ltr"
-                    maxLength={2000}
-                    onChange={(event) =>
-                      update({ dayImage: event.target.value })
-                    }
-                    hint="نشانی تصویر را وارد کنید یا از کادر کنار آن تصویر بارگذاری کنید."
-                  />
                   <ImagePreview
                     key={selected.id}
                     src={selected.dayImage}
@@ -330,132 +401,89 @@ export function SliderEditor({ initial }: { initial: SlidesContent }) {
                     onUpload={(dayImage) => update({ dayImage })}
                     onUploadingChange={setUploading}
                   />
-                </div>
-              </div>
-              <div className={styles.buttonSettings}>
-                <h3>
-                  <Layers size={19} aria-hidden="true" />
-                  دکمه‌های اسلاید
-                </h3>
-                <div className={styles.buttonGrid}>
-                  {(["primary", "secondary"] as const).map((key, index) => (
-                    <fieldset key={key} className={styles.buttonGroup}>
-                      <legend>{index === 0 ? "دکمه اصلی" : "دکمه دوم"}</legend>
-                      <FormField
-                        label={index === 0 ? "متن دکمه اصلی" : "متن دکمه دوم"}
-                        value={selected[key].label}
-                        maxLength={5000}
-                        onChange={(event) =>
-                          update({
-                            [key]: {
-                              ...selected[key],
-                              label: event.target.value,
-                            },
-                          })
-                        }
-                      />
-                      <FormField
-                        label={
-                          index === 0
-                            ? "لینک داخلی دکمه اصلی"
-                            : "لینک داخلی دکمه دوم"
-                        }
-                        value={selected[key].href}
-                        dir="ltr"
-                        maxLength={500}
-                        onChange={(event) =>
-                          update({
-                            [key]: {
-                              ...selected[key],
-                              href: event.target.value,
-                            },
-                          })
-                        }
-                      />
-                    </fieldset>
-                  ))}
-                </div>
-              </div>
-            </section>
-            <aside className={styles.previewColumn}>
-              <section
-                className={`admin-panel ${styles.previewPanel}`}
-                aria-labelledby="slide-preview-title"
-              >
-                <div className={styles.heading}>
-                  <h2 id="slide-preview-title">
-                    <Eye size={20} aria-hidden="true" />
-                    پیش‌نمایش اسلاید
-                  </h2>
-                  <div
-                    className={styles.devices}
-                    role="group"
-                    aria-label="اندازه پیش‌نمایش"
-                  >
-                    <button
-                      type="button"
-                      aria-label="پیش‌نمایش دسکتاپ"
-                      aria-pressed={!mobile}
-                      onClick={() => setMobile(false)}
-                    >
-                      <Monitor size={18} aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="پیش‌نمایش موبایل"
-                      aria-pressed={mobile}
-                      onClick={() => setMobile(true)}
-                    >
-                      <Smartphone size={18} aria-hidden="true" />
-                    </button>
-                  </div>
-                </div>
-                <div
-                  className={`${styles.preview} ${mobile ? styles.mobilePreview : ""}`}
-                >
-                  <SlideImage
-                    src={selected.dayImage}
-                    alt="پیش‌نمایش تصویر بنر"
-                    className={styles.heroImage}
-                  />
-                  <div className={styles.heroCopy}>
-                    <small>{selected.eyebrow}</small>
-                    <h3>{selected.title}</h3>
-                    <p>{selected.subtitle}</p>
-                    <p>{selected.description}</p>
-                    <div className={styles.heroActions}>
-                      <span>{selected.primary.label}</span>
-                      <span>{selected.secondary.label}</span>
-                    </div>
-                  </div>
-                  {!selected.isActive && (
-                    <span className={styles.inactive}>
-                      این اسلاید در فروشگاه نمایش داده نمی‌شود.
-                    </span>
-                  )}
-                </div>
-                <div className={styles.dots} aria-hidden="true">
-                  {slides.map((slide) => (
-                    <span
-                      key={slide.id}
-                      className={
-                        slide.id === selectedId ? styles.activeDot : undefined
+                  <div className={styles.fields}>
+                    <FormField
+                      label="نشانی تصویر"
+                      value={selected.dayImage}
+                      dir="ltr"
+                      maxLength={2000}
+                      onChange={(event) =>
+                        update({ dayImage: event.target.value })
                       }
+                      hint="نشانی تصویر را وارد کنید یا برای بارگذاری، روی کادر تصویر بزنید."
                     />
-                  ))}
+                  </div>
                 </div>
-                <p className={styles.caption}>نمایش تقریبی در صفحه اصلی</p>
+                <div className={styles.buttonSettings}>
+                  <h3>
+                    <Layers size={19} aria-hidden="true" />
+                    دکمه‌های اسلاید
+                  </h3>
+                  <div className={styles.buttonGrid}>
+                    {(["primary", "secondary"] as const).map((key, index) => (
+                      <fieldset key={key} className={styles.buttonGroup}>
+                        <legend>
+                          {index === 0 ? "دکمه اصلی" : "دکمه دوم"}
+                        </legend>
+                        <FormField
+                          label={index === 0 ? "متن دکمه اصلی" : "متن دکمه دوم"}
+                          value={selected[key].label}
+                          maxLength={5000}
+                          onChange={(event) =>
+                            update({
+                              [key]: {
+                                ...selected[key],
+                                label: event.target.value,
+                              },
+                            })
+                          }
+                        />
+                        <FormField
+                          label={
+                            index === 0
+                              ? "لینک داخلی دکمه اصلی"
+                              : "لینک داخلی دکمه دوم"
+                          }
+                          value={selected[key].href}
+                          dir="ltr"
+                          maxLength={500}
+                          onChange={(event) =>
+                            update({
+                              [key]: {
+                                ...selected[key],
+                                href: event.target.value,
+                              },
+                            })
+                          }
+                        />
+                      </fieldset>
+                    ))}
+                  </div>
+                </div>
               </section>
-              <div className={styles.tip}>
-                <Info size={20} aria-hidden="true" />
-                <div>
-                  <p>
-                    برای تغییر ترتیب، اسلایدها را بکشید یا از دکمه‌های جابه‌جایی
-                    استفاده کنید.
-                  </p>
-                  <p>اسلایدهای غیرفعال در فروشگاه نمایش داده نمی‌شوند.</p>
-                </div>
-              </div>
+            </div>
+          </div>
+        )}
+        <footer className={`admin-panel ${styles.footer}`}>
+          {selected && (
+            <div className={styles.publication}>
+              <label className={styles.toggle}>
+                <span>نمایش اسلاید</span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  aria-label="نمایش اسلاید در فروشگاه"
+                  checked={selected.isActive}
+                  onChange={(event) =>
+                    update({ isActive: event.target.checked })
+                  }
+                />
+              </label>
+              <span
+                className={`admin-badge ${selected.isActive ? "admin-badge-success" : ""}`}
+              >
+                {selected.isActive ? "فعال" : "غیرفعال"}
+              </span>
               <button
                 type="button"
                 className={styles.danger}
@@ -479,10 +507,8 @@ export function SliderEditor({ initial }: { initial: SlidesContent }) {
                 <Trash2 size={17} aria-hidden="true" />
                 حذف این اسلاید
               </button>
-            </aside>
-          </div>
-        )}
-        <footer className={`admin-panel ${styles.footer}`}>
+            </div>
+          )}
           <p className="admin-hint">
             {dirty
               ? "تغییرات ذخیره‌نشده دارید؛ پس از ذخیره در صفحه اصلی نمایش داده می‌شوند."
