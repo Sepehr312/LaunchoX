@@ -16,16 +16,6 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    services:
-      mongo:
-        image: mongo:7
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -48,11 +38,13 @@ jobs:
       - name: Test
         run: npm run test
 
-      # Product static paths are generated against the disposable MongoDB service.
-      - name: Build
-        run: npm run build
+      # No application database is available to build workers.
+      - name: Build without database access
+        run: |
+          for uri in "" "invalid" "mongodb://build-db-unavailable.invalid:27017/launchox-ci"; do
+            MONGODB_URI="$uri" npm run build
+          done
         env:
-          MONGODB_URI: mongodb://127.0.0.1:27017/launchox-ci
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
           NEXT_PUBLIC_SITE_NAME: LaunchoX
           AUTH_SECRET: ci-only-secret-not-used-in-production-0123456789abcdef

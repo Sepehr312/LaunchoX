@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 const requiredText = z
   .string({ error: "این تنظیم الزامی است" })
@@ -101,7 +102,15 @@ export const envSchema = z
 export type Env = z.infer<typeof envSchema>;
 
 export function getEnv(): Env {
-  const result = envSchema.safeParse(process.env);
+  // Build workers need public metadata but may have no runtime database configuration.
+  const input = { ...process.env };
+  if (
+    input.NEXT_PHASE === PHASE_PRODUCTION_BUILD &&
+    !envSchema.shape.MONGODB_URI.safeParse(input.MONGODB_URI).success
+  ) {
+    input.MONGODB_URI = "mongodb://127.0.0.1:1/launchox-build-unavailable";
+  }
+  const result = envSchema.safeParse(input);
   if (!result.success) {
     // Report keys and messages only, never configuration values or secrets.
     throw new Error(

@@ -24,8 +24,16 @@ const loadProduct = cache(async (slug: string) => {
 });
 
 export async function generateStaticParams() {
-  const products = await listProducts({ page: 1, limit: 48, sort: "newest" });
-  return products.items.map((product) => ({ slug: product.slug }));
+  // Build workers may not reach the runtime database; dynamic params remain available.
+  try {
+    const products = await listProducts({ page: 1, limit: 48, sort: "newest" });
+    return products.items.map((product) => ({ slug: product.slug }));
+  } catch {
+    console.warn(
+      "generateStaticParams skipped: database unavailable during build",
+    );
+    return [];
+  }
 }
 
 export async function generateMetadata({

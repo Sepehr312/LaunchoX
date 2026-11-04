@@ -82,3 +82,17 @@ describe("environment validation", () => {
     expect(getEnv).not.toThrow("private-invalid-value");
   });
 });
+
+it.each(["", "invalid"])(
+  "permits build-only missing database configuration: %s",
+  (uri) => {
+    Object.entries(valid).forEach(([key, value]) => vi.stubEnv(key, value));
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
+    vi.stubEnv("MONGODB_URI", uri);
+    expect(getEnv().MONGODB_URI).toBe(
+      "mongodb://127.0.0.1:1/launchox-build-unavailable",
+    );
+    vi.stubEnv("NEXT_PHASE", "phase-production-server");
+    expect(getEnv).toThrow("MONGODB_URI");
+  },
+);

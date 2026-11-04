@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   product: vi.fn(),
   related: vi.fn(),
   cart: vi.fn(),
+  list: vi.fn(),
 }));
 vi.mock("@/lib/env", () => ({
   getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "فروشگاه" }),
@@ -11,7 +12,7 @@ vi.mock("@/lib/env", () => ({
 vi.mock("@/services/product.service", () => ({
   getProductBySlug: mocks.product,
   getRelatedProducts: mocks.related,
-  listProducts: vi.fn(),
+  listProducts: mocks.list,
 }));
 vi.mock("@/actions/cart.actions", () => ({ getCurrentCart: mocks.cart }));
 vi.mock("@/components/store/ProductDetails", () => ({
@@ -25,6 +26,7 @@ vi.mock("next/navigation", () => ({
 
 import ProductPage, {
   generateMetadata,
+  generateStaticParams,
 } from "@/app/(shop)/products/[slug]/page";
 
 const product = {
@@ -99,3 +101,28 @@ it.each(["related", "cart"] as const)(
     ).rejects.toBe(failure);
   },
 );
+
+it("keeps product paths when the database is available", async () => {
+  mocks.list.mockResolvedValue({ items: [product] });
+  await expect(generateStaticParams()).resolves.toEqual([
+    { slug: product.slug },
+  ]);
+  expect(mocks.list).toHaveBeenCalledWith({
+    page: 1,
+    limit: 48,
+    sort: "newest",
+  });
+});
+
+it("allows on-demand paths when build-time database lookup fails", async () => {
+  const warning = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+  try {
+    mocks.list.mockRejectedValue(new Error("Database unavailable"));
+    await expect(generateStaticParams()).resolves.toEqual([]);
+    expect(warning).toHaveBeenCalledWith(
+      "generateStaticParams skipped: database unavailable during build",
+    );
+  } finally {
+    warning.mockRestore();
+  }
+});
