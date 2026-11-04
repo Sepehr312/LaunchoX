@@ -167,6 +167,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Contact content uses equal-height form and preview cards without a separate guidance box, the shared validated content action and the existing phone/email/address contract, with a live preview of valid draft values and explicit Save/Cancel controls. Clearing all three fields publishes the existing Persian empty state; the preview never inserts sample contact details into stored content.
+
 - The approved slider authoring layout keeps the homepage slide list above a full-width preview, two equal editing columns, and a bottom publication bar. Existing plain-text content, active-state publishing, transactional image references, and explicit Save/Cancel behavior remain the data contract.
 
 - The store content screen opens on the slider tab. Its editor reuses the existing validated content action and image uploader, keeps edits local until Save, supports drag sorting plus keyboard-accessible move buttons, and shows an approximate desktop/mobile preview without following draft links.

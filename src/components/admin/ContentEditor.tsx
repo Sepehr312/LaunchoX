@@ -2,10 +2,13 @@
 import { useState, useTransition } from "react";
 import { saveContentAction } from "@/actions/admin/content.actions";
 import { SliderEditor } from "@/components/admin/SliderEditor";
+import { ContactEditor } from "@/components/admin/ContactEditor";
 import type { ContentInput } from "@/validations/content";
 export function ContentEditor({ initial }: { initial: ContentInput }) {
   return initial.key === "slides" ? (
     <SliderEditor initial={initial} />
+  ) : initial.key === "contact" ? (
+    <ContactEditor initial={initial} />
   ) : (
     <PageContentEditor initial={initial} />
   );
@@ -233,12 +236,6 @@ function PageContentEditor({ initial }: { initial: ContentInput }) {
             </button>
           </>
         )}
-        {value.key === "contact" &&
-          (["phone", "email", "address"] as const).map((key, i) =>
-            field(["تلفن", "ایمیل", "آدرس"][i], value.data[key], (text) =>
-              setValue({ ...value, data: { ...value.data, [key]: text } }),
-            ),
-          )}
         <button className="rounded bg-blue-700 p-3 text-white" type="submit">
           {pending ? "در حال ذخیره…" : "ذخیره تغییرات"}
         </button>

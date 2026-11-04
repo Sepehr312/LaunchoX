@@ -56,7 +56,9 @@ export default async function ContentPage({
           <p className="admin-hint mt-2">
             {key === "slides"
               ? "اسلایدهای صفحه اصلی فروشگاه را مدیریت کنید."
-              : "محتوای صفحات و ارتباط با مشتریان را مدیریت کنید."}
+              : key === "contact"
+                ? "راه‌های ارتباط با فروشگاه را به‌روز نگه دارید."
+                : "محتوای صفحات و ارتباط با مشتریان را مدیریت کنید."}
           </p>
         </div>
         <Link
@@ -87,7 +89,7 @@ export default async function ContentPage({
           </Link>
         ))}
       </nav>
-      {key !== "slides" && (
+      {(key === "about" || key === "services") && (
         <p className="admin-hint">
           ترتیب نمایش مطابق ترتیب بخش‌هاست. با ذخیره، محتوای این فرم جایگزین
           صفحهٔ فعلی می‌شود.
