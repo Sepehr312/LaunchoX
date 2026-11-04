@@ -1,6 +1,6 @@
 "use server";
 import { requireAdmin } from "@/lib/auth";
-import { saveContent } from "@/services/content.service";
+import { mutateAboutSection, saveContent } from "@/services/content.service";
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
@@ -21,6 +21,26 @@ export async function saveContentAction(input: unknown) {
           : error instanceof AppError
             ? error.message
             : "ذخیرهٔ محتوا انجام نشد",
+    };
+  }
+}
+
+export async function mutateAboutSectionAction(input: unknown) {
+  await requireAdmin();
+  try {
+    const data = await mutateAboutSection(input);
+    revalidatePath("/", "layout");
+    return { ok: true as const, data };
+  } catch (error) {
+    unstable_rethrow(error);
+    return {
+      ok: false as const,
+      error:
+        error instanceof z.ZodError
+          ? error.issues[0].message
+          : error instanceof AppError
+            ? error.message
+            : "ذخیرهٔ بخش انجام نشد",
     };
   }
 }

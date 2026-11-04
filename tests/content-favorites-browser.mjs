@@ -8,6 +8,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { startTestMongo } from "./mongo-server.ts";
+import { runAboutEditorScenario } from "./about-editor-browser-scenario.mjs";
 const require = createRequire(import.meta.url);
 const { chromium } = require(
   process.env.LAUNCHO_PLAYWRIGHT_PATH || "playwright",
@@ -103,21 +104,34 @@ try {
     await p.waitForURL((url) => url.pathname === target);
   }
   await login(page, "admin@example.com", "/admin/content");
-  await page.goto(base + "/admin/content?section=about");
-  await page.getByLabel("عنوان صفحه", { exact: true }).fill("درباره ما از پنل");
-  await page.getByLabel("متن معرفی").fill("متن قابل مدیریت");
-  await page.getByRole("button", { name: "افزودن بخش", exact: true }).click();
-  await page.getByRole("button", { name: "افزودن پرسش", exact: true }).click();
-  await page.getByRole("button", { name: "ذخیره تغییرات" }).click();
-  await page
-    .getByRole("status")
-    .filter({ hasText: "تغییرات ذخیره شد" })
-    .waitFor();
-  await page.goto(base + "/about");
-  await page
-    .getByRole("heading", { name: "درباره ما از پنل", exact: true })
-    .waitFor();
-  await page.getByText("پرسش جدید", { exact: true }).waitFor();
+  const originalAbout = await browser.newPage({
+    viewport: { width: 1902, height: 908 },
+  });
+  await mkdir(new URL("../test-results/", import.meta.url), {
+    recursive: true,
+  });
+  await originalAbout.goto(base + "/about");
+  await originalAbout.getByRole("heading", { name: /سرمایی مطمئن/ }).waitFor();
+  await originalAbout.screenshot({
+    path: fileURLToPath(
+      new URL("../test-results/about-public-desktop.png", import.meta.url),
+    ),
+    fullPage: true,
+  });
+  await originalAbout.setViewportSize({ width: 360, height: 900 });
+  assert.ok(
+    await originalAbout.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await originalAbout.screenshot({
+    path: fileURLToPath(
+      new URL("../test-results/about-public-mobile.png", import.meta.url),
+    ),
+    fullPage: true,
+  });
+  await originalAbout.close();
+  await runAboutEditorScenario({ page, browser, db, base });
   await page.goto(base + "/admin/content?section=services");
   await page.getByLabel("عنوان صفحه", { exact: true }).fill("خدمات مدیریت‌شده");
   await page.getByRole("button", { name: "ذخیره تغییرات" }).click();

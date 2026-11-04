@@ -1,0 +1,516 @@
+.editor,
+.controls,
+.fields,
+.group,
+.sectionList,
+.editPanel,
+.previewPanel {
+  display: grid;
+  min-width: 0;
+  gap: 18px;
+}
+.controls {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.editor button,
+.editor input,
+.editor textarea,
+.editor select {
+  font: inherit;
+}
+.editor button {
+  cursor: pointer;
+}
+.editor button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.editor :is(button, input, textarea, select, summary, a):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+.heading,
+.footer,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.heading svg {
+  flex-shrink: 0;
+}
+.editor :is(.controls, .dialog) .outline,
+.editor :is(.controls, .dialog) .primary,
+.editor :is(.controls, .dialog) .danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 1px solid var(--primary);
+  border-radius: 9px;
+  background: white;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.editor :is(.controls, .dialog) .primary {
+  background: var(--primary);
+  color: white;
+}
+.editor :is(.controls, .dialog) .danger {
+  border-color: #efb8bf;
+  color: #c8263c;
+}
+.columns,
+.workspace {
+  display: grid;
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+}
+.group {
+  align-content: start;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fbfdff;
+}
+.group h3 {
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+.editor .columns :global(.admin-span) {
+  grid-column: auto;
+}
+.editor :global(.field-input) {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+}
+.editor textarea {
+  resize: vertical;
+}
+.editor input[readonly] {
+  background: #eef2f8;
+  color: var(--muted);
+}
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.toggle input {
+  appearance: none;
+  position: relative;
+  width: 36px;
+  height: 21px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  background: #9aabba;
+  cursor: pointer;
+}
+.toggle input:checked {
+  background: #28b445;
+}
+.toggle input::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-start: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: white;
+}
+.toggle input:checked::after {
+  inset-inline-start: 18px;
+}
+.list {
+  display: grid;
+  gap: 10px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fbfdff;
+}
+.editor :is(.controls, .dialog) .selected {
+  border-color: var(--primary);
+  background: #e6f1ff;
+  box-shadow: 0 0 0 1px var(--primary);
+}
+.editor .controls .selectRow {
+  flex: 1 1 140px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  border: 0;
+  text-align: start;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  padding: 5px;
+}
+.selectRow span {
+  min-width: 0;
+}
+.selectRow small {
+  display: block;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--muted);
+}
+.row > .toggle {
+  font-size: 0;
+}
+.rowActions {
+  display: flex;
+  gap: 4px;
+}
+.editor .controls .rowActions button,
+.editor .controls .devices button,
+.editor .dialog .close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--primary);
+  background: white;
+}
+.devices {
+  display: flex;
+  gap: 6px;
+}
+.editor .controls .devices button[aria-pressed="true"] {
+  background: #d6eaff;
+  border-color: var(--primary);
+}
+.preview {
+  min-width: 0;
+  width: 100%;
+}
+.mobilePreview {
+  max-width: 360px;
+  margin-inline: auto;
+  container-type: inline-size;
+}
+.previewSection {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-block-end: 16px;
+  overflow: hidden;
+}
+.previewSection:focus-within,
+.previewSection:hover {
+  border-color: var(--primary);
+}
+.sectionToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-block-end: 1px solid var(--border);
+  background: #f6faff;
+}
+.sectionToolbar > .toggle {
+  margin-inline-start: auto;
+}
+.sectionEditLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}
+.editor .controls .dragHandle {
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: grab;
+}
+.sectionCanvas {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.sectionCanvas > div {
+  pointer-events: none;
+}
+.disabledSection .sectionCanvas {
+  opacity: 0.5;
+}
+.editor .controls .addSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 180px;
+  border: 2px dashed #a8c9ee;
+  border-radius: 14px;
+  color: var(--primary);
+  background: #f8fbff;
+}
+.editor .controls .addSection:hover {
+  border-color: var(--primary);
+  background: #eef6ff;
+}
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--primary);
+  border-radius: 9px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+.iconPicker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0;
+  min-width: 0;
+  border: 0;
+}
+.iconPicker legend {
+  margin-block-end: 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.editor .controls .iconPicker button {
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary);
+  background: white;
+  font-size: 12px;
+}
+.footer {
+  position: sticky;
+  inset-block-end: 10px;
+  z-index: 5;
+  box-shadow: 0 3px 18px #234a7b1c;
+}
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(920px, calc(100% - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: clamp(16px, 3vw, 28px);
+  overflow-y: auto;
+  border: 1px solid var(--primary);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--foreground);
+  box-shadow: 0 24px 80px #11326740;
+}
+.dialog::backdrop {
+  background: #102e6266;
+}
+.dialog h2 {
+  font-size: 24px;
+}
+.templates {
+  display: grid;
+  gap: 14px;
+  margin-block: 24px;
+}
+.editor .dialog .template {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: inherit;
+  background: white;
+}
+.template strong {
+  font-size: 17px;
+}
+.template > span {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.templatePreview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 110px;
+  padding: 12px;
+  border-radius: 10px;
+  background: linear-gradient(140deg, #e6f2ff, #d8e8fc);
+  overflow: hidden;
+}
+.mockImage {
+  display: grid;
+  place-content: center;
+  width: 42%;
+  height: 80px;
+  background: linear-gradient(90deg, #abbac8, #f8fcff, #879aaf);
+  border: 2px solid #fff;
+  border-radius: 8px;
+  color: white;
+  font-size: 28px;
+}
+.mockText {
+  display: grid;
+  flex: 1;
+  gap: 8px;
+}
+.mockText b,
+.mockText span,
+.mockCard span,
+.mockQuestion span {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: 4px;
+  background: #9bb7d8;
+}
+.mockText b {
+  width: 70%;
+  height: 7px;
+  background: #173c73;
+}
+.mockText em {
+  width: 45%;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--primary);
+}
+.mockCard {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 5px;
+  border-radius: 6px;
+  background: white;
+}
+.mockCard b {
+  color: var(--primary);
+  font-size: 20px;
+}
+.mockCard small {
+  font-size: 9px;
+}
+.faq {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+}
+.mockQuestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 8px;
+  border-radius: 5px;
+  color: var(--primary);
+  background: white;
+}
+.story .mockImage {
+  order: 1;
+}
+.introduction,
+.values,
+.steps,
+.contact {
+  isolation: isolate;
+}
+.editor :is(.controls, .dialog) button.selected {
+  border-color: var(--primary);
+  background: #e6f1ff;
+  box-shadow: 0 0 0 1px var(--primary);
+}
+.editor .controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (min-width: 640px) {
+  .templates {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1200px) {
+  .workspace {
+    grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.7fr);
+  }
+  .sectionList {
+    position: sticky;
+    inset-block-start: 20px;
+  }
+}
+@media (max-width: 639px) {
+  .editor :global(.admin-panel) {
+    padding: 14px;
+  }
+  .footer {
+    position: static;
+  }
+  .actions {
+    width: 100%;
+  }
+  .actions > button {
+    flex: 1;
+  }
+  .templatePreview {
+    height: 92px;
+  }
+}

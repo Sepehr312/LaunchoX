@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth";
 import { readContent } from "@/services/content.service";
 import { getSiteSettings } from "@/services/site.service";
 import { defaultSlides } from "@/lib/content-defaults";
+import { defaultAboutPage } from "@/components/store/about-defaults";
 import { contentKeySchema, type ContentInput } from "@/validations/content";
 import { ContentEditor } from "@/components/admin/ContentEditor";
 export const dynamic = "force-dynamic";
@@ -36,16 +37,18 @@ export default async function ContentPage({
                 address: site.address,
               },
             }
-          : ({
-              key,
-              data: {
-                title: key === "about" ? "درباره ما" : "خدمات و پشتیبانی",
-                content: "همراه شما برای انتخاب و خریدی آگاهانه.",
-                isActive: true,
-                sections: [],
-                questions: [],
-              },
-            } as ContentInput);
+          : key === "about"
+            ? { key, data: defaultAboutPage }
+            : ({
+                key,
+                data: {
+                  title: "خدمات و پشتیبانی",
+                  content: "همراه شما برای انتخاب و خریدی آگاهانه.",
+                  isActive: true,
+                  sections: [],
+                  questions: [],
+                },
+              } as ContentInput);
   }
   return (
     <section className={styles.page}>
@@ -58,7 +61,9 @@ export default async function ContentPage({
               ? "اسلایدهای صفحه اصلی فروشگاه را مدیریت کنید."
               : key === "contact"
                 ? "راه‌های ارتباط با فروشگاه را به‌روز نگه دارید."
-                : "محتوای صفحات و ارتباط با مشتریان را مدیریت کنید."}
+                : key === "about"
+                  ? "بخش‌های صفحه درباره ما را بسازید و مدیریت کنید."
+                  : "محتوای صفحات و ارتباط با مشتریان را مدیریت کنید."}
           </p>
         </div>
         <Link
@@ -69,7 +74,8 @@ export default async function ContentPage({
           target="_blank"
           rel="noopener noreferrer"
         >
-          مشاهده فروشگاه <ArrowUpLeft size={18} aria-hidden="true" />
+          {key === "about" ? "مشاهده صفحه درباره ما" : "مشاهده فروشگاه"}{" "}
+          <ArrowUpLeft size={18} aria-hidden="true" />
         </Link>
       </header>
       <nav className={styles.tabs} aria-label="بخش‌های محتوای فروشگاه">
@@ -89,13 +95,17 @@ export default async function ContentPage({
           </Link>
         ))}
       </nav>
-      {(key === "about" || key === "services") && (
+      {key === "services" && (
         <p className="admin-hint">
           ترتیب نمایش مطابق ترتیب بخش‌هاست. با ذخیره، محتوای این فرم جایگزین
           صفحهٔ فعلی می‌شود.
         </p>
       )}
-      <ContentEditor key={key} initial={initial} />
+      <ContentEditor
+        key={key}
+        initial={initial}
+        contact={key === "about" ? await getSiteSettings() : undefined}
+      />
     </section>
   );
 }

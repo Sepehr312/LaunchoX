@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   user: vi.fn(),
   save: vi.fn(),
   read: vi.fn(),
+  mutate: vi.fn(),
   merge: vi.fn(),
   set: vi.fn(),
   ids: vi.fn(),
@@ -15,6 +16,7 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/services/content.service", () => ({
   saveContent: mocks.save,
   readContent: mocks.read,
+  mutateAboutSection: mocks.mutate,
 }));
 vi.mock("@/services/favorite.service", () => ({
   mergeFavorites: mocks.merge,
@@ -23,7 +25,10 @@ vi.mock("@/services/favorite.service", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 import { PUT, GET } from "@/app/api/pages/[slug]/route";
-import { saveContentAction } from "@/actions/admin/content.actions";
+import {
+  mutateAboutSectionAction,
+  saveContentAction,
+} from "@/actions/admin/content.actions";
 import {
   setFavoriteAction,
   mergeFavoritesAction,
@@ -43,7 +48,9 @@ it("guards all content writes before parsing or persistence", async () => {
     ),
   ).rejects.toThrow("denied");
   await expect(saveContentAction({})).rejects.toThrow("denied");
+  await expect(mutateAboutSectionAction({})).rejects.toThrow("denied");
   expect(mocks.save).not.toHaveBeenCalled();
+  expect(mocks.mutate).not.toHaveBeenCalled();
 });
 it("does not expose inactive page content", async () => {
   mocks.read.mockResolvedValue({ key: "about", data: { isActive: false } });

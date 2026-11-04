@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { aboutSectionSchema } from "@/validations/about-sections";
 import {
   assetUrlSchema,
   requiredString,
@@ -11,7 +12,6 @@ export const contentKeySchema = z.enum([
   "contact",
 ]);
 const text = requiredString.max(5000);
-const image = z.union([assetUrlSchema, z.literal("")]);
 const href = z
   .string()
   .max(500)
@@ -19,21 +19,31 @@ const href = z
     /^(\/(?!\/)|#)[^\\\s]*$/,
     "لینک باید به صفحه‌ای در همین سایت اشاره کند",
   );
-export const sectionSchema = z.object({
-  title: text,
-  description: text,
-  imageUrl: image.default(""),
-});
-export const pageSchema = z.object({
-  title: text,
-  content: text,
-  isActive: z.boolean(),
-  sections: z.array(sectionSchema).max(30),
-  questions: z
-    .array(z.object({ question: text, answer: text }))
-    .max(30)
-    .default([]),
-});
+export const sectionSchema = aboutSectionSchema;
+export const pageSchema = z
+  .object({
+    title: text,
+    content: text,
+    isActive: z.boolean(),
+    sections: z.array(sectionSchema).max(30),
+    questions: z
+      .array(z.object({ question: text, answer: text }))
+      .max(30)
+      .default([]),
+    layout: z.literal("sections").optional(),
+  })
+  .superRefine((page, ctx) => {
+    const ids = page.sections.flatMap((section) =>
+      section.id ? [section.id] : [],
+    );
+    if (new Set(ids).size !== ids.length) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["sections"],
+        message: "شناسهٔ بخش‌ها تکراری است",
+      });
+    }
+  });
 export const slideSchema = z.object({
   id: z.string().min(1).max(80),
   dayImage: assetUrlSchema,
