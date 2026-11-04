@@ -1,8 +1,16 @@
 "use client";
 import { useState, useTransition } from "react";
 import { saveContentAction } from "@/actions/admin/content.actions";
+import { SliderEditor } from "@/components/admin/SliderEditor";
 import type { ContentInput } from "@/validations/content";
 export function ContentEditor({ initial }: { initial: ContentInput }) {
+  return initial.key === "slides" ? (
+    <SliderEditor initial={initial} />
+  ) : (
+    <PageContentEditor initial={initial} />
+  );
+}
+function PageContentEditor({ initial }: { initial: ContentInput }) {
   const [value, setValue] = useState(initial);
   const [message, setMessage] = useState("");
   const [pending, start] = useTransition();
@@ -231,129 +239,6 @@ export function ContentEditor({ initial }: { initial: ContentInput }) {
               setValue({ ...value, data: { ...value.data, [key]: text } }),
             ),
           )}
-        {value.key === "slides" && (
-          <>
-            {value.data.map((slide, i) => (
-              <fieldset
-                className="grid gap-3 rounded border p-4"
-                key={slide.id}
-              >
-                <legend>اسلاید</legend>
-                {(
-                  [
-                    "dayImage",
-                    "eyebrow",
-                    "title",
-                    "subtitle",
-                    "description",
-                  ] as const
-                ).map((key, n) =>
-                  field(
-                    [
-                      "نشانی تصویر",
-                      "عنوان کوتاه",
-                      "عنوان اصلی",
-                      "زیرعنوان",
-                      "توضیحات",
-                    ][n],
-                    slide[key],
-                    (text) =>
-                      setValue({
-                        ...value,
-                        data: value.data.map((s, j) =>
-                          j === i ? { ...s, [key]: text } : s,
-                        ),
-                      }),
-                  ),
-                )}
-                {(["primary", "secondary"] as const).map((key, n) => (
-                  <div className="grid gap-3" key={key}>
-                    {field(
-                      n === 0 ? "متن دکمه اصلی" : "متن دکمه دوم",
-                      slide[key].label,
-                      (label) =>
-                        setValue({
-                          ...value,
-                          data: value.data.map((s, j) =>
-                            j === i ? { ...s, [key]: { ...s[key], label } } : s,
-                          ),
-                        }),
-                    )}
-                    {field("لینک داخل سایت", slide[key].href, (href) =>
-                      setValue({
-                        ...value,
-                        data: value.data.map((s, j) =>
-                          j === i ? { ...s, [key]: { ...s[key], href } } : s,
-                        ),
-                      }),
-                    )}
-                  </div>
-                ))}
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={slide.isActive}
-                    onChange={(e) =>
-                      setValue({
-                        ...value,
-                        data: value.data.map((s, j) =>
-                          j === i ? { ...s, isActive: e.target.checked } : s,
-                        ),
-                      })
-                    }
-                  />{" "}
-                  فعال
-                </label>
-                <button
-                  type="button"
-                  disabled={!i}
-                  onClick={() => {
-                    const data = [...value.data];
-                    [data[i - 1], data[i]] = [data[i], data[i - 1]];
-                    setValue({ ...value, data });
-                  }}
-                >
-                  انتقال به بالا
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setValue({
-                      ...value,
-                      data: value.data.filter((_, j) => i !== j),
-                    })
-                  }
-                >
-                  حذف اسلاید
-                </button>
-              </fieldset>
-            ))}
-            <button
-              type="button"
-              onClick={() =>
-                setValue({
-                  ...value,
-                  data: [
-                    ...value.data,
-                    {
-                      id: crypto.randomUUID(),
-                      dayImage: "/images/arctic-showroom-light.webp",
-                      eyebrow: "فروشگاه",
-                      title: "اسلاید جدید",
-                      subtitle: "زیرعنوان",
-                      description: "توضیحات",
-                      primary: { label: "محصولات", href: "/products" },
-                      secondary: { label: "خدمات", href: "/services" },
-                      isActive: true,
-                    },
-                  ],
-                })
-              }
-            >
-              افزودن اسلاید
-            </button>
-          </>
-        )}
         <button className="rounded bg-blue-700 p-3 text-white" type="submit">
           {pending ? "در حال ذخیره…" : "ذخیره تغییرات"}
         </button>

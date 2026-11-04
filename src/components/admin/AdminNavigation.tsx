@@ -12,11 +12,12 @@ import {
   X,
   Snowflake,
   ArrowUpLeft,
+  FileText,
 } from "lucide-react";
 import { useRef, type ReactNode } from "react";
 const links = [
-  { href: "/admin/content", label: "محتوای فروشگاه", icon: LayoutDashboard },
   { href: "/admin", label: "نمای کلی", icon: LayoutDashboard },
+  { href: "/admin/content", label: "محتوای فروشگاه", icon: FileText },
   { href: "/admin/products", label: "محصولات", icon: Package },
   { href: "/admin/categories", label: "دسته‌بندی‌ها", icon: FolderTree },
   { href: "/admin/brands", label: "برندها", icon: Tags },
