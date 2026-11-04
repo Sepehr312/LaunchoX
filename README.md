@@ -167,6 +167,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Product static path discovery falls back to an empty list when the database is unavailable to build workers; runtime lookups still fail normally. Storefront rendering is explicitly dynamic because managed content and sessions require runtime data. Missing or malformed MONGODB_URI is replaced with an unreachable placeholder only during the Next.js production build phase; runtime validation remains strict. Other required environment variables must still be configured.
+
 - Checkout follows SPEC section 10: only online test-payment success or cancellation is supported. The unapproved cash-on-delivery option and callback are removed; delivered and cancelled order messages take precedence over payment status. Existing database records are not migrated or deleted.
 
 - The customer sidebar stays sticky below the storefront header on desktop, with a viewport-based height and internal scrolling on short displays; mobile keeps the expandable account menu in the page flow.

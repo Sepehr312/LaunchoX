@@ -7,6 +7,8 @@ import { listCategories } from "@/services/category.service";
 import { getCurrentCart } from "@/actions/cart.actions";
 
 export const revalidate = 300;
+// Storefront content and session data require the runtime database, not build access.
+export const dynamic = "force-dynamic";
 
 export default async function ShopLayout({
   children,
