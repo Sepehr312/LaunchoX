@@ -5,6 +5,7 @@ import { StoreFooter } from "@/components/store/StoreFooter";
 import { StoreHeader } from "@/components/store/StoreHeader";
 import { listCategories } from "@/services/category.service";
 import { getCurrentCart } from "@/actions/cart.actions";
+import { readContent } from "@/services/content.service";
 
 export const revalidate = 300;
 // Storefront content and session data require the runtime database, not build access.
@@ -18,6 +19,8 @@ export default async function ShopLayout({
   const categories = await listCategories();
   const cart = await getCurrentCart();
   const user = await getCurrentUser();
+  const services = await readContent("services");
+  const about = await readContent("about");
   return (
     <FavoritesProvider
       key={user?.id ?? "guest"}
@@ -28,6 +31,8 @@ export default async function ShopLayout({
         categories={categories}
         cartCount={cart.count}
         authenticated={Boolean(user)}
+        showServices={services?.key !== "services" || services.data.isActive}
+        showAbout={about?.key !== "about" || about.data.isActive}
       />
       <div className="flex flex-1 flex-col">{children}</div>
       <StoreFooter />

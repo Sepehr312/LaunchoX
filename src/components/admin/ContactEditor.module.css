@@ -1,0 +1,223 @@
+.editor,
+.controls {
+  display: grid;
+  min-width: 0;
+  gap: 20px;
+}
+.controls {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.info {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #e4f2ff;
+  color: var(--muted);
+  font-size: 13px;
+}
+.info svg {
+  flex-shrink: 0;
+  color: var(--primary);
+  margin-block-start: 2px;
+}
+.layout {
+  display: grid;
+  min-width: 0;
+  gap: 20px;
+  align-items: stretch;
+}
+.formPanel {
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  min-width: 0;
+}
+.heading {
+  display: grid;
+  gap: 6px;
+}
+.editor h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+.formPanel :global(.admin-field) {
+  grid-column: auto;
+}
+.editor .formPanel :global(.field-input) {
+  margin: 0;
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  width: 100%;
+}
+.editor .formPanel :global(.field-input[aria-invalid="true"]) {
+  border-color: var(--color-danger);
+}
+.editor .formPanel :global(textarea.field-input) {
+  min-height: 120px;
+  resize: vertical;
+}
+.formPanel :global(.admin-hint) {
+  font-size: 12px;
+}
+.addressField {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.previewPanel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  gap: 20px;
+}
+.preview {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  background: #eaf5ff;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block-end: 14px;
+  border-block-end: 1px solid var(--border);
+}
+.logo svg,
+.logo strong span {
+  color: var(--primary);
+}
+.logo strong {
+  font-size: 25px;
+  line-height: 1.4;
+}
+.preview h3 {
+  font-size: 18px;
+  font-weight: 750;
+}
+.contacts {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+  font-style: normal;
+}
+.contacts > div {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  padding-block: 12px;
+  min-width: 0;
+  font-size: 14px;
+}
+.contacts > div + div {
+  border-block-start: 1px solid var(--border);
+}
+.contacts svg {
+  flex-shrink: 0;
+  margin-block-start: 3px;
+}
+.contacts :is(span, bdi) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+.call {
+  display: inline-flex;
+  align-self: center;
+  margin-block-start: auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 1px solid var(--primary);
+  border-radius: 9px;
+  color: var(--primary);
+  background: white;
+  font-size: 13px;
+  font-weight: 650;
+}
+.call:hover {
+  background: var(--ice);
+}
+.empty {
+  color: var(--muted);
+  font-size: 14px;
+  padding-block: 16px;
+}
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.footer > p {
+  flex: 1 1 260px;
+  font-size: 13px;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+}
+.editor .controls button:is(.outline, .primary) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  padding: 8px 16px;
+  background: white;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 650;
+}
+.editor .controls button.primary {
+  background: var(--primary);
+  color: white;
+}
+.editor .controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.editor :is(button, a, input, textarea):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+@media (min-width: 1200px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+}
+@media (max-width: 639px) {
+  .editor :is(.formPanel, .previewPanel, .footer) {
+    padding: 16px;
+  }
+  .preview {
+    padding: 16px;
+  }
+  .editor h2 {
+    font-size: 16px;
+  }
+  .actions {
+    width: 100%;
+  }
+  .actions > button {
+    flex: 1;
+  }
+}

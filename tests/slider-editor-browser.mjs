@@ -123,6 +123,46 @@ try {
   assert.equal(await save.isDisabled(), true);
   const list = page.getByRole("list", { name: "ترتیب اسلایدها" });
   assert.equal(await list.getByRole("listitem").count(), 3);
+  const previewRegion = page.getByRole("region", {
+    name: "پیش‌نمایش اسلاید",
+    exact: true,
+  });
+  const contentRegion = page.getByRole("region", {
+    name: "محتوای اسلاید",
+    exact: true,
+  });
+  const mediaRegion = page.getByRole("region", {
+    name: "تصویر و دکمه‌های اسلاید",
+    exact: true,
+  });
+  const [listBox, previewBox, contentBox, mediaBox, footerBox] =
+    await Promise.all([
+      list.boundingBox(),
+      previewRegion.boundingBox(),
+      contentRegion.boundingBox(),
+      mediaRegion.boundingBox(),
+      page.locator("form footer").boundingBox(),
+    ]);
+  assert.ok(listBox && previewBox && contentBox && mediaBox && footerBox);
+  assert.ok(previewBox.width >= listBox.width);
+  assert.ok(previewBox.y >= listBox.y + listBox.height);
+  assert.ok(contentBox.y >= previewBox.y + previewBox.height);
+  assert.ok(Math.abs(contentBox.y - mediaBox.y) < 2);
+  assert.ok(Math.abs(contentBox.width - mediaBox.width) < 2);
+  assert.ok(contentBox.x > mediaBox.x);
+  assert.ok(
+    footerBox.y >=
+      Math.max(contentBox.y + contentBox.height, mediaBox.y + mediaBox.height),
+  );
+  await mkdir(new URL("../test-results/", import.meta.url), {
+    recursive: true,
+  });
+  await page.screenshot({
+    path: fileURLToPath(
+      new URL("../test-results/slider-wide-editor.png", import.meta.url),
+    ),
+    fullPage: true,
+  });
   await page
     .getByLabel("عنوان اصلی", { exact: true })
     .fill("اسلاید نخست آزمون");
@@ -138,6 +178,10 @@ try {
       .getAttribute("aria-pressed"),
     "true",
   );
+  const mobileHeroBox = await previewRegion
+    .getByRole("img", { name: "پیش‌نمایش تصویر بنر", exact: true })
+    .boundingBox();
+  assert.ok(mobileHeroBox && mobileHeroBox.width <= 280);
   await page
     .getByRole("button", { name: "پیش‌نمایش دسکتاپ", exact: true })
     .click();
@@ -256,6 +300,14 @@ try {
     fullPage: true,
   });
   await page.setViewportSize({ width: 360, height: 900 });
+  const [mobileContent, mobileMedia, mobilePreview] = await Promise.all([
+    contentRegion.boundingBox(),
+    mediaRegion.boundingBox(),
+    previewRegion.boundingBox(),
+  ]);
+  assert.ok(mobileContent && mobileMedia && mobilePreview);
+  assert.ok(mobileContent.y >= mobilePreview.y + mobilePreview.height);
+  assert.ok(mobileMedia.y >= mobileContent.y + mobileContent.height);
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

@@ -167,6 +167,22 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- The storefront header hides the About link in both desktop and mobile navigation while the about page is inactive. Missing managed content keeps the default page link visible, and reactivation restores it through the existing layout revalidation.
+
+- Services use the shared About section editor and transactional section mutations, with service-specific presets and rendering. Existing static content becomes editable defaults; legacy CMS text and questions are preserved as sections. Page visibility also controls the Services link in desktop and mobile header navigation.
+
+- Saving an about section redirects to the full preview from the Server Action after persistence succeeds. Redirecting before the edit route can be refreshed avoids depending on a client callback that may be replaced during revalidation; validation and storage failures keep the form open.
+
+- The about-page manager combines section controls with the full desktop/mobile page preview. Reordering, visibility and deletion save immediately; new sections open as unsaved drafts in a separate page. Each edit page reuses the existing section fields and image uploader and saves only its section. Document comparison retries preserve concurrent changes to other sections, and image reference writes keep their shared transactional lock.
+
+- Dynamic about sections reuse the original storefront composition: orbit hero, image-backed story, value cards, split buying-guide panel and closing call to action. The editor and storefront use the same renderer and initial presets; titles, accent text, notes, image captions, guide headings and both actions stay editable. Existing saved content is preserved without database writes or image substitution.
+
+- About-page sections use six editable presets (introduction, story, values, steps, FAQ, contact) and retain the existing CMS image URL field and transactional image lifecycle. Array order controls display; inactive sections and items stay saved but are hidden in the storefront. Legacy sections remain editable, and legacy questions become an FAQ preset when the about page is next saved. Contact presets share store contact settings by default and may override them locally. The section layout suppresses the old automatic contact block, including when all sections are removed. No additional dependency or database migration is required.
+
+- Contact content uses equal-height form and preview cards without a separate guidance box, the shared validated content action and the existing phone/email/address contract, with a live preview of valid draft values and explicit Save/Cancel controls. Clearing all three fields publishes the existing Persian empty state; the preview never inserts sample contact details into stored content.
+
+- The approved slider authoring layout keeps the homepage slide list above a full-width preview, two equal editing columns, and a bottom publication bar. Existing plain-text content, active-state publishing, transactional image references, and explicit Save/Cancel behavior remain the data contract.
+
 - The store content screen opens on the slider tab. Its editor reuses the existing validated content action and image uploader, keeps edits local until Save, supports drag sorting plus keyboard-accessible move buttons, and shows an approximate desktop/mobile preview without following draft links.
 
 - Product static path discovery falls back to an empty list when the database is unavailable to build workers; runtime lookups still fail normally. Storefront rendering is explicitly dynamic because managed content and sessions require runtime data. Missing or malformed MONGODB_URI is replaced with an unreachable placeholder only during the Next.js production build phase; runtime validation remains strict. Other required environment variables must still be configured. CI builds against empty, malformed, and unreachable database URIs without an application database service. Standalone deployment JavaScript helpers retain CommonJS imports through a scoped ESLint override; application TypeScript rules remain unchanged.

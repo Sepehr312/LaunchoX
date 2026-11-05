@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { mkdir } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -6,6 +8,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { startTestMongo } from "./mongo-server.ts";
+import { runAboutEditorScenario } from "./about-editor-browser-scenario.mjs";
 const require = createRequire(import.meta.url);
 const { chromium } = require(
   process.env.LAUNCHO_PLAYWRIGHT_PATH || "playwright",
@@ -38,32 +41,28 @@ try {
   ]);
   const category = new mongoose.Types.ObjectId();
   const product = new mongoose.Types.ObjectId();
-  await db
-    .collection("categories")
-    .insertOne({
-      _id: category,
-      name: "دسته آزمون",
-      slug: "test-category",
-      isActive: true,
-    });
-  await db
-    .collection("products")
-    .insertOne({
-      _id: product,
-      title: "محصول آزمون",
-      slug: "test-product",
-      description: "توضیح محصول",
-      price: 2000000,
-      stock: 4,
-      category,
-      images: ["/images/arctic-showroom-light.webp"],
-      attributes: [],
-      isActive: true,
-      isFeatured: true,
-      soldCount: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+  await db.collection("categories").insertOne({
+    _id: category,
+    name: "دسته آزمون",
+    slug: "test-category",
+    isActive: true,
+  });
+  await db.collection("products").insertOne({
+    _id: product,
+    title: "محصول آزمون",
+    slug: "test-product",
+    description: "توضیح محصول",
+    price: 2000000,
+    stock: 4,
+    category,
+    images: ["/images/arctic-showroom-light.webp"],
+    attributes: [],
+    isActive: true,
+    isFeatured: true,
+    soldCount: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
   server = spawn(
     process.execPath,
     ["node_modules/next/dist/bin/next", "start", "--port", "3024"],
@@ -80,6 +79,9 @@ try {
         PAYMENT_PROVIDER: "fake",
         SHIPPING_FLAT_FEE: "0",
         FREE_SHIPPING_THRESHOLD: "0",
+        CONTACT_PHONE: "02187654321",
+        CONTACT_EMAIL: "initial@example.com",
+        CONTACT_ADDRESS: "تهران، نشانی اولیه",
       },
     },
   );
@@ -102,40 +104,181 @@ try {
     await p.waitForURL((url) => url.pathname === target);
   }
   await login(page, "admin@example.com", "/admin/content");
-  await page.goto(base + "/admin/content?section=about");
-  await page.getByLabel("عنوان صفحه", { exact: true }).fill("درباره ما از پنل");
-  await page.getByLabel("متن معرفی").fill("متن قابل مدیریت");
-  await page.getByRole("button", { name: "افزودن بخش", exact: true }).click();
-  await page.getByRole("button", { name: "افزودن پرسش", exact: true }).click();
-  await page.getByRole("button", { name: "ذخیره تغییرات" }).click();
+  const originalAbout = await browser.newPage({
+    viewport: { width: 1902, height: 908 },
+  });
+  await mkdir(new URL("../test-results/", import.meta.url), {
+    recursive: true,
+  });
+  await originalAbout.goto(base + "/about");
+  await originalAbout.getByRole("heading", { name: /سرمایی مطمئن/ }).waitFor();
+  await originalAbout.screenshot({
+    path: fileURLToPath(
+      new URL("../test-results/about-public-desktop.png", import.meta.url),
+    ),
+    fullPage: true,
+  });
+  await originalAbout.setViewportSize({ width: 360, height: 900 });
+  assert.ok(
+    await originalAbout.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await originalAbout.screenshot({
+    path: fileURLToPath(
+      new URL("../test-results/about-public-mobile.png", import.meta.url),
+    ),
+    fullPage: true,
+  });
+  await originalAbout.close();
+  await runAboutEditorScenario({ page, browser, db, base });
+  await page.goto(base + "/admin/content/services/services-introduction/edit");
+  await page.getByLabel("عنوان اصلی", { exact: true }).fill("خدمات مدیریت‌شده");
+  await page.getByRole("button", { name: "ذخیره این بخش", exact: true }).click();
+  await page.waitForURL(base + "/admin/content?section=services");
+  await page.goto(base + "/admin/content?section=contact");
+  await page.setViewportSize({ width: 1584, height: 1100 });
+  const phoneInput = page.getByLabel("شماره تماس", { exact: true });
+  const emailInput = page.getByLabel("ایمیل پشتیبانی", { exact: true });
+  const addressInput = page.getByLabel("نشانی فروشگاه", { exact: true });
+  const contactSave = page.getByRole("button", {
+    name: "ذخیره تغییرات",
+    exact: true,
+  });
+  const contactPreview = page.getByRole("region", {
+    name: "پیش‌نمایش اطلاعات تماس",
+    exact: true,
+  });
+  assert.equal(await phoneInput.inputValue(), "02187654321");
+  assert.equal(await contactSave.isDisabled(), true);
+  await phoneInput.fill("02111111111");
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "انصراف", exact: true }).click();
+  assert.equal(await phoneInput.inputValue(), "02187654321");
+  await phoneInput.fill("invalid");
+  await emailInput.fill("not-an-email");
+  await contactSave.click();
+  await page
+    .getByText("اطلاعات مشخص‌شده را اصلاح کنید و دوباره ذخیره کنید.", {
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(await phoneInput.getAttribute("aria-invalid"), "true");
+  assert.equal(await emailInput.getAttribute("aria-invalid"), "true");
+  assert.equal(
+    await db.collection("managedcontents").countDocuments({ key: "contact" }),
+    0,
+  );
+  await phoneInput.fill("۰۲۱۱۲۳۴۵۶۷۸");
+  await emailInput.fill("support@example.com");
+  const contactAddress = "تهران، خیابان ولیعصر، بالاتر از میدان ونک، پلاک 12";
+  await addressInput.fill(contactAddress);
+  assert.equal(await phoneInput.inputValue(), "02112345678");
+  await contactPreview.getByText("۰۲۱۱۲۳۴۵۶۷۸", { exact: true }).waitFor();
+  await contactPreview
+    .getByText("support@example.com", { exact: true })
+    .waitFor();
+  assert.equal(
+    await contactPreview
+      .getByRole("link", { name: "تماس با فروشگاه" })
+      .getAttribute("href"),
+    "tel:02112345678",
+  );
+  const contactRoute = "**/admin/content?section=contact";
+  await page.route(contactRoute, (route) =>
+    route.request().method() === "POST"
+      ? route.abort("failed")
+      : route.continue(),
+  );
+  await contactSave.click();
+  await page
+    .getByText("ارتباط با سرور برقرار نشد؛ دوباره تلاش کنید.", { exact: true })
+    .waitFor();
+  assert.equal(await emailInput.inputValue(), "support@example.com");
+  assert.equal(
+    await db.collection("managedcontents").countDocuments({ key: "contact" }),
+    0,
+  );
+  await page.unroute(contactRoute);
+  await contactSave.click();
+  await page
+    .getByRole("status")
+    .filter({ hasText: "تغییرات ذخیره شد" })
+    .waitFor();
+  await page.reload();
+  assert.equal(await emailInput.inputValue(), "support@example.com");
+  assert.equal(await addressInput.inputValue(), contactAddress);
+  const [contactFormBox, contactPreviewBox] = await Promise.all([
+    page
+      .getByRole("region", { name: "اطلاعات تماس فروشگاه", exact: true })
+      .boundingBox(),
+    contactPreview.boundingBox(),
+  ]);
+  assert.ok(
+    contactFormBox &&
+      contactPreviewBox &&
+      contactFormBox.x > contactPreviewBox.x,
+  );
+  assert.ok(Math.abs(contactFormBox.y - contactPreviewBox.y) < 2);
+  assert.ok(Math.abs(contactFormBox.height - contactPreviewBox.height) < 2);
+  assert.equal(
+    await page
+      .getByRole("region", { name: "راهنمای ثبت اطلاعات", exact: true })
+      .count(),
+    0,
+  );
+  await mkdir(new URL("../test-results/", import.meta.url), {
+    recursive: true,
+  });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: fileURLToPath(
+      new URL("../test-results/contact-desktop.png", import.meta.url),
+    ),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 360, height: 900 });
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  );
+  await page.screenshot({
+    path: fileURLToPath(
+      new URL("../test-results/contact-mobile.png", import.meta.url),
+    ),
+    fullPage: true,
+  });
+  await phoneInput.fill("");
+  await emailInput.fill("");
+  await addressInput.fill("");
+  await contactPreview
+    .getByText("اطلاعات تماس رسمی هنوز منتشر نشده است.", { exact: true })
+    .waitFor();
+  await contactSave.click();
   await page
     .getByRole("status")
     .filter({ hasText: "تغییرات ذخیره شد" })
     .waitFor();
   await page.goto(base + "/about");
   await page
-    .getByRole("heading", { name: "درباره ما از پنل", exact: true })
-    .waitFor();
-  await page.getByText("پرسش جدید", { exact: true }).waitFor();
-  await page.goto(base + "/admin/content?section=services");
-  await page.getByLabel("عنوان صفحه", { exact: true }).fill("خدمات مدیریت‌شده");
-  await page.getByRole("button", { name: "ذخیره تغییرات" }).click();
-  await page
-    .getByRole("status")
-    .filter({ hasText: "تغییرات ذخیره شد" })
+    .getByRole("contentinfo")
+    .getByText("اطلاعات تماس رسمی هنوز منتشر نشده است.", { exact: true })
     .waitFor();
   await page.goto(base + "/admin/content?section=contact");
-  await page.getByLabel("تلفن", { exact: true }).fill("02112345678");
-  await page.getByLabel("ایمیل", { exact: true }).fill("support@example.com");
-  await page.getByLabel("آدرس", { exact: true }).fill("تهران، آدرس آزمون");
-  await page.getByRole("button", { name: "ذخیره تغییرات" }).click();
+  assert.equal(await phoneInput.inputValue(), "");
+  await phoneInput.fill("02112345678");
+  await emailInput.fill("support@example.com");
+  await addressInput.fill(contactAddress);
+  await contactSave.click();
   await page
     .getByRole("status")
     .filter({ hasText: "تغییرات ذخیره شد" })
     .waitFor();
+  await page.setViewportSize({ width: 1584, height: 1100 });
   await page.goto(base + "/services");
   await page
-    .getByRole("heading", { name: "خدمات مدیریت‌شده", exact: true })
+    .getByRole("heading", { name: /^خدمات مدیریت‌شده/ })
     .waitFor();
   assert.ok(
     (await page.locator('a[href="mailto:support@example.com"]').count()) >= 2,
@@ -193,7 +336,7 @@ try {
     ),
   );
   console.log(
-    "PASS: CMS pages, cards, FAQ, contact source, slider, guest merge, second-device favorites, write authorization and mobile form",
+    "PASS: CMS pages, cards, FAQ, contact preview/equal-height cards/validation/discard/network retry/save/reload/empty state/mobile layout, slider, guest merge, second-device favorites and write authorization",
   );
 } catch (error) {
   console.error(output);
