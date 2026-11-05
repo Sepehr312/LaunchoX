@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { defaultServicesPage } from "@/lib/services-defaults";
 import { ArrowUpLeft, Images, Info, Layers, Phone } from "lucide-react";
 import { getEnv } from "@/lib/env";
 import styles from "@/components/admin/SliderEditor.module.css";
@@ -7,7 +8,7 @@ import { readContent } from "@/services/content.service";
 import { getSiteSettings } from "@/services/site.service";
 import { defaultSlides } from "@/lib/content-defaults";
 import { defaultAboutPage } from "@/components/store/about-defaults";
-import { contentKeySchema, type ContentInput } from "@/validations/content";
+import { contentKeySchema } from "@/validations/content";
 import { ContentEditor } from "@/components/admin/ContentEditor";
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -39,16 +40,7 @@ export default async function ContentPage({
             }
           : key === "about"
             ? { key, data: defaultAboutPage }
-            : ({
-                key,
-                data: {
-                  title: "خدمات و پشتیبانی",
-                  content: "همراه شما برای انتخاب و خریدی آگاهانه.",
-                  isActive: true,
-                  sections: [],
-                  questions: [],
-                },
-              } as ContentInput);
+            : { key, data: defaultServicesPage };
   }
   return (
     <section className={styles.page}>
@@ -95,16 +87,14 @@ export default async function ContentPage({
           </Link>
         ))}
       </nav>
-      {key === "services" && (
-        <p className="admin-hint">
-          ترتیب نمایش مطابق ترتیب بخش‌هاست. با ذخیره، محتوای این فرم جایگزین
-          صفحهٔ فعلی می‌شود.
-        </p>
-      )}
       <ContentEditor
         key={key}
         initial={initial}
-        contact={key === "about" ? await getSiteSettings() : undefined}
+        contact={
+          key === "about" || key === "services"
+            ? await getSiteSettings()
+            : undefined
+        }
       />
     </section>
   );

@@ -1,6 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { ServicesSections } from "@/components/store/ServicesSections";
+import {
+  servicesTemplates,
+  prepareServicesPage,
+} from "@/lib/services-defaults";
+import { mutateServicesSectionAction } from "@/actions/admin/content.actions";
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
   ArrowDown,
@@ -35,7 +41,7 @@ import type {
 } from "@/validations/about-sections";
 import styles from "./AboutEditor.module.css";
 
-type AboutContent = Extract<ContentInput, { key: "about" }>;
+type AboutContent = Extract<ContentInput, { key: "about" | "services" }>;
 
 export function AboutEditor({
   initial,
@@ -44,7 +50,15 @@ export function AboutEditor({
   initial: AboutContent;
   contact: AboutContact;
 }) {
-  const [value, setValue] = useState(() => prepareAboutPage(initial.data));
+  const services = initial.key === "services";
+  const pageLabel = services ? "خدمات" : "درباره ما";
+  const templates = services ? servicesTemplates : aboutTemplates;
+  const prepare = services ? prepareServicesPage : prepareAboutPage;
+  const mutateAction = services
+    ? mutateServicesSectionAction
+    : mutateAboutSectionAction;
+  const Sections = services ? ServicesSections : AboutSections;
+  const [value, setValue] = useState(() => prepare(initial.data));
   const [previousInitial, setPreviousInitial] = useState(initial);
   const [picker, setPicker] = useState(false);
   const [template, setTemplate] = useState<SectionTemplate>("introduction");
@@ -58,7 +72,7 @@ export function AboutEditor({
 
   if (previousInitial !== initial) {
     setPreviousInitial(initial);
-    setValue(prepareAboutPage(initial.data));
+    setValue(prepare(initial.data));
   }
 
   useEffect(() => {
@@ -70,11 +84,11 @@ export function AboutEditor({
     if (lock.current) return;
     lock.current = true;
     const previous = value;
-    setValue(prepareAboutPage(applyAboutMutation(value, input)));
+    setValue(prepare(applyAboutMutation(value, input)));
     setNotice(undefined);
     startTransition(async () => {
       try {
-        const result = await mutateAboutSectionAction(input);
+        const result = await mutateAction(input);
         if (result.ok) setValue(result.data);
         else setValue(previous);
         setNotice({
@@ -116,7 +130,7 @@ export function AboutEditor({
           <header className={styles.heading}>
             <h2 id="about-preview-title">
               <Eye size={21} />
-              پیش‌نمایش کل صفحه درباره ما
+              پیش‌نمایش کل صفحه {pageLabel}
             </h2>
             <div className={styles.devices}>
               <button
@@ -137,7 +151,7 @@ export function AboutEditor({
               </button>
             </div>
             <EditorToggle
-              label="نمایش صفحه درباره ما"
+              label={`نمایش صفحه ${pageLabel}`}
               checked={value.isActive}
               onChange={(isActive) =>
                 mutate({ operation: "page-visibility", isActive })
@@ -152,9 +166,9 @@ export function AboutEditor({
             className={`${styles.preview} ${mobile ? styles.mobilePreview : ""}`}
           >
             {value.sections.map((section, index) => {
-              const href = `/admin/content/about/${encodeURIComponent(section.id)}/edit`;
+              const href = `/admin/content/${initial.key}/${encodeURIComponent(section.id)}/edit`;
               const label =
-                aboutTemplates.find((item) => item.type === section.template)
+                templates.find((item) => item.type === section.template)
                   ?.title ?? section.title;
               return (
                 <div
@@ -248,7 +262,7 @@ export function AboutEditor({
                     }}
                   >
                     <div inert>
-                      <AboutSections
+                      <Sections
                         sections={[section]}
                         contact={contact}
                         preview
@@ -298,7 +312,7 @@ export function AboutEditor({
           </button>
         </header>
         <div className={styles.templates}>
-          {aboutTemplates.map((item) => (
+          {templates.map((item) => (
             <button
               type="button"
               key={item.type}
@@ -315,7 +329,7 @@ export function AboutEditor({
         <footer className={styles.heading}>
           <p>
             قالب انتخاب‌شده:{" "}
-            {aboutTemplates.find((item) => item.type === template)?.title}
+            {templates.find((item) => item.type === template)?.title}
           </p>
           <div className={styles.actions}>
             <button
@@ -331,7 +345,9 @@ export function AboutEditor({
               disabled={pending || value.sections.length >= 30}
               onClick={() => {
                 setPicker(false);
-                router.push(`/admin/content/about/new?template=${template}`);
+                router.push(
+                  `/admin/content/${initial.key}/new?template=${template}`,
+                );
               }}
             >
               ادامه و ویرایش بخش

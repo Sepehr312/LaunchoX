@@ -98,13 +98,18 @@ const iconLabels = {
   check: "تأیید",
   ruler: "ابعاد",
   volume: "صدا",
+  message: "مشاوره",
+  package: "تحویل",
+  wrench: "نصب",
 };
 
 function ItemFields({
   section,
   onChange,
   errors,
+  services = false,
 }: {
+  services?: boolean;
   section: AboutSection;
   onChange: (patch: Partial<AboutSection>) => void;
   errors: Record<string, string[]>;
@@ -121,7 +126,15 @@ function ItemFields({
     items[0];
   const index = selected ? items.indexOf(selected) : -1;
   const faq = section.template === "faq";
-  const noun = faq ? "پرسش" : section.template === "steps" ? "مرحله" : "ارزش";
+  const noun = faq
+    ? "پرسش"
+    : services
+      ? section.template === "steps"
+        ? "راهنما"
+        : "خدمت"
+      : section.template === "steps"
+        ? "مرحله"
+        : "ارزش";
   function update(patch: Partial<SectionItem>) {
     onChange({
       items: items.map((item) =>
@@ -145,8 +158,12 @@ function ItemFields({
           {faq
             ? "پرسش‌ها"
             : section.template === "steps"
-              ? "مراحل انتخاب"
-              : "کارت‌های ارزش"}
+              ? services
+                ? "راهنماهای خدمات"
+                : "مراحل انتخاب"
+              : services
+                ? "کارت‌های خدمات"
+                : "کارت‌های ارزش"}
         </h3>
         <p className="admin-hint">
           با دکمه‌های بالا و پایین یا کشیدن ردیف‌ها، ترتیب را تغییر دهید.
@@ -242,6 +259,14 @@ function ItemFields({
           <h3>
             ویرایش {noun}: {selected.title}
           </h3>
+          {services && section.template === "values" && (
+            <FormField
+              label="برچسب کارت"
+              value={selected.label ?? ""}
+              maxLength={300}
+              onChange={(event) => update({ label: event.target.value })}
+            />
+          )}
           <FormField
             label={faq ? "متن پرسش" : `عنوان ${noun}`}
             value={selected.title}
@@ -274,7 +299,8 @@ function ItemFields({
               ))}
             </fieldset>
           )}
-          {section.template === "steps" && (
+          {(section.template === "steps" ||
+            (services && section.template === "values")) && (
             <ButtonFields
               value={selected.button}
               onChange={(button) => update({ button })}
@@ -309,7 +335,9 @@ export function AboutSectionFields({
   contact,
   onUploadingChange,
   errors,
+  services = false,
 }: {
+  services?: boolean;
   section: AboutSection;
   onChange: (patch: Partial<AboutSection>) => void;
   contact: AboutContact;
@@ -336,7 +364,11 @@ export function AboutSectionFields({
           />
           {
             <FormField
-              label={section.template === "story" ? "زیرعنوان" : "عنوان کوتاه"}
+              label={
+                section.template === "story" && !services
+                  ? "زیرعنوان"
+                  : "عنوان کوتاه"
+              }
               value={section.eyebrow ?? ""}
               maxLength={5000}
               onChange={(event) => onChange({ eyebrow: event.target.value })}
@@ -357,7 +389,9 @@ export function AboutSectionFields({
             label={
               imageSection
                 ? section.template === "story"
-                  ? "متن داستان"
+                  ? services
+                    ? "متن پیگیری سفارش"
+                    : "متن داستان"
                   : "متن معرفی"
                 : section.template === "contact"
                   ? "متن دعوت به ارتباط"
@@ -373,7 +407,11 @@ export function AboutSectionFields({
         {imageSection && (
           <div className={styles.group}>
             <h3>
-              {section.template === "story" ? "تصویر داستان" : "تصویر معرفی"}
+              {section.template === "story"
+                ? services
+                  ? "تصویر بخش"
+                  : "تصویر داستان"
+                : "تصویر معرفی"}
             </h3>
             <ImagePreview
               src={section.imageUrl}
@@ -462,7 +500,8 @@ export function AboutSectionFields({
         </div>
       )}
       {(section.template === "introduction" ||
-        section.template === "contact") && (
+        section.template === "contact" ||
+        (services && section.template === "story")) && (
         <ButtonFields
           secondary
           value={section.secondaryButton}
@@ -484,6 +523,7 @@ export function AboutSectionFields({
         section.template === "faq") && (
         <ItemFields
           key={section.id}
+          services={services}
           section={section}
           onChange={onChange}
           errors={errors}

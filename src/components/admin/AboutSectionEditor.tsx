@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { servicesTemplates } from "@/lib/services-defaults";
+import { saveServicesSectionAction } from "@/actions/admin/content.actions";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ArrowRight, Save } from "lucide-react";
@@ -21,11 +23,18 @@ export function AboutSectionEditor({
   initial,
   contact,
   create = false,
+  pageKey = "about",
 }: {
+  pageKey?: "about" | "services";
   initial: AboutSection;
   contact: AboutContact;
   create?: boolean;
 }) {
+  const services = pageKey === "services";
+  const previewUrl = `/admin/content?section=${pageKey}`;
+  const saveAction = services
+    ? saveServicesSectionAction
+    : saveAboutSectionAction;
   const [section, setSection] = useState(initial);
   const [uploading, setUploading] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -37,8 +46,9 @@ export function AboutSectionEditor({
   const dirty = JSON.stringify(section) !== JSON.stringify(initial);
   const busy = pending || uploading;
   const label =
-    aboutTemplates.find((item) => item.type === initial.template)?.title ??
-    initial.title;
+    (services ? servicesTemplates : aboutTemplates).find(
+      (item) => item.type === initial.template,
+    )?.title ?? initial.title;
 
   useEffect(() => {
     if (!dirty && !uploading) return;
@@ -61,7 +71,9 @@ export function AboutSectionEditor({
     <div className={styles.editor}>
       <header className="admin-panel admin-page-header admin-approved-header">
         <div>
-          <p className="admin-eyebrow">محتوای فروشگاه / درباره ما</p>
+          <p className="admin-eyebrow">
+            محتوای فروشگاه / {services ? "خدمات" : "درباره ما"}
+          </p>
           <h1>
             {create ? "افزودن بخش" : "ویرایش بخش"}: {label}
           </h1>
@@ -70,7 +82,7 @@ export function AboutSectionEditor({
           </p>
         </div>
         <Link
-          href="/admin/content?section=about"
+          href={previewUrl}
           className={styles.backLink}
           aria-disabled={busy}
           onClick={(event) => {
@@ -120,7 +132,7 @@ export function AboutSectionEditor({
           lock.current = true;
           startTransition(async () => {
             try {
-              const result = await saveAboutSectionAction(parsed.data);
+              const result = await saveAction(parsed.data);
               if (result) setNotice({ ok: false, text: result.error });
             } catch {
               setNotice({
@@ -147,6 +159,7 @@ export function AboutSectionEditor({
               />
             </header>
             <AboutSectionFields
+              services={services}
               section={section}
               contact={contact}
               onChange={(patch) => {
@@ -170,7 +183,7 @@ export function AboutSectionEditor({
                 className={styles.outline}
                 disabled={busy}
                 onClick={() => {
-                  if (canLeave()) router.push("/admin/content?section=about");
+                  if (canLeave()) router.push(previewUrl);
                 }}
               >
                 انصراف
