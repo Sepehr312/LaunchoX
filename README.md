@@ -169,6 +169,8 @@ npm run images:cleanup -- --apply --limit 50
 
 - The storefront header hides the About link in both desktop and mobile navigation while the about page is inactive. Missing managed content keeps the default page link visible, and reactivation restores it through the existing layout revalidation.
 
+- Services use the shared About section editor and transactional section mutations, with service-specific presets and rendering. Existing static content becomes editable defaults; legacy CMS text and questions are preserved as sections. Page visibility also controls the Services link in desktop and mobile header navigation.
+
 - Saving an about section redirects to the full preview from the Server Action after persistence succeeds. Redirecting before the edit route can be refreshed avoids depending on a client callback that may be replaced during revalidation; validation and storage failures keep the form open.
 
 - The about-page manager combines section controls with the full desktop/mobile page preview. Reordering, visibility and deletion save immediately; new sections open as unsaved drafts in a separate page. Each edit page reuses the existing section fields and image uploader and saves only its section. Document comparison retries preserve concurrent changes to other sections, and image reference writes keep their shared transactional lock.

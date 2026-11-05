@@ -18,6 +18,7 @@ import { Favorite } from "@/models/favorite";
 import { Product } from "@/models/product";
 import {
   mutateAboutSection,
+  mutateServicesSection,
   readContent,
   saveContent,
 } from "@/services/content.service";
@@ -30,10 +31,82 @@ import {
 import { cleanupImages } from "@/services/image-lifecycle.service";
 import { UploadedImage } from "@/models/uploaded-image";
 import {
+  defaultServicesPage,
+  createServicesSection,
+  prepareServicesPage,
+} from "@/lib/services-defaults";
+import {
   aboutTemplates,
   createAboutSection,
 } from "@/components/admin/about-templates";
 let server: Awaited<ReturnType<typeof startTestMongo>>;
+
+it("preserves service defaults and unrelated sections during concurrent saves", async () => {
+  const first = createServicesSection("introduction");
+  const second = createServicesSection("story");
+  await saveContent({
+    key: "services",
+    data: { ...defaultServicesPage, sections: [first, second] },
+  });
+  await Promise.all([
+    mutateServicesSection({
+      operation: "save",
+      section: { ...first, title: "Updated introduction" },
+    }),
+    mutateServicesSection({
+      operation: "save",
+      section: { ...second, title: "Updated order support" },
+    }),
+  ]);
+  const content = await readContent("services");
+  expect(
+    content?.key === "services" && content.data.sections.map((s) => s.title),
+  ).toEqual(["Updated introduction", "Updated order support"]);
+  await mutateServicesSection({
+    operation: "visibility",
+    id: first.id,
+    isActive: false,
+  });
+  const moved = await mutateServicesSection({
+    operation: "move",
+    id: second.id,
+    targetId: first.id,
+  });
+  expect(moved.sections[0].id).toBe(second.id);
+  expect(moved.sections[1].isActive).toBe(false);
+  await mutateServicesSection({ operation: "delete", id: first.id });
+  await expect(
+    mutateServicesSection({ operation: "save", section: first }),
+  ).rejects.toThrow();
+  await expect(
+    mutateServicesSection({
+      operation: "save",
+      create: true,
+      section: { ...first, imageUrl: "/api/images/000000000000000000000001" },
+    }),
+  ).rejects.toThrow();
+  const saved = await readContent("services");
+  expect(saved?.key === "services" && saved.data.sections).toHaveLength(1);
+});
+
+it("preserves legacy service intro, sections and questions through normalization", () => {
+  const legacy = {
+    ...defaultServicesPage,
+    layout: undefined,
+    title: "Legacy title",
+    content: "Legacy intro",
+    sections: [
+      { title: "Legacy section", description: "Legacy text", imageUrl: "" },
+    ],
+    questions: [{ question: "Question", answer: "Answer" }],
+  };
+  const page = prepareServicesPage(legacy);
+  expect(page.sections).toHaveLength(3);
+  expect(page.sections[0].description).toBe("Legacy intro");
+  expect(page.sections[1].title).toBe("Legacy section");
+  expect(page.sections[2].items?.[0].description).toBe("Answer");
+  expect(prepareServicesPage(page)).toEqual(page);
+});
 
 it("saves sections independently and preserves concurrent edits and visibility", async () => {
   const first = createAboutSection("introduction");

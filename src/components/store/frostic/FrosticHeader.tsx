@@ -63,12 +63,14 @@ export function FrosticHeader({
   authenticated = false,
   links = defaultLinks,
   activeHref,
+  showServices = true,
   showAbout = true,
 }: {
   cartCount?: number;
   authenticated?: boolean;
   links?: readonly FrosticNavItem[];
   activeHref?: string;
+  showServices?: boolean;
   showAbout?: boolean;
 }) {
   const pathname = usePathname();
@@ -182,6 +184,7 @@ export function FrosticHeader({
         className={mobile ? styles.drawerNav : styles.navigation}
       >
         {links
+          .filter((item) => showServices || item.href !== "/services")
           .filter((item) => showAbout || item.href !== "/about")
           .map((item) =>
             item.href ? (

@@ -17,6 +17,7 @@ vi.mock("@/services/content.service", () => ({
   saveContent: mocks.save,
   readContent: mocks.read,
   mutateAboutSection: mocks.mutate,
+  mutateServicesSection: mocks.mutate,
 }));
 vi.mock("@/services/favorite.service", () => ({
   mergeFavorites: mocks.merge,
@@ -29,6 +30,8 @@ import {
   mutateAboutSectionAction,
   saveAboutSectionAction,
   saveContentAction,
+  mutateServicesSectionAction,
+  saveServicesSectionAction,
 } from "@/actions/admin/content.actions";
 import {
   setFavoriteAction,
@@ -51,8 +54,28 @@ it("guards all content writes before parsing or persistence", async () => {
   await expect(saveContentAction({})).rejects.toThrow("denied");
   await expect(mutateAboutSectionAction({})).rejects.toThrow("denied");
   await expect(saveAboutSectionAction({})).rejects.toThrow("denied");
+  await expect(mutateServicesSectionAction({})).rejects.toThrow("denied");
+  await expect(saveServicesSectionAction({})).rejects.toThrow("denied");
   expect(mocks.save).not.toHaveBeenCalled();
   expect(mocks.mutate).not.toHaveBeenCalled();
+});
+it("redirects service saves only after persistence and returns errors without redirecting", async () => {
+  const section = {
+    id: "service-one",
+    title: "Service",
+    description: "Description",
+    imageUrl: "",
+  };
+  mocks.mutate.mockRejectedValueOnce(new Error("storage unavailable"));
+  await expect(
+    saveServicesSectionAction({ operation: "save", section }),
+  ).resolves.toMatchObject({ ok: false });
+  mocks.mutate.mockResolvedValueOnce(undefined);
+  await expect(
+    saveServicesSectionAction({ operation: "save", section }),
+  ).rejects.toMatchObject({
+    digest: expect.stringContaining("/admin/content?section=services"),
+  });
 });
 it("redirects to the full preview only after saving a section", async () => {
   const input = {

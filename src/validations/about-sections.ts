@@ -28,6 +28,9 @@ export const contentIconSchema = z.enum([
   "check",
   "ruler",
   "volume",
+  "message",
+  "package",
+  "wrench",
 ]);
 export const sectionLinkSchema = z
   .string()
@@ -59,6 +62,7 @@ export const sectionItemSchema = z.object({
   description: requiredString.max(5000),
   icon: contentIconSchema,
   isActive: z.boolean(),
+  label: z.string().trim().max(300).optional(),
   button: buttonSchema.optional(),
 });
 export const sectionContactSchema = z
@@ -95,7 +99,7 @@ export const aboutSectionSchema = z
     id: z.string().min(1).max(80).optional(),
     template: sectionTemplateSchema.optional(),
     title: requiredString.max(5000),
-    description: requiredString.max(5000),
+    description: optionalText,
     imageUrl: z.union([assetUrlSchema, z.literal("")]).default(""),
     isActive: z.boolean().optional(),
     eyebrow: optionalText.optional(),
@@ -117,6 +121,16 @@ export const aboutSectionSchema = z
     contact: sectionContactSchema.optional(),
   })
   .superRefine((section, ctx) => {
+    if (
+      !section.description &&
+      !["values", "faq"].includes(section.template ?? "")
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["description"],
+        message: "توضیحات بخش را وارد کنید",
+      });
+    }
     if (
       ["values", "steps", "faq"].includes(section.template ?? "") &&
       !section.items?.length

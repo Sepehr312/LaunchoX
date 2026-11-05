@@ -132,13 +132,10 @@ try {
   });
   await originalAbout.close();
   await runAboutEditorScenario({ page, browser, db, base });
-  await page.goto(base + "/admin/content?section=services");
-  await page.getByLabel("عنوان صفحه", { exact: true }).fill("خدمات مدیریت‌شده");
-  await page.getByRole("button", { name: "ذخیره تغییرات" }).click();
-  await page
-    .getByRole("status")
-    .filter({ hasText: "تغییرات ذخیره شد" })
-    .waitFor();
+  await page.goto(base + "/admin/content/services/services-introduction/edit");
+  await page.getByLabel("عنوان اصلی", { exact: true }).fill("خدمات مدیریت‌شده");
+  await page.getByRole("button", { name: "ذخیره این بخش", exact: true }).click();
+  await page.waitForURL(base + "/admin/content?section=services");
   await page.goto(base + "/admin/content?section=contact");
   await page.setViewportSize({ width: 1584, height: 1100 });
   const phoneInput = page.getByLabel("شماره تماس", { exact: true });
@@ -281,7 +278,7 @@ try {
   await page.setViewportSize({ width: 1584, height: 1100 });
   await page.goto(base + "/services");
   await page
-    .getByRole("heading", { name: "خدمات مدیریت‌شده", exact: true })
+    .getByRole("heading", { name: /^خدمات مدیریت‌شده/ })
     .waitFor();
   assert.ok(
     (await page.locator('a[href="mailto:support@example.com"]').count()) >= 2,

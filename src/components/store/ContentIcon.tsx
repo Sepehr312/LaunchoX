@@ -1,4 +1,7 @@
 import {
+  MessageCircle,
+  PackageCheck,
+  Wrench,
   Store,
   BookOpen,
   ShieldCheck,
@@ -17,6 +20,9 @@ import {
 import type { ContentIconName } from "@/validations/about-sections";
 
 const icons = {
+  message: MessageCircle,
+  package: PackageCheck,
+  wrench: Wrench,
   store: Store,
   book: BookOpen,
   shield: ShieldCheck,
