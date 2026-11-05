@@ -236,7 +236,16 @@ export async function runAboutEditorScenario({ page, browser, db, base }) {
   await write(() =>
     page.getByLabel("نمایش صفحه درباره ما", { exact: true }).uncheck(),
   );
-  await customer.reload();
+  await customer.goto(base + "/");
+  assert.equal(await customer.locator('header a[href="/about"]').count(), 0);
+  assert.equal(
+    await customer
+      .locator("header")
+      .getByText("درباره ما", { exact: true })
+      .count(),
+    0,
+  );
+  await customer.goto(base + "/about");
   await customer
     .getByRole("heading", {
       name: "صفحه یا مورد موردنظر پیدا نشد",
@@ -246,6 +255,8 @@ export async function runAboutEditorScenario({ page, browser, db, base }) {
   await write(() =>
     page.getByLabel("نمایش صفحه درباره ما", { exact: true }).check(),
   );
+  await customer.goto(base + "/");
+  assert.equal(await customer.locator('header a[href="/about"]').count(), 2);
   await customer.close();
   console.log(
     "PASS: full preview, empty state, six standalone edit forms, independent saves, save-and-return, cancel, network retry, visibility, ordering and mobile layout",
