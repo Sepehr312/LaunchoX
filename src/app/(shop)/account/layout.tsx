@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 import { redirect } from "next/navigation";
 import { requireUser } from "@/actions/auth.actions";
 import { getProfile } from "@/services/user.service";

@@ -8,10 +8,10 @@ import { routeSlugSchema } from "@/validations/common";
 import {
   getProductBySlug,
   getRelatedProducts,
-  listProducts,
 } from "@/services/product.service";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const dynamicParams = true;
 
 // Share one lookup between metadata and page rendering within this request.
@@ -22,19 +22,6 @@ const loadProduct = cache(async (slug: string) => {
   if (!product) notFound();
   return product;
 });
-
-export async function generateStaticParams() {
-  // Build workers may not reach the runtime database; dynamic params remain available.
-  try {
-    const products = await listProducts({ page: 1, limit: 48, sort: "newest" });
-    return products.items.map((product) => ({ slug: product.slug }));
-  } catch {
-    console.warn(
-      "generateStaticParams skipped: database unavailable during build",
-    );
-    return [];
-  }
-}
 
 export async function generateMetadata({
   params,

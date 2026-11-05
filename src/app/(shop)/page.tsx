@@ -11,7 +11,8 @@ import { ChevronIcon } from "@/components/store/Icons";
 import { listProducts } from "@/services/product.service";
 import { listCategories } from "@/services/category.service";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const metadata: Metadata = {
   title: `صفحه اصلی | ${getEnv().NEXT_PUBLIC_SITE_NAME}`,
 };
