@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ArrowRight, Save } from "lucide-react";
-import { mutateAboutSectionAction } from "@/actions/admin/content.actions";
+import { saveAboutSectionAction } from "@/actions/admin/content.actions";
 import {
   AboutSectionFields,
   EditorToggle,
@@ -27,7 +27,6 @@ export function AboutSectionEditor({
   create?: boolean;
 }) {
   const [section, setSection] = useState(initial);
-  const [saved, setSaved] = useState(initial);
   const [uploading, setUploading] = useState(false);
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -35,7 +34,7 @@ export function AboutSectionEditor({
   const noticeRef = useRef<HTMLDivElement>(null);
   const lock = useRef(false);
   const router = useRouter();
-  const dirty = JSON.stringify(section) !== JSON.stringify(saved);
+  const dirty = JSON.stringify(section) !== JSON.stringify(initial);
   const busy = pending || uploading;
   const label =
     aboutTemplates.find((item) => item.type === initial.template)?.title ??
@@ -121,22 +120,8 @@ export function AboutSectionEditor({
           lock.current = true;
           startTransition(async () => {
             try {
-              const result = await mutateAboutSectionAction(parsed.data);
-              if (result.ok) {
-                const updated = result.data.sections.find(
-                  (item) => item.id === section.id,
-                );
-                if (updated) {
-                  setSection(updated);
-                  setSaved(updated);
-                }
-                setErrors({});
-                router.replace("/admin/content?section=about");
-              }
-              setNotice({
-                ok: result.ok,
-                text: result.ok ? "تغییرات این بخش ذخیره شد." : result.error,
-              });
+              const result = await saveAboutSectionAction(parsed.data);
+              if (result) setNotice({ ok: false, text: result.error });
             } catch {
               setNotice({
                 ok: false,

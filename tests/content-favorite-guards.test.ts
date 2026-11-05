@@ -27,6 +27,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 import { PUT, GET } from "@/app/api/pages/[slug]/route";
 import {
   mutateAboutSectionAction,
+  saveAboutSectionAction,
   saveContentAction,
 } from "@/actions/admin/content.actions";
 import {
@@ -49,8 +50,53 @@ it("guards all content writes before parsing or persistence", async () => {
   ).rejects.toThrow("denied");
   await expect(saveContentAction({})).rejects.toThrow("denied");
   await expect(mutateAboutSectionAction({})).rejects.toThrow("denied");
+  await expect(saveAboutSectionAction({})).rejects.toThrow("denied");
   expect(mocks.save).not.toHaveBeenCalled();
   expect(mocks.mutate).not.toHaveBeenCalled();
+});
+it("redirects to the full preview only after saving a section", async () => {
+  const input = {
+    operation: "save",
+    section: {
+      id: "section-one",
+      title: "عنوان",
+      description: "توضیح",
+      imageUrl: "",
+    },
+  };
+  let finishSave: (() => void) | undefined;
+  mocks.mutate.mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        finishSave = resolve;
+      }),
+  );
+  const result = saveAboutSectionAction(input);
+  const assertion = expect(result).rejects.toMatchObject({
+    digest: expect.stringContaining("/admin/content?section=about"),
+  });
+  await vi.waitFor(() => expect(mocks.mutate).toHaveBeenCalledTimes(1));
+  finishSave?.();
+  await assertion;
+});
+it("keeps the section form open when validation or persistence fails", async () => {
+  expect(
+    (await saveAboutSectionAction({ operation: "delete", id: "section-one" }))
+      ?.ok,
+  ).toBe(false);
+  expect(mocks.mutate).not.toHaveBeenCalled();
+  mocks.mutate.mockRejectedValue(new Error("storage unavailable"));
+  await expect(
+    saveAboutSectionAction({
+      operation: "save",
+      section: {
+        id: "section-one",
+        title: "عنوان",
+        description: "توضیح",
+        imageUrl: "",
+      },
+    }),
+  ).resolves.toMatchObject({ ok: false });
 });
 it("does not expose inactive page content", async () => {
   mocks.read.mockResolvedValue({ key: "about", data: { isActive: false } });

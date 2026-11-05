@@ -135,6 +135,10 @@ export async function runAboutEditorScenario({ page, browser, db, base }) {
     exact: true,
   });
   await edit.click();
+  await page.waitForURL((url) =>
+    /\/admin\/content\/about\/[^/]+\/edit$/.test(url.pathname),
+  );
+  await page.reload();
   await page
     .getByRole("heading", { name: "ویرایش بخش: معرفی فروشگاه", exact: true })
     .waitFor();

@@ -167,6 +167,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- Saving an about section redirects to the full preview from the Server Action after persistence succeeds. Redirecting before the edit route can be refreshed avoids depending on a client callback that may be replaced during revalidation; validation and storage failures keep the form open.
+
 - The about-page manager combines section controls with the full desktop/mobile page preview. Reordering, visibility and deletion save immediately; new sections open as unsaved drafts in a separate page. Each edit page reuses the existing section fields and image uploader and saves only its section. Document comparison retries preserve concurrent changes to other sections, and image reference writes keep their shared transactional lock.
 
 - Dynamic about sections reuse the original storefront composition: orbit hero, image-backed story, value cards, split buying-guide panel and closing call to action. The editor and storefront use the same renderer and initial presets; titles, accent text, notes, image captions, guide headings and both actions stay editable. Existing saved content is preserved without database writes or image substitution.
