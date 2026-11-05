@@ -6,6 +6,11 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   { rules: { "@typescript-eslint/no-explicit-any": "error" } },
+  {
+    // Standalone deployment helpers run directly in Node.js as CommonJS.
+    files: ["LaunchoX-Deploy/**/*.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
   globalIgnores([
     ".next/**",
     "out/**",

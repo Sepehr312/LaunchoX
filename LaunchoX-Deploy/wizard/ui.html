@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دستیار راه‌اندازی LaunchoX</title>
+<style>
+  @font-face { font-family: Vazirmatn; src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: Vazirmatn; src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: Vazirmatn; src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+
+  :root {
+    --bg: #eef3f8;
+    --card: #ffffff;
+    --ink: #1c2430;
+    --muted: #63707f;
+    --line: #dbe4ee;
+    --blue: #1b5e8f;
+    --blue-soft: #e8f1f8;
+    --green: #1c7a4c;
+    --green-soft: #e6f4ec;
+    --amber: #9a6b12;
+    --amber-soft: #fbf1dc;
+    --red: #a3281f;
+    --red-soft: #fbe9e7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 16px 60px;
+    background: radial-gradient(1200px 500px at 80% -10%, #dbeaf7 0%, var(--bg) 55%) no-repeat, var(--bg);
+    color: var(--ink);
+    font-family: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.8;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+
+  header { margin-bottom: 18px; }
+  h1 { font-size: 25px; margin: 0 0 4px; letter-spacing: -.2px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin: 0; }
+
+  .bar { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .progress { flex: 1; min-width: 220px; height: 10px; background: #dde7f1; border-radius: 99px; overflow: hidden; }
+  .progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #2e7db3, #1b5e8f); transition: width .4s ease; }
+  .pct { font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px 22px; margin-bottom: 16px; box-shadow: 0 8px 24px -18px rgba(23,48,74,.45);
+  }
+  .card h2 { font-size: 16.5px; margin: 0 0 4px; }
+  .card .hint { color: var(--muted); font-size: 12.8px; margin: 0 0 14px; }
+
+  label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #33414f; }
+  .field { margin-bottom: 14px; }
+  input[type=text], input[type=password], textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font-family: inherit; font-size: 13.5px; color: var(--ink); background: #fbfdff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, textarea:focus { outline: none; border-color: #7db2d6; box-shadow: 0 0 0 3px #e3f0f9; }
+  textarea { resize: vertical; min-height: 62px; direction: ltr; text-align: left; font-family: Consolas, monospace; font-size: 12.5px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 620px) { .row { grid-template-columns: 1fr; } }
+  .with-btn { display: flex; gap: 8px; }
+  .with-btn input { flex: 1; }
+
+  button {
+    font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer;
+    border-radius: 10px; border: 1px solid var(--line); background: #fff; color: #2b3a48;
+    padding: 9px 16px; transition: .15s;
+  }
+  button:hover { background: #f4f8fc; }
+  button.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  button.primary:hover { background: #174f79; }
+  button.ghost { background: transparent; }
+  button:disabled { opacity: .55; cursor: default; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+  .list { list-style: none; padding: 0; margin: 0; }
+  .list li { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 1px dashed #e7eef6; }
+  .list li:last-child { border-bottom: none; }
+  .dot { width: 22px; height: 22px; border-radius: 50%; flex: 0 0 22px; display: grid; place-items: center; font-size: 12px; margin-top: 3px; }
+  .dot.ok { background: var(--green-soft); color: var(--green); }
+  .dot.warn { background: var(--amber-soft); color: var(--amber); }
+  .dot.fail { background: var(--red-soft); color: var(--red); }
+  .dot.wait { background: #eef2f7; color: #8a97a6; }
+  .li-body { flex: 1; }
+  .li-title { font-size: 13.5px; font-weight: 500; }
+  .li-fa { font-size: 12.6px; color: var(--muted); word-break: break-word; }
+  .li-fa.ltr { direction: ltr; text-align: right; font-family: Consolas, monospace; font-size: 12px; }
+
+  pre {
+    background: #0f2233; color: #d6e6f4; border-radius: 12px; padding: 14px 16px;
+    font-family: Consolas, monospace; font-size: 12.3px; line-height: 1.9;
+    direction: ltr; text-align: left; overflow: auto; margin: 10px 0 0; white-space: pre-wrap; word-break: break-all;
+  }
+  .pre-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+  .task { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 1px dashed #e7eef6; }
+  .task:last-child { border-bottom: none; }
+  .task input { width: 18px; height: 18px; margin-top: 4px; accent-color: var(--blue); }
+  .task .t { font-size: 13.4px; }
+  .task .t small { display: block; color: var(--muted); font-size: 12.2px; }
+  .task.done .t { text-decoration: line-through; color: #94a1ae; }
+
+  details.builder {
+    border: 1px dashed #c8d9e8; border-radius: 12px; padding: 12px 16px;
+    margin: 0 0 16px; background: #f8fbfe;
+  }
+  details.builder summary {
+    cursor: pointer; font-size: 13.2px; font-weight: 500; color: var(--blue);
+    list-style: none; outline: none;
+  }
+  details.builder summary::-webkit-details-marker { display: none; }
+  details.builder summary::before { content: '＋ '; color: var(--blue); }
+  details.builder[open] summary::before { content: '－ '; }
+  details.builder[open] summary { margin-bottom: 10px; }
+
+  .toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #12283a; color: #fff; padding: 10px 18px; border-radius: 99px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: .25s;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .note { background: var(--blue-soft); border-radius: 10px; padding: 10px 14px; font-size: 12.6px; color: #23445c; margin-top: 12px; }
+  .tiny { font-size: 12.2px; color: var(--muted); }
+  .links { display: flex; gap: 8px; justify-content: center; margin-top: 4px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>دستیار راه‌اندازی لانچ‌اوکس</h1>
+    <p class="sub">اطلاعات را وارد کن، ذخیره کن، و تست‌ها را بزن. هر چیزی که سبز شد، درست است.</p>
+    <div class="bar">
+      <div class="progress"><i id="bar"></i></div>
+      <span class="pct" id="pct">۰٪</span>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>۱. اطلاعات اصلی</h2>
+    <p class="hint">رشتهٔ اتصال را از پنل رانفلر (سرویس دیتابیس ← Connection String) کپی کن. آدرس سایت را با https بنویس.</p>
+
+    <div class="field">
+      <label for="uri">رشتهٔ اتصال دیتابیس (MONGODB_URI)</label>
+      <textarea id="uri" placeholder="mongodb://user:pass@host:27017/ldb?authSource=admin"></textarea>
+    </div>
+
+    <details class="builder">
+      <summary>رشتهٔ اتصال را بلد نیستی بسازی؟ اینجا بسازش</summary>
+      <p class="tiny">همان چیزهایی که پنل رانفلر جدا نشانت می‌دهد را اینجا وارد کن؛ خودم رشته را می‌سازم.</p>
+      <div class="row">
+        <div class="field">
+          <label for="bHost">میزبان (Host)</label>
+          <input id="bHost" type="text" placeholder="db-zxg-service" style="direction:ltr;text-align:left">
+        </div>
+        <div class="field">
+          <label for="bPort">پورت (Port)</label>
+          <input id="bPort" type="text" placeholder="27017" style="direction:ltr;text-align:left">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="bUser">نام کاربری</label>
+          <input id="bUser" type="text" placeholder="admin" style="direction:ltr;text-align:left">
+        </div>
+        <div class="field">
+          <label for="bPass">رمز دیتابیس</label>
+          <input id="bPass" type="password" placeholder="رمز" style="direction:ltr;text-align:left">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="bDb">نام دیتابیس</label>
+          <input id="bDb" type="text" placeholder="ldb" style="direction:ltr;text-align:left">
+        </div>
+        <div class="field">
+          <label for="bAuth">دیتابیس احراز هویت</label>
+          <input id="bAuth" type="text" placeholder="admin" style="direction:ltr;text-align:left">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="buildUri">بساز و در فیلد بالا بگذار</button>
+      </div>
+      <div class="note" id="buildNote" hidden></div>
+    </details>
+
+    <div class="field">
+      <label for="site">آدرس سایت</label>
+      <input id="site" type="text" placeholder="launchox.ir" style="direction:ltr;text-align:left">
+      <div class="tiny">دامنه‌ات را بدون https بنویس؛ خودم اضافه می‌کنم. اگر دامنه نداری، آدرس موقت سرویس رانفلر را بگذار.</div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="email">ایمیل ادمین فروشگاه</label>
+        <input id="email" type="text" placeholder="you@example.com" style="direction:ltr;text-align:left">
+      </div>
+      <div class="field">
+        <label for="pass">رمز ادمین فروشگاه</label>
+        <input id="pass" type="password" placeholder="حداقل ۸ کاراکتر" style="direction:ltr;text-align:left">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="name">نام فروشگاه</label>
+        <input id="name" type="text" placeholder="لانچ‌اوکس">
+      </div>
+      <div class="field">
+        <label for="secret">کلید امنیتی نشست (AUTH_SECRET)</label>
+        <div class="with-btn">
+          <input id="secret" type="text" readonly style="direction:ltr;text-align:left">
+          <button id="regen" title="ساخت کلید تازه">تولید</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="save">ذخیره و بررسی</button>
+      <button class="ghost" id="run">اجرای تست‌ها</button>
+    </div>
+    <div class="note" id="savenote" hidden></div>
+  </section>
+
+  <section class="card">
+    <h2>۲. وضعیت</h2>
+    <p class="hint">هر مورد سبز یعنی آن بخش آماده است. تست‌ها به اینترنت نیاز دارند.</p>
+    <ul class="list" id="checks"><li class="tiny">در حال خواندن…</li></ul>
+  </section>
+
+  <section class="card">
+    <h2>۳. این مقدارها را در پنل رانفلر بگذار</h2>
+    <p class="hint">در سرویس برنامه، بخش Environment Variables. دقیقاً همین‌ها را کپی کن.</p>
+    <div class="pre-head">
+      <button id="copyEnv">کپی همه</button>
+      <span class="tiny">اگر دامنه را بعداً عوض کردی، باید دوباره بسازی</span>
+    </div>
+    <pre id="envbox">—</pre>
+  </section>
+
+  <section class="card">
+    <h2>۴. کارهایی که باید در پنل انجام بدهی</h2>
+    <p class="hint">این‌ها را نمی‌شود از بیرون خودکار کرد؛ تیک بزن تا گم نشوند.</p>
+    <div id="tasks"></div>
+  </section>
+
+  <div class="links">
+    <button id="openPdf">باز کردن دفترچه</button>
+    <button id="openFolder">باز کردن پوشه</button>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fa = (n) => String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+
+let state = { tasks: {} };
+let checks = [];
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function icon(level) {
+  return level === 'OK' ? '✓' : level === 'WARN' ? '!' : level === 'FAIL' ? '✕' : '…';
+}
+function cls(level) {
+  return level === 'OK' ? 'ok' : level === 'WARN' ? 'warn' : level === 'FAIL' ? 'fail' : 'wait';
+}
+
+function renderChecks() {
+  const ul = $('checks');
+  if (!checks.length) { ul.innerHTML = '<li class="tiny">چیزی برای نمایش نیست.</li>'; return; }
+  ul.innerHTML = checks.map(c => `
+    <li>
+      <span class="dot ${cls(c.level)}">${icon(c.level)}</span>
+      <span class="li-body">
+        <span class="li-title">${c.title}</span>
+        <span class="li-fa ${c.name === 'MONGODB_URI' || c.name === 'NEXT_PUBLIC_SITE_URL' ? 'ltr' : ''}">${c.fa}</span>
+      </span>
+    </li>`).join('');
+}
+
+function computeProgress() {
+  const totalChecks = checks.length || 1;
+  const okChecks = checks.filter(c => c.level === 'OK').length;
+  const ids = Object.keys(TASKS);
+  const doneTasks = ids.filter(id => state.tasks[id]).length;
+  const p = Math.round((okChecks / totalChecks) * 45 + (doneTasks / ids.length) * 55);
+  $('bar').style.width = p + '%';
+  $('pct').textContent = fa(p) + '٪';
+}
+
+const TASKS = {
+  service: { t: 'سرویس برنامه (NextJS) را ساختم', s: 'در رانفلر، پلن با حداقل ۲ گیگ رم و ۵ گیگ دیسک' },
+  github: { t: 'ریپوی گیت‌هاب را وصل کردم', s: 'شاخهٔ main، دستور ساخت npm run build و اجرا npm start' },
+  env: { t: 'متغیرها را در پنل گذاشتم', s: 'همان بلوکی که در بخش ۳ می‌بینی' },
+  build: { t: 'اولین build موفق شد', s: 'آدرس موقت باز می‌شود' },
+  seed: { t: 'دستور seed را اجرا کردم', s: 'npm run seed -- --force در ترمینال سرویس' },
+  domain: { t: 'دامنه را وصل کردم', s: 'افزودن دامنه در پنل + رکورد A در DNS' },
+  ssl: { t: 'SSL فعال شد', s: 'آدرس با https و قفل سبز باز می‌شود' },
+};
+
+function renderTasks() {
+  $('tasks').innerHTML = Object.entries(TASKS).map(([id, t]) => `
+    <label class="task ${state.tasks[id] ? 'done' : ''}" data-id="${id}">
+      <input type="checkbox" ${state.tasks[id] ? 'checked' : ''}>
+      <span class="t">${t.t}<small>${t.s}</small></span>
+    </label>`).join('');
+
+  $('tasks').querySelectorAll('.task').forEach(el => {
+    el.querySelector('input').addEventListener('change', async (e) => {
+      const id = el.dataset.id;
+      const done = e.target.checked;
+      state.tasks[id] = done;
+      el.classList.toggle('done', done);
+      await fetch('/api/task', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, done }) });
+      computeProgress();
+    });
+  });
+  computeProgress();
+}
+
+function renderEnvBox() {
+  const s = $('secret').value;
+  const site = ($('site').value || '').trim().replace(/^https?:\/\//, '');
+  const url = site ? 'https://' + site : '';
+  const lines = [
+    'MONGODB_URI=' + ($('uri').value || ''),
+    'AUTH_SECRET=' + (s || ''),
+    'AUTH_URL=' + url,
+    'NEXT_PUBLIC_SITE_URL=' + url,
+    'NEXT_PUBLIC_SITE_NAME=' + ($('name').value || 'لانچ‌اوکس'),
+    'PAYMENT_PROVIDER=fake',
+    'SEED_ADMIN_EMAIL=' + ($('email').value || ''),
+    'SEED_ADMIN_PASSWORD=' + ($('pass').value || ''),
+    'SHIPPING_FLAT_FEE=50000',
+    'FREE_SHIPPING_THRESHOLD=1000000',
+  ];
+  $('envbox').textContent = lines.join('\n');
+}
+
+async function load() {
+  const r = await fetch('/api/state');
+  const data = await r.json();
+  state = { tasks: data.tasks || {} };
+  $('uri').value = data.env.mongodbUri || '';
+  $('site').value = (data.env.siteUrl || '').replace(/^https?:\/\//, '');
+  $('email').value = data.env.email || '';
+  $('name').value = data.env.siteName || 'لانچ‌اوکس';
+  $('secret').value = data.env.secret || '';
+  $('pass').value = data.env.password || '';
+  $('pass').placeholder = 'حداقل ۸ کاراکتر';
+  checks = data.checks || [];
+  renderChecks();
+  renderTasks();
+  renderEnvBox();
+  computeProgress();
+}
+
+$('save').addEventListener('click', async () => {
+  const btn = $('save');
+  btn.disabled = true;
+  btn.textContent = 'در حال ذخیره…';
+  try {
+    const payload = {
+      mongodbUri: $('uri').value,
+      siteUrl: $('site').value,
+      email: $('email').value,
+      password: $('pass').value,
+      siteName: $('name').value,
+      secret: $('secret').value,
+    };
+    const r = await fetch('/api/save', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await r.json();
+    checks = data.checks || [];
+    renderChecks();
+    computeProgress();
+    renderEnvBox();
+    const fails = checks.filter(c => c.level === 'FAIL').length;
+    const note = $('savenote');
+    note.hidden = false;
+    note.textContent = fails === 0
+      ? 'ذخیره شد و همهٔ موارد لازم کامل است. حالا «اجرای تست‌ها» را بزن.'
+      : `ذخیره شد، ولی ${fa(fails)} مورد هنوز مشکل دارد. در بخش ۲ قرمزها را ببین.`;
+    toast(fails === 0 ? 'ذخیره شد ✓' : 'ذخیره شد، چند مورد قرمز است');
+  } catch (e) {
+    toast('خطا در ذخیره');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ذخیره و بررسی';
+  }
+});
+
+$('run').addEventListener('click', async () => {
+  const btn = $('run');
+  btn.disabled = true;
+  btn.textContent = 'در حال تست…';
+  try {
+    const r = await fetch('/api/tests', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    const data = await r.json();
+    checks = [...data.db, ...data.site];
+    renderChecks();
+    computeProgress();
+    const fails = checks.filter(c => c.level === 'FAIL').length;
+    toast(fails === 0 ? 'همه‌چیز سالم است' : fa(fails) + ' مورد قرمز');
+  } catch (e) {
+    toast('خطا در اجرای تست');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'اجرای تست‌ها';
+  }
+});
+
+$('regen').addEventListener('click', async () => {
+  const r = await fetch('/api/secret', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+  const data = await r.json();
+  $('secret').value = data.secret;
+  renderEnvBox();
+  toast('کلید تازه ساخته شد');
+});
+
+$('buildUri').addEventListener('click', () => {
+  const note = $('buildNote');
+  const host = $('bHost').value.trim().replace(/^mongodb(\+srv)?:\/\//i, '').replace(/\/.*$/, '');
+  const port = $('bPort').value.trim();
+  const user = $('bUser').value.trim();
+  const pass = $('bPass').value;
+  const db = $('bDb').value.trim() || 'ldb';
+  const auth = $('bAuth').value.trim() || 'admin';
+
+  const errs = [];
+  if (!host) errs.push('میزبان خالی است');
+  if (host.includes('@')) errs.push('میزبان نباید @ داشته باشد');
+  if (host.includes('/')) errs.push('میزبان نباید / داشته باشد');
+  if (port && !/^\d+$/.test(port)) errs.push('پورت باید عدد باشد');
+  if (!user) errs.push('نام کاربری خالی است');
+  if (!pass) errs.push('رمز خالی است');
+
+  note.hidden = false;
+  if (errs.length) {
+    note.textContent = 'هنوز کامل نیست: ' + errs.join('، ');
+    return;
+  }
+
+  const hostPart = /:\d+$/.test(host) ? host : host + ':' + (port || '27017');
+  $('uri').value = 'mongodb://' + encodeURIComponent(user) + ':' + encodeURIComponent(pass) +
+    '@' + hostPart + '/' + db + '?authSource=' + auth;
+  renderEnvBox();
+  note.textContent = 'ساخته شد و در فیلد بالا گذاشته شد. حالا «ذخیره و بررسی» را بزن.';
+  toast('رشتهٔ اتصال ساخته شد');
+});
+
+$('copyEnv').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText($('envbox').textContent);
+    toast('کپی شد');
+  } catch (e) {
+    const r = document.createRange();
+    r.selectNodeContents($('envbox'));
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    toast('متن انتخاب شد — Ctrl+C بزن');
+  }
+});
+
+['uri', 'site', 'email', 'pass', 'name', 'secret'].forEach(id => {
+  $(id).addEventListener('input', renderEnvBox);
+});
+
+$('openPdf').addEventListener('click', () => fetch('/api/open', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ what: 'pdf' }) }));
+$('openFolder').addEventListener('click', () => fetch('/api/open', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ what: 'folder' }) }));
+
+load();
+</script>
+</body>
+</html>

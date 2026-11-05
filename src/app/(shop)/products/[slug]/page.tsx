@@ -23,7 +23,6 @@ const loadProduct = cache(async (slug: string) => {
   return product;
 });
 
-
 export async function generateMetadata({
   params,
 }: {

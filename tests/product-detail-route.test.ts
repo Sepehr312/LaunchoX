@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   product: vi.fn(),
   related: vi.fn(),
   cart: vi.fn(),
+  list: vi.fn(),
 }));
 vi.mock("@/lib/env", () => ({
   getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "فروشگاه" }),
@@ -11,7 +12,7 @@ vi.mock("@/lib/env", () => ({
 vi.mock("@/services/product.service", () => ({
   getProductBySlug: mocks.product,
   getRelatedProducts: mocks.related,
-  listProducts: vi.fn(),
+  listProducts: mocks.list,
 }));
 vi.mock("@/actions/cart.actions", () => ({ getCurrentCart: mocks.cart }));
 vi.mock("@/components/store/ProductDetails", () => ({
@@ -25,6 +26,8 @@ vi.mock("next/navigation", () => ({
 
 import ProductPage, {
   generateMetadata,
+  dynamic,
+  revalidate,
 } from "@/app/(shop)/products/[slug]/page";
 
 const product = {
@@ -99,3 +102,13 @@ it.each(["related", "cart"] as const)(
     ).rejects.toBe(failure);
   },
 );
+
+it("renders product routes on demand without querying the build-time catalog", async () => {
+  expect(dynamic).toBe("force-dynamic");
+  expect(revalidate).toBe(0);
+  expect(
+    (await ProductPage({ params: Promise.resolve({ slug: product.slug }) }))
+      .props.product,
+  ).toBe(product);
+  expect(mocks.list).not.toHaveBeenCalled();
+});

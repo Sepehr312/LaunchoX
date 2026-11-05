@@ -63,11 +63,15 @@ export function FrosticHeader({
   authenticated = false,
   links = defaultLinks,
   activeHref,
+  showServices = true,
+  showAbout = true,
 }: {
   cartCount?: number;
   authenticated?: boolean;
   links?: readonly FrosticNavItem[];
   activeHref?: string;
+  showServices?: boolean;
+  showAbout?: boolean;
 }) {
   const pathname = usePathname();
   const selectedHref = activeHref ?? pathname;
@@ -179,33 +183,36 @@ export function FrosticHeader({
         aria-label={mobile ? "منوی اصلی موبایل" : "منوی اصلی"}
         className={mobile ? styles.drawerNav : styles.navigation}
       >
-        {links.map((item) =>
-          item.href ? (
-            <Link
-              key={item.label}
-              href={item.href}
-              aria-current={
-                selectedHref === item.href ||
-                ((item.href === "/brands" || item.href === "/categories") &&
-                  selectedHref?.startsWith(`${item.href}/`))
-                  ? "page"
-                  : undefined
-              }
-              onClick={() => setIsOpen(false)}
-            >
-              {item.label}
-            </Link>
-          ) : (
-            <span
-              key={item.label}
-              aria-disabled="true"
-              title="این بخش هنوز فعال نشده است"
-            >
-              {item.label}
-              {mobile && <small>به‌زودی</small>}
-            </span>
-          ),
-        )}
+        {links
+          .filter((item) => showServices || item.href !== "/services")
+          .filter((item) => showAbout || item.href !== "/about")
+          .map((item) =>
+            item.href ? (
+              <Link
+                key={item.label}
+                href={item.href}
+                aria-current={
+                  selectedHref === item.href ||
+                  ((item.href === "/brands" || item.href === "/categories") &&
+                    selectedHref?.startsWith(`${item.href}/`))
+                    ? "page"
+                    : undefined
+                }
+                onClick={() => setIsOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <span
+                key={item.label}
+                aria-disabled="true"
+                title="این بخش هنوز فعال نشده است"
+              >
+                {item.label}
+                {mobile && <small>به‌زودی</small>}
+              </span>
+            ),
+          )}
       </nav>
     );
   }
