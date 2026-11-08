@@ -9,9 +9,11 @@ import { getClientIp } from "@/lib/rate-limit";
 import { getEnv } from "@/lib/env";
 import { consumeStoredAuthAttempt } from "@/services/auth-attempt.service";
 import { authenticateUser, getUserAccess } from "@/services/auth.service";
-import { loginSchema, safeCallbackUrl } from "@/validations/auth";
+import { safeCallbackUrl } from "@/validations/auth";
 import { guestIdSchema } from "@/validations/cart";
 import { mergeGuestCart } from "@/services/cart.service";
+import { authenticateOtp } from "@/services/otp.service";
+import { mobilePasswordSchema, otpVerifySchema } from "@/validations/otp";
 
 class TooManyAttempts extends CredentialsSignin {
   code = "rate_limit";
@@ -21,10 +23,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   ...getAuthConfig(),
   providers: [
     Credentials({
-      name: "ایمیل و رمز عبور",
-      credentials: { email: { type: "email" }, password: { type: "password" } },
+      name: "شماره موبایل و رمز عبور",
+      credentials: {
+        mobile: { type: "tel" },
+        password: { type: "password" },
+      },
       async authorize(credentials, request) {
-        const parsed = loginSchema.safeParse(credentials);
+        const parsed = mobilePasswordSchema.safeParse(credentials);
         if (
           !(await consumeStoredAuthAttempt(
             "login",
@@ -32,7 +37,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
               request.headers,
               Boolean(getEnv().AUTH_TRUST_PROXY_HEADERS),
             ),
-            credentials?.email,
+            credentials?.mobile,
           ))
         )
           throw new TooManyAttempts();
@@ -42,10 +47,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
         if (user) {
           const store = await cookies();
           const guest = guestIdSchema.safeParse(store.get("cart_id")?.value);
-          if (guest.success) await mergeGuestCart(user.id, guest.data);
-          if (store.has("cart_id")) store.delete("cart_id");
+          if (guest.success) {
+            await mergeGuestCart(user.id, guest.data);
+            store.delete("cart_id");
+          }
+          store.delete("initial_password");
         }
         return user;
+      },
+    }),
+    Credentials({
+      id: "otp",
+      name: "کد پیامکی",
+      credentials: { mobile: {}, code: {}, challengeId: {}, purpose: {} },
+      async authorize(credentials, request) {
+        const parsed = otpVerifySchema.safeParse(credentials);
+        if (!parsed.success || parsed.data.purpose !== "login") return null;
+        try {
+          const { initialPasswordGrant, ...user } = await authenticateOtp(
+            parsed.data,
+            getClientIp(request.headers, getEnv().AUTH_TRUST_PROXY_HEADERS),
+          );
+          const store = await cookies();
+          const guest = guestIdSchema.safeParse(store.get("cart_id")?.value);
+          if (guest.success) {
+            await mergeGuestCart(user.id, guest.data);
+            store.delete("cart_id");
+          }
+          if (initialPasswordGrant)
+            store.set("initial_password", initialPasswordGrant, {
+              httpOnly: true,
+              secure: getEnv().NODE_ENV === "production",
+              sameSite: "lax",
+              path: "/",
+              maxAge: 300,
+            });
+          else store.delete("initial_password");
+          return user;
+        } catch {
+          // Auth.js may log thrown provider errors, so expose no service error details.
+          return null;
+        }
       },
     }),
   ],

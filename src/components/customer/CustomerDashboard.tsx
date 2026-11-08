@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { requireUser } from "@/actions/auth.actions";
 import { getProfile, getCheckoutAddresses } from "@/services/user.service";
+import { OtpSecurityForm } from "@/components/account/OtpSecurityForm";
 import { getCustomerOrderCounts } from "@/services/customer-dashboard.service";
 import { listOrdersForUser } from "@/services/order.service";
 import { customerDashboardQuerySchema } from "@/validations/customer-dashboard";
@@ -71,7 +72,11 @@ export async function CustomerDashboard({
         <>
           <section className={styles.welcome}>
             <Snowflake aria-hidden="true" />
-            <h1>{user.name} عزیز، خوش آمدید</h1>
+            <h1>
+              {user.name
+                ? `${user.name} عزیز، خوش آمدید`
+                : "به حساب خود خوش آمدید"}
+            </h1>
             <p>سفارش‌ها و اطلاعات حسابتان را اینجا مدیریت کنید.</p>
           </section>
           <div className={styles.stats}>
@@ -170,7 +175,7 @@ export async function CustomerDashboard({
                   <UserRound />
                 </span>
                 <div>
-                  <strong>{user.name}</strong>
+                  <strong>{user.name || "حساب کاربری"}</strong>
                   <p dir="ltr">{user.email}</p>
                 </div>
               </div>
@@ -346,10 +351,8 @@ export async function CustomerDashboard({
                 برای ارسال سفارش، اطلاعاتتان را به‌روز نگه دارید.
               </p>
               <div className={styles.email}>
-                <span>
-                  ایمیل حساب <small>غیرقابل ویرایش</small>
-                </span>
-                <bdi>{user.email}</bdi>
+                <span>شمارهٔ ورود</span>
+                <bdi>{toPersianDigits(user.mobile ?? "")}</bdi>
               </div>
               <AccountForm operation="profile" label="ذخیره اطلاعات">
                 <CustomerField
@@ -360,17 +363,27 @@ export async function CustomerDashboard({
                   autoComplete="name"
                 />
                 <CustomerField
-                  name="mobile"
-                  label="شماره موبایل"
-                  defaultValue={toPersianDigits(user.mobile ?? "")}
-                  hint="اختیاری؛ شمارهٔ ۱۱ رقمی با شروع ۰۹"
-                  inputMode="tel"
-                  autoComplete="tel"
+                  name="email"
+                  label="ایمیل (اختیاری)"
+                  defaultValue={user.email ?? ""}
+                  type="email"
+                  autoComplete="email"
                 />
               </AccountForm>
               <p className={styles.note}>
                 تغییرات پس از ذخیره در حساب شما اعمال می‌شود.
               </p>
+              {user.mobileVerifiedAt && (
+                <details className="mt-6">
+                  <summary className="cursor-pointer text-sm font-semibold">
+                    تغییر شمارهٔ ورود
+                  </summary>
+                  <OtpSecurityForm
+                    mobile={user.mobile ?? ""}
+                    operation="change-mobile"
+                  />
+                </details>
+              )}
             </section>
             <section className={styles.panel}>
               <h2>
@@ -400,6 +413,17 @@ export async function CustomerDashboard({
                   />
                 ))}
               </AccountForm>
+              {user.mobileVerifiedAt && (
+                <details className="mt-6">
+                  <summary className="cursor-pointer text-sm font-semibold">
+                    هنوز رمز تعیین نکرده‌ام
+                  </summary>
+                  <OtpSecurityForm
+                    mobile={user.mobile ?? ""}
+                    operation="set-password"
+                  />
+                </details>
+              )}
             </section>
           </div>
           <p className={styles.security}>

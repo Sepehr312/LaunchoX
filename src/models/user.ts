@@ -5,17 +5,17 @@ import {
   mobilePattern,
   modelOptions,
   optionalText,
-  requiredText,
   type IAddress,
   type StoredDocument,
 } from "@/lib/model-shared";
 import { userRoles, type UserRole } from "@/types/domain";
 
 export interface IUser extends StoredDocument {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   mobile?: string;
-  passwordHash: string;
+  mobileVerifiedAt?: Date;
+  passwordHash?: string;
   sessionVersion: number;
   role: UserRole;
   addresses: IAddress[];
@@ -25,14 +25,13 @@ export interface IUser extends StoredDocument {
 const userSchema = new Schema<IUser>(
   {
     name: {
-      ...requiredText,
+      ...optionalText,
       minlength: [2, "نام باید حداقل ۲ کاراکتر باشد"],
       maxlength: [60, "نام باید حداکثر ۶۰ کاراکتر باشد"],
     },
     email: {
-      ...requiredText,
+      ...optionalText,
       lowercase: true,
-      unique: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "ایمیل معتبر نیست"],
     },
     mobile: {
@@ -43,10 +42,10 @@ const userSchema = new Schema<IUser>(
     },
     passwordHash: {
       type: String,
-      required: [true, "رمز عبور الزامی است"],
       select: false,
       match: [/^\$2[aby]\$12\$[./A-Za-z0-9]{53}$/, "هش رمز عبور معتبر نیست"],
     },
+    mobileVerifiedAt: { type: Date },
     sessionVersion: {
       type: Number,
       default: 0,
@@ -75,6 +74,15 @@ const userSchema = new Schema<IUser>(
     },
   },
   modelOptions,
+);
+
+userSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    name: "email_optional_unique",
+    partialFilterExpression: { email: { $type: "string" } },
+  },
 );
 
 export const User: Model<IUser> =

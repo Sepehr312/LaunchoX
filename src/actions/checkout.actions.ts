@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { AppError, type ActionResult } from "@/lib/errors";
-import { addAddress } from "@/services/user.service";
+import { addAddress, updateCheckoutName } from "@/services/user.service";
 import { startCheckout } from "@/services/payment/payment.service";
 import { orderSchema } from "@/validations/order";
 import { addressSchema } from "@/validations/address";
+import { profileSchema } from "@/validations/account";
 import type { AddressDTO } from "@/types/dto";
 
 export async function checkoutAction(
@@ -24,6 +25,14 @@ export async function checkoutAction(
     };
   let destination: string;
   try {
+    const name = profileSchema.shape.name.safeParse(form.get("name"));
+    if (!name.success)
+      return {
+        ok: false,
+        error: "نام و نام خانوادگی را کامل وارد کنید",
+        fieldErrors: { name: name.error.issues.map((issue) => issue.message) },
+      };
+    await updateCheckoutName(user.id, name.data);
     destination = (await startCheckout(user.id, parsed.data)).redirectUrl;
   } catch (error: unknown) {
     unstable_rethrow(error);

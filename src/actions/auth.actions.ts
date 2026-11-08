@@ -10,13 +10,8 @@ import {
   requireAdmin as checkAdmin,
   consumeCurrentAuthAttempt,
 } from "@/lib/auth";
-import { AppError } from "@/lib/errors";
-import {
-  loginSchema,
-  registerSchema,
-  safeCallbackUrl,
-} from "@/validations/auth";
-import { registerUser } from "@/services/auth.service";
+import { safeCallbackUrl } from "@/validations/auth";
+import { mobilePasswordSchema } from "@/validations/otp";
 import type { AuthActionState } from "@/types/auth";
 
 const rateLimitMessage =
@@ -26,9 +21,14 @@ export async function loginAction(
   _state: AuthActionState,
   form: FormData,
 ): Promise<AuthActionState> {
-  const parsed = loginSchema.safeParse(Object.fromEntries(form));
+  const parsed = mobilePasswordSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) {
-    if (!(await consumeCurrentAuthAttempt("login", form.get("email"))))
+    if (
+      !(await consumeCurrentAuthAttempt(
+        "login",
+        form.get("mobile") ?? form.get("email"),
+      ))
+    )
       return { ok: false, error: rateLimitMessage };
     return {
       ok: false,
@@ -50,7 +50,7 @@ export async function loginAction(
         error:
           error.code === "rate_limit"
             ? rateLimitMessage
-            : "ایمیل یا رمز عبور اشتباه است",
+            : "شماره یا رمز عبور معتبر نیست",
       };
     if (error instanceof AuthError) {
       console.error("Authentication failed:", error.type);
@@ -61,38 +61,12 @@ export async function loginAction(
   }
 }
 
-export async function registerAction(
-  _state: AuthActionState,
-  form: FormData,
-): Promise<AuthActionState> {
-  if (!(await consumeCurrentAuthAttempt("register", form.get("email"))))
-    return { ok: false, error: rateLimitMessage };
-  const parsed = registerSchema.safeParse(Object.fromEntries(form));
-  if (!parsed.success)
-    return {
-      ok: false,
-      error: "اطلاعات ثبت‌نام معتبر نیست",
-      fieldErrors: parsed.error.flatten().fieldErrors,
-    };
-  try {
-    await registerUser(parsed.data);
-    await signIn("credentials", {
-      email: parsed.data.email,
-      password: parsed.data.password,
-      redirectTo: safeCallbackUrl(form.get("callbackUrl")),
-    });
-    return { ok: true, data: undefined };
-  } catch (error: unknown) {
-    unstable_rethrow(error);
-    if (error instanceof AppError) return { ok: false, error: error.message };
-    if (error instanceof CredentialsSignin && error.code === "rate_limit")
-      return {
-        ok: false,
-        error: "حساب ساخته شد؛ پس از ۱۵ دقیقه از صفحهٔ ورود وارد شوید",
-      };
-    console.error("Registration failed");
-    return { ok: false, error: "خطایی رخ داد، دوباره تلاش کنید" };
-  }
+// Reject stale clients that still hold a reference to the retired email signup action.
+export async function registerAction(): Promise<AuthActionState> {
+  return {
+    ok: false,
+    error: "ثبت‌نام فقط با تأیید شمارهٔ موبایل انجام می‌شود",
+  };
 }
 
 export async function logoutAction() {

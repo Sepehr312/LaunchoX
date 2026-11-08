@@ -12,20 +12,21 @@ import type { UserDTO } from "@/types/dto";
 
 export type AdminUserDTO = Pick<
   UserDTO,
-  "id" | "name" | "email" | "role" | "isActive"
+  "id" | "name" | "email" | "mobile" | "role" | "isActive"
 >;
 
 export async function listUsersAdmin(): Promise<AdminUserDTO[]> {
   await requireAdmin();
   await connectDB();
   const users = await User.find({})
-    .select("name email role isActive")
+    .select("name email mobile role isActive")
     .sort({ role: 1, createdAt: -1, _id: -1 })
     .lean();
   return users.map((user) => ({
     id: String(user._id),
     name: user.name,
     email: user.email,
+    ...(user.mobile ? { mobile: user.mobile } : {}),
     role: user.role,
     isActive: user.isActive,
   }));
@@ -94,6 +95,7 @@ async function changeUserAccess(
           );
         if (
           !data.confirmationPassword ||
+          !actor.passwordHash ||
           !(await compare(data.confirmationPassword, actor.passwordHash))
         ) {
           const failedAttempts =
@@ -172,6 +174,7 @@ async function changeUserAccess(
           {
             actor: actor._id,
             actorEmail: actor.email,
+            ...(actor.mobile ? { actorMobile: actor.mobile } : {}),
             target: target._id,
             before: { ...before, sessionVersion: target.sessionVersion ?? 0 },
             after: {

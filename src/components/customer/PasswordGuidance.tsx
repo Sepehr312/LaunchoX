@@ -1,5 +1,5 @@
 import { toPersianDigits } from "@/lib/format";
-import { Circle, Snowflake } from "lucide-react";
+import { Check, Circle, Snowflake } from "lucide-react";
 import styles from "@/components/customer/password-guidance.module.css";
 export function PasswordGuidance({
   password,
@@ -8,7 +8,7 @@ export function PasswordGuidance({
 }: {
   password: string;
   confirmation: string;
-  appearance?: "default" | "premium";
+  appearance?: "default" | "premium" | "auth";
 }) {
   if (appearance === "premium") {
     const rules = [
@@ -67,7 +67,11 @@ export function PasswordGuidance({
   return (
     <ul
       aria-label="شرایط رمز عبور"
-      className="grid gap-2 text-xs sm:grid-cols-2"
+      className={
+        appearance === "auth"
+          ? `${styles.grid} ${styles.authGrid}`
+          : "grid gap-2 text-xs sm:grid-cols-2"
+      }
     >
       {rules.map((rule) => (
         <li
@@ -75,11 +79,19 @@ export function PasswordGuidance({
           className={`flex items-center gap-2 ${rule.passed ? "text-primary" : "text-muted"}`}
         >
           {rule.passed ? (
-            <Snowflake
-              className="size-4 shrink-0"
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
+            appearance === "auth" ? (
+              <Check
+                className="size-4 shrink-0"
+                strokeWidth={1.8}
+                aria-hidden="true"
+              />
+            ) : (
+              <Snowflake
+                className="size-4 shrink-0"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+            )
           ) : (
             <Circle
               className="size-4 shrink-0"

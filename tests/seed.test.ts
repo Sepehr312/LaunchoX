@@ -130,8 +130,8 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
     .select("+passwordHash")
     .lean()
     .orFail();
-  expect(await compare(options.password, admin.passwordHash)).toBe(true);
-  expect(await compare("Customer123!", customer.passwordHash)).toBe(true);
+  expect(await compare(options.password, admin.passwordHash ?? "")).toBe(true);
+  expect(await compare("Customer123!", customer.passwordHash ?? "")).toBe(true);
   expect(customer.addresses).toHaveLength(1);
   expect(customer.addresses[0].city).toBe("تهران");
   const second = await seedDatabase({ ...options, reset: false });
@@ -152,7 +152,7 @@ it("seeds the required catalog and accounts, preserves identities on rerun and r
     .select("+passwordHash")
     .lean()
     .orFail();
-  expect(repeated.passwordHash).toBe(customer.passwordHash);
+  expect(repeated.passwordHash).toBe(customer.passwordHash ?? "");
   expect(repeated.addresses[0]._id).toEqual(customer.addresses[0]._id);
   await Counter.create({ _id: "order", seq: 100002 });
   await Cart.create({

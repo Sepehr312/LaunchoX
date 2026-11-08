@@ -30,17 +30,12 @@ export default async function LoginPage({
       ? query.data.code === "rate_limit"
         ? "تعداد تلاش‌ها بیش از حد مجاز است؛ پس از ۱۵ دقیقه دوباره تلاش کنید"
         : query.data.error === "CredentialsSignin"
-          ? "ایمیل یا رمز عبور اشتباه است"
+          ? "شماره یا رمز عبور معتبر نیست"
           : "خطایی رخ داد، دوباره تلاش کنید"
       : undefined;
   return (
     <PremiumAuthLayout>
-      <AuthForm
-        mode="login"
-        appearance="premium"
-        callbackUrl={callbackUrl}
-        initialError={initialError}
-      />
+      <AuthForm callbackUrl={callbackUrl} initialError={initialError} />
     </PremiumAuthLayout>
   );
 }

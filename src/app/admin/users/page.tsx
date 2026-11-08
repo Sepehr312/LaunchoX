@@ -38,7 +38,7 @@ export default async function Users({
   const users = await listUsersAdmin();
   const permissions = await getUserManagementPermissions();
   const filtered = users.filter((user) =>
-    `${user.name} ${user.email}`
+    `${user.name ?? ""} ${user.email ?? ""} ${user.mobile ?? ""}`
       .toLocaleLowerCase("fa")
       .includes(query.data.q.toLocaleLowerCase("fa")),
   );
@@ -84,11 +84,13 @@ export default async function Users({
                         <span className="admin-user-avatar">
                           <UserRound size={22} aria-hidden="true" />
                         </span>
-                        <strong>{user.name}</strong>
+                        <strong>{user.name ?? "نام تکمیل نشده"}</strong>
                       </div>
                     </td>
                     <td>
-                      <bdi className="admin-user-email">{user.email}</bdi>
+                      <bdi className="admin-user-email">
+                        {user.email ?? toPersianDigits(user.mobile ?? "")}
+                      </bdi>
                     </td>
                     <td>
                       {user.id === permissions.ownerId ? (
@@ -96,7 +98,7 @@ export default async function Users({
                       ) : (
                         <UserRoleForm
                           id={user.id}
-                          name={user.name}
+                          name={user.name ?? "کاربر"}
                           role={user.role}
                           canManage={permissions.canManageAdmins}
                           isSelf={user.id === admin.id}
@@ -109,7 +111,7 @@ export default async function Users({
                       ) : (
                         <UserActiveForm
                           id={user.id}
-                          name={user.name}
+                          name={user.name ?? "کاربر"}
                           isActive={user.isActive}
                           requiresConfirmation={user.role === "admin"}
                           canManage={

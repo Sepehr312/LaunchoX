@@ -88,7 +88,8 @@ export async function seedDatabase(
     // Catalog maintenance must not reset the owner's credentials or access.
     if (existing && String(ownership?.owner) === String(existing._id)) continue;
     const passwordHash =
-      existing && (await compare(account.password, existing.passwordHash))
+      existing?.passwordHash &&
+      (await compare(account.password, existing.passwordHash))
         ? existing.passwordHash
         : await hash(account.password, 12);
     await User.updateOne(

@@ -1,6 +1,7 @@
 import { OrderDelivery } from "@/components/customer/OrderDelivery";
 import { OrderProgress } from "@/components/customer/OrderProgress";
 import { PasswordGuidance } from "@/components/customer/PasswordGuidance";
+import { OtpCodeInput } from "@/components/auth/OtpCodeInput";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -15,6 +16,12 @@ vi.mock("@/actions/auth.actions", () => ({
   registerAction: vi.fn(),
   requireUser: async () => ({ id: "user-1", name: "مشتری نمونه" }),
   logoutAction: vi.fn(),
+}));
+vi.mock("@/actions/otp.actions", () => ({
+  requestOtpAction: vi.fn(),
+  verifyLoginOtpAction: vi.fn(),
+  passwordOtpAction: vi.fn(),
+  changeMobileOtpAction: vi.fn(),
 }));
 vi.mock("@/actions/cart.actions", () => ({
   addCartAction: vi.fn(),
@@ -39,26 +46,35 @@ const address: AddressDTO = {
   updatedAt: "2026-10-13T00:00:00Z",
 };
 describe("customer forms and purchase states", () => {
-  it("keeps login and registration fields distinct and passwords private", () => {
-    const login = renderToStaticMarkup(
-      <AuthForm mode="login" callbackUrl="/account" />,
+  it("exposes one autofillable OTP input with six decorative slots", () => {
+    const html = renderToStaticMarkup(
+      <OtpCodeInput id="test-code" describedBy="request-status" />,
     );
-    expect(login).toContain('type="password"');
-    expect(login).toContain('autoComplete="current-password"');
+    expect(html.match(/<input /g)).toHaveLength(1);
+    expect(html.match(/data-filled="false"/g)).toHaveLength(6);
+    expect(html).toContain('autoComplete="one-time-code"');
+    expect(html).toContain('inputMode="numeric"');
+    expect(html).toContain('aria-describedby="request-status"');
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('name="code"');
+  });
+  it("defaults to mobile OTP and keeps email, name and passwords out of the initial form", () => {
+    const login = renderToStaticMarkup(<AuthForm callbackUrl="/account" />);
+    expect(login).toContain('type="tel"');
+    expect(login).toContain('autoComplete="tel"');
     expect(login).toContain('name="callbackUrl"');
-    expect(login).toContain("ایمیل را تا بسته‌شدن این تب نگه دار");
+    expect(login).toContain("در حال آماده‌سازی…");
+    expect(login).toContain('method="post"');
+    expect(login).toMatch(/<button[^>]*type="submit"[^>]*disabled=""/);
+    expect(login).toContain("برای ورود، جاوااسکریپت مرورگر را فعال کنید.");
     expect(login).not.toContain('name="confirmPassword"');
-    const register = renderToStaticMarkup(
-      <AuthForm mode="register" callbackUrl="/checkout" />,
-    );
-    for (const name of ["name", "email", "password", "confirmPassword"])
-      expect(register).toContain(`name="${name}"`);
-    expect(register).toContain("حداقل ۸ کاراکتر");
-    expect(register).not.toContain('name="role"');
+    for (const name of ["name", "email", "password", "role"])
+      expect(login).not.toContain(`name="${name}"`);
+    expect(login).toContain('aria-pressed="true"');
+    expect(login).toContain("حساب جدید پس از تأیید شماره ساخته می‌شود");
     expect(
       renderToStaticMarkup(
         <AuthForm
-          mode="login"
           callbackUrl="/"
           initialError="ایمیل یا رمز عبور اشتباه است"
         />,
@@ -229,8 +245,9 @@ describe("customer page composition", () => {
     const profile = renderToStaticMarkup(
       await CustomerDashboard(profilePage.props),
     );
-    expect(profile).toContain("ایمیل حساب");
-    expect(profile).toContain("غیرقابل ویرایش");
+    expect(profile).toContain("ایمیل (اختیاری)");
+    expect(profile).toContain("شمارهٔ ورود");
+    expect(profile).not.toContain('name="mobile"');
     expect(profile).toContain('name="currentPassword"');
     const { default: Addresses } =
       await import("@/app/(shop)/account/addresses/page");
@@ -316,6 +333,27 @@ describe("customer interaction cues", () => {
     );
     expect(empty).not.toContain("text-primary");
     expect(empty).not.toContain("lucide-snowflake");
+  });
+  it("shows four auth password checks and measures Unicode passwords in bytes", () => {
+    const valid = renderToStaticMarkup(
+      <PasswordGuidance
+        password="Customer123!"
+        confirmation="Customer123!"
+        appearance="auth"
+      />,
+    );
+    expect(valid.match(/lucide-check/g)).toHaveLength(4);
+    expect(valid).toContain("حداکثر ۷۲ بایت");
+    const oversized = "ژ".repeat(36) + "1";
+    const invalid = renderToStaticMarkup(
+      <PasswordGuidance
+        password={oversized}
+        confirmation={oversized}
+        appearance="auth"
+      />,
+    );
+    expect(invalid.match(/lucide-check/g)).toHaveLength(3);
+    expect(invalid.match(/lucide-circle/g)).toHaveLength(1);
   });
 });
 
