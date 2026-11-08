@@ -1,5 +1,13 @@
 # تحویل پنل مدیریت LaunchoX
 
+## Approved account security layout
+
+The owner-approved [security design](admin-review/security-design-approved.png) is implemented at `/admin/security`. The page uses the existing admin palette and navigation, a white container, ice-blue section headers, inline password visibility controls and blue primary actions. Enrollment and password changes sit in equal columns from 1200px and stack in reading order below that width. Verified-number changes and initial-password enrollment remain available through their existing forms and actions.
+
+The isolated production-browser check covers 360/768/1024/1440px, absence of page overflow, keyboard password visibility, client/server error draft retention, verified-number controls, guest/customer restrictions, successful password saving and session revocation. It uses a temporary replica set and sends no real SMS. Run `node --import tsx tests/admin-security-browser.mjs`; set `LAUNCHO_PLAYWRIGHT_PATH` when using an external Playwright installation and optionally `LAUNCHO_BROWSER_CHANNEL` for the installed browser channel (default `msedge`).
+
+Implementation screenshots: [desktop](admin-review/security-approved-1440.png), [mobile](admin-review/security-approved-360.png).
+
 شاخه: `ui/admin`؛ مبنا: `82fb6f3` از `main`.
 
 ## کامپوننت‌ها
