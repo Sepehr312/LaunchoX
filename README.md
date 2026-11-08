@@ -209,6 +209,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- The approved admin security page uses two equal form columns from 1200px and stacks the mobile enrollment before password changes on smaller screens. Presentation stays local to admin security; existing enrollment, verified-number changes and initial-password flows retain their current server actions.
+
 - The OTP-confirmed initial password form in account security reuses the four live password checks from onboarding. Password fields and checks clear together on form reset and after requesting a fresh verification challenge.
 
 - Login and recovery OTP entry uses six visual slots over one accessible input, preserving native SMS autofill, whole-code paste and keyboard selection. Persian and Arabic digits normalize to ASCII for submission; displayed digits use the shared Persian formatter. The input clears on form reset and does not submit automatically.

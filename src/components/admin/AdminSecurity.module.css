@@ -1,0 +1,262 @@
+.page {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.pageHeader {
+  margin-block-end: 40px;
+}
+
+.pageHeader p,
+.sectionHeader p {
+  margin-block-start: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.sections {
+  display: grid;
+  align-items: start;
+  gap: 24px;
+}
+
+.section {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: start;
+  gap: 16px;
+  padding: 24px;
+  border-block-end: 1px solid var(--border);
+  background: var(--ice);
+}
+
+.icon {
+  display: grid;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--color-selected, #dceeff);
+  color: var(--foreground);
+}
+
+.body {
+  display: grid;
+  min-width: 0;
+  gap: 24px;
+  padding: 24px;
+}
+
+.page .body form,
+.page .body fieldset {
+  min-width: 0;
+  max-width: none;
+  gap: 24px;
+}
+
+.body label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.page .body input {
+  min-height: 48px;
+  border-color: var(--border-strong);
+  font-size: 16px;
+}
+
+.page .body input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.page .body input:focus-visible {
+  border-color: var(--primary);
+}
+
+.page .body button[type="submit"] {
+  width: 100%;
+  min-height: 48px;
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--color-primary-foreground);
+  font-size: 16px;
+}
+
+.page .body button[type="submit"]:hover:not(:disabled) {
+  background: #0057ab;
+}
+
+.page .body button[type="submit"]:active:not(:disabled) {
+  background: #004b94;
+}
+
+/* The admin shell styles all buttons; keep password visibility inside the input. */
+.page .body button[aria-pressed] {
+  inset-inline-end: 2px;
+  width: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+.page .body button[aria-pressed]:hover:not(:disabled) {
+  background: var(--ice);
+}
+
+.page .body button:disabled {
+  border-color: var(--border);
+  background: var(--color-disabled-bg, #e8edf3);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.page .body button[aria-pressed]:disabled {
+  background: transparent;
+}
+
+.body ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  font-size: 12px;
+}
+
+.body li {
+  min-width: 0;
+  align-items: start;
+}
+
+.body li svg {
+  margin-block-start: 3px;
+}
+
+.unverified,
+.verified {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.unverified {
+  background: var(--color-warning-soft, #fff6dd);
+  color: var(--color-warning, #885000);
+}
+
+.verified {
+  background: var(--color-success-soft, #eaf7ef);
+  color: var(--color-success);
+}
+
+.info,
+.footer {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 2;
+}
+
+.info svg,
+.footer svg {
+  flex-shrink: 0;
+  margin-block-start: 4px;
+}
+
+.info {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--ice);
+}
+
+.footer {
+  margin-block-start: 24px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.initialPassword {
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--border);
+}
+
+.initialPassword summary {
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.initialPassword summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.mobileInput {
+  position: relative;
+  min-width: 0;
+}
+
+.mobileInput > svg {
+  position: absolute;
+  inset-inline-start: 12px;
+  inset-block-start: 14px;
+  pointer-events: none;
+  color: var(--muted);
+}
+
+.page .mobileInput input {
+  padding-inline-end: 44px;
+}
+
+@media (min-width: 1200px) {
+  .sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 639px) {
+  .page,
+  .sectionHeader,
+  .body {
+    padding: 16px;
+  }
+
+  .pageHeader {
+    margin-block-end: 24px;
+  }
+
+  .sections {
+    gap: 16px;
+  }
+
+  .sectionHeader {
+    gap: 12px;
+  }
+
+  .body ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

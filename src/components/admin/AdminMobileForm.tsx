@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/Input";
 import { MobileInput } from "@/components/auth/MobileInput";
 import { PasswordInput } from "@/components/customer/PasswordInput";
 import { Button } from "@/components/ui/Button";
+import { MessageSquare, Smartphone } from "lucide-react";
+import { toPersianDigits } from "@/lib/format";
+import styles from "@/components/admin/AdminSecurity.module.css";
 export function AdminMobileForm({ mobile }: { mobile?: string }) {
   const [challenge, setChallenge] = useState<{
     mobile: string;
@@ -22,6 +25,7 @@ export function AdminMobileForm({ mobile }: { mobile?: string }) {
   return (
     <form
       className="grid max-w-lg gap-5"
+      aria-busy={pending}
       onSubmit={(event) => {
         event.preventDefault();
         if (lock.current) return;
@@ -51,15 +55,19 @@ export function AdminMobileForm({ mobile }: { mobile?: string }) {
       }}
     >
       {!challenge ? (
-        <label className="grid gap-2">
-          شمارهٔ مدیر
-          <MobileInput
-            name="mobile"
-            defaultValue={mobile ?? ""}
-            required
-            disabled={pending}
-          />
-        </label>
+        <div className="grid min-w-0 gap-2">
+          <label htmlFor="admin-mobile">شمارهٔ مدیر</label>
+          <div className={styles.mobileInput}>
+            <Smartphone size={20} aria-hidden="true" />
+            <MobileInput
+              id="admin-mobile"
+              name="mobile"
+              defaultValue={toPersianDigits(mobile ?? "")}
+              required
+              disabled={pending}
+            />
+          </div>
+        </div>
       ) : (
         <>
           <label className="grid gap-2">
@@ -88,21 +96,24 @@ export function AdminMobileForm({ mobile }: { mobile?: string }) {
           </button>
         </>
       )}
-      <label className="grid gap-2">
-        رمز فعلی مدیر
+      <div className="grid min-w-0 gap-2">
+        <label htmlFor="admin-confirmation-password">رمز فعلی مدیر</label>
         <PasswordInput
+          id="admin-confirmation-password"
+          aria-label="رمز فعلی مدیر"
           name="confirmationPassword"
           autoComplete="current-password"
           required
           disabled={pending}
         />
-      </label>
+      </div>
       {error && (
         <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}
       <Button type="submit" disabled={pending}>
+        <MessageSquare size={20} aria-hidden="true" />
         {pending
           ? "در حال انجام…"
           : challenge
