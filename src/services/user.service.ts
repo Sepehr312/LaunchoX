@@ -73,9 +73,9 @@ export async function updateProfile(userId: string, input: unknown) {
       {
         $set: {
           name: data.name,
-          ...(data.mobile ? { mobile: data.mobile } : {}),
+          ...(data.email ? { email: data.email } : {}),
         },
-        ...(!data.mobile ? { $unset: { mobile: 1 } } : {}),
+        ...(!data.email ? { $unset: { email: 1 } } : {}),
       },
       { returnDocument: "after", runValidators: true },
     ).lean();
@@ -83,7 +83,7 @@ export async function updateProfile(userId: string, input: unknown) {
     return toDTO(user);
   } catch (error: unknown) {
     if (error instanceof Error && "code" in error && error.code === 11000)
-      throw new AppError("این شمارهٔ موبایل قبلاً ثبت شده است", "CONFLICT");
+      throw new AppError("این ایمیل قبلاً ثبت شده است", "CONFLICT");
     throw error;
   }
 }
@@ -96,7 +96,11 @@ export async function changePassword(userId: string, input: unknown) {
   })
     .select("+passwordHash")
     .lean();
-  if (!user || !(await compare(data.currentPassword, user.passwordHash)))
+  if (
+    !user ||
+    !user.passwordHash ||
+    !(await compare(data.currentPassword, user.passwordHash))
+  )
     throw new AppError("رمز عبور فعلی صحیح نیست", "VALIDATION");
   const result = await User.updateOne(
     { _id: user._id, isActive: true, passwordHash: user.passwordHash },
@@ -107,6 +111,17 @@ export async function changePassword(userId: string, input: unknown) {
   );
   if (!result.modifiedCount)
     throw new AppError("رمز تغییر کرده است؛ دوباره تلاش کنید", "CONFLICT");
+}
+
+export async function updateCheckoutName(userId: string, name: unknown) {
+  const parsed = profileSchema.shape.name.parse(name);
+  await connectDB();
+  const result = await User.updateOne(
+    { _id: objectIdSchema.parse(userId), isActive: true },
+    { $set: { name: parsed } },
+    { runValidators: true },
+  );
+  if (!result.matchedCount) throw new AppError("کاربر پیدا نشد", "NOT_FOUND");
 }
 export async function manageAddress(
   userId: string,

@@ -22,7 +22,7 @@ export default async function AccountLayout({
         <DashboardBreadcrumb />
         <CustomerScope>
           <main className={styles.layout}>
-            <DashboardNavigation name={user.name} />
+            <DashboardNavigation name={user.name ?? ""} />
             <div className="min-w-0">{children}</div>
           </main>
         </CustomerScope>

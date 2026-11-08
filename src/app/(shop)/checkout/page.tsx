@@ -6,7 +6,7 @@ import Link from "next/link";
 import { requireUser } from "@/actions/auth.actions";
 import { getCurrentCart } from "@/actions/cart.actions";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
-import { getCheckoutAddresses } from "@/services/user.service";
+import { getCheckoutAddresses, getProfile } from "@/services/user.service";
 import { formatPrice, toPersianDigits } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -15,9 +15,10 @@ export const metadata: Metadata = {
 
 export default async function CheckoutPage() {
   const user = await requireUser();
-  const [cart, addresses] = await Promise.all([
+  const [cart, addresses, profile] = await Promise.all([
     getCurrentCart(),
     getCheckoutAddresses(user.id),
+    getProfile(user.id),
   ]);
   return (
     <main className="store-shell py-8 sm:py-12">
@@ -45,7 +46,7 @@ export default async function CheckoutPage() {
                 {warning}
               </p>
             ))}
-            <CheckoutForm addresses={addresses} />
+            <CheckoutForm addresses={addresses} name={profile.name} />
           </div>
           <aside className="checkout-panel lg:sticky lg:top-28">
             <p className="section-kicker">با دقت انتخاب شده</p>

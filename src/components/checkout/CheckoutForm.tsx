@@ -22,7 +22,13 @@ function FormErrors({ state }: { state: ActionResult<unknown> | undefined }) {
   ) : null;
 }
 
-export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
+export function CheckoutForm({
+  addresses,
+  name,
+}: {
+  addresses: AddressDTO[];
+  name?: string;
+}) {
   const [clientErrors, setClientErrors] = useState<Record<string, string[]>>(
     {},
   );
@@ -44,6 +50,24 @@ export function CheckoutForm({ addresses }: { addresses: AddressDTO[] }) {
   return (
     <div className="grid min-w-0 gap-6">
       <form action={action} className="checkout-panel">
+        <label className="mb-6 grid gap-2 text-sm">
+          نام و نام خانوادگی خریدار
+          <input
+            name="name"
+            defaultValue={name ?? ""}
+            autoComplete="name"
+            required
+            minLength={2}
+            maxLength={60}
+            disabled={pending}
+            className="min-h-12 w-full rounded-xl border border-border p-3"
+          />
+        </label>
+        {state && !state.ok && state.fieldErrors?.name && (
+          <p role="alert" className="mb-4 text-sm text-danger">
+            {state.fieldErrors.name.join("؛ ")}
+          </p>
+        )}
         <p className="section-kicker">مقصد انتخاب‌های شما</p>
         <h2 className="mt-2 mb-6 text-xl font-bold">آدرس ارسال</h2>
         <fieldset disabled={pending} className="grid gap-3">

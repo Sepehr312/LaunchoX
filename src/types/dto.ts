@@ -16,8 +16,9 @@ export interface EntityDTO extends TimestampsDTO {
 }
 export interface AddressDTO extends AddressFields, EntityDTO {}
 export interface UserDTO extends EntityDTO {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
+  mobileVerifiedAt?: string;
   mobile?: string;
   role: UserRole;
   addresses: AddressDTO[];

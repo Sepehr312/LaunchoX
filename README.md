@@ -56,12 +56,14 @@ MONGODB_URI=mongodb://localhost:27017/launchox
 
 `npm run seed` در دیتابیس خالی دو حساب، پنج دستهٔ محصولات سرمایشی و ۲۴ محصول با تصاویر محلی می‌سازد. مشتری نمونه هنگام ساخت اولیه یک آدرس پیش‌فرض در تهران دارد.
 
-| حساب | ایمیل ورود | رمز ورود |
-| --- | --- | --- |
-| ادمین | مقدار `SEED_ADMIN_EMAIL` در `.env.local`؛ نمونهٔ فایل: `admin@launchox.local` | مقدار انتخابی `SEED_ADMIN_PASSWORD` در `.env.local` |
-| مشتری نمونه | `customer@launchox.local` | `Customer123!` |
+| حساب        | ایمیل دادهٔ نمونه                                                             | رمز دادهٔ نمونه                                     |
+| ----------- | ----------------------------------------------------------------------------- | --------------------------------------------------- |
+| ادمین       | مقدار `SEED_ADMIN_EMAIL` در `.env.local`؛ نمونهٔ فایل: `admin@launchox.local` | مقدار انتخابی `SEED_ADMIN_PASSWORD` در `.env.local` |
+| مشتری نمونه | `customer@launchox.local`                                                     | `Customer123!`                                      |
 
 رمز مشتری بالا یک مقدار عمومی و ثابت در کد seed برای توسعه است. هیچ رمز واقعی ادمین یا کلید محیطی در این مستند درج نشده است. رمز ادمین seed باید حداقل ۸ کاراکتر و حداکثر ۷۲ بایت باشد و ایمیل آن با ایمیل مشتری نمونه متفاوت باشد. seed در پایان خلاصهٔ تعدادها و ایمیل ادمین را چاپ می‌کند؛ رمز فقط از `SEED_ADMIN_PASSWORD` خوانده می‌شود و در خروجی نمایش داده نمی‌شود.
+
+این جدول شناسه‌های دادهٔ نمونه را توصیف می‌کند؛ ورود ایمیلی کنار گذاشته شده است. مدیر و مشتری از همان `/login` وارد می‌شوند. ادمین از پیش تعیین‌شده با شمارهٔ متصل به حساب و رمز فعلی وارد می‌شود و اتصال پیامکی شماره را در `/admin/security` تکمیل می‌کند.
 
 اجرای مجدد seed کاربران را با ایمیل و دسته‌ها و محصولات را با نامک به‌روزرسانی می‌کند. شناسهٔ کاربران و آدرس‌های موجود حفظ می‌شوند؛ نام، نقش، وضعیت فعال و رمز دو حساب نمونه مطابق seed تنظیم می‌شوند. هش منطبق دوباره تولید نمی‌شود. seed داده‌های نمونهٔ کاتالوگ را نیز به‌روزرسانی می‌کند و رکوردهای اضافی را در اجرای عادی حذف نمی‌کند.
 
@@ -75,18 +77,18 @@ npm run seed -- --reset
 
 ## دستورهای موجود
 
-| دستور | کاربرد |
-| --- | --- |
-| `npm run dev` | اجرای توسعه با Turbopack |
-| `npm run build` | ساخت نسخهٔ production |
-| `npm start` | اجرای نسخهٔ ساخته‌شده پس از build |
-| `npm run lint` | بررسی ESLint |
-| `npm run typecheck` | بررسی TypeScript |
-| `npm run test` | اجرای تست‌های Vitest |
-| `npm run format` | فرمت کل پروژه با Prettier و مرتب‌سازی کلاس‌های Tailwind |
-| `npm run db:up` | اجرای MongoDB محلی با Docker Compose |
-| `npm run seed` | ساخت یا به‌روزرسانی دادهٔ نمونه |
-| `npm run seed -- --reset` | پاک‌سازی محدود مجموعه‌ها و ساخت دوبارهٔ دادهٔ نمونه |
+| دستور                     | کاربرد                                                  |
+| ------------------------- | ------------------------------------------------------- |
+| `npm run dev`             | اجرای توسعه با Turbopack                                |
+| `npm run build`           | ساخت نسخهٔ production                                   |
+| `npm start`               | اجرای نسخهٔ ساخته‌شده پس از build                       |
+| `npm run lint`            | بررسی ESLint                                            |
+| `npm run typecheck`       | بررسی TypeScript                                        |
+| `npm run test`            | اجرای تست‌های Vitest                                    |
+| `npm run format`          | فرمت کل پروژه با Prettier و مرتب‌سازی کلاس‌های Tailwind |
+| `npm run db:up`           | اجرای MongoDB محلی با Docker Compose                    |
+| `npm run seed`            | ساخت یا به‌روزرسانی دادهٔ نمونه                         |
+| `npm run seed -- --reset` | پاک‌سازی محدود مجموعه‌ها و ساخت دوبارهٔ دادهٔ نمونه     |
 
 تست‌های دیتابیس از MongoDB مستقل با `mongodb-memory-server` استفاده می‌کنند. اگر باینری قابل دریافت یا اجرا نباشد، `tests/mongo-server.ts` به کانتینر موقت `mongo:7` با پورت تصادفی روی localhost و داده‌های tmpfs برمی‌گردد و آن را در پایان حذف می‌کند؛ این مسیر به Docker روشن نیاز دارد. این تست‌ها از `MONGODB_URI` برنامه استفاده نمی‌کنند. دریافت اولیهٔ باینری یا image ممکن است به اینترنت نیاز داشته باشد.
 
@@ -96,22 +98,22 @@ npm run seed -- --reset
 
 ## ساختار پوشه‌های اصلی
 
-| مسیر | مسئولیت |
-| --- | --- |
-| `src/app/` | مسیرها، layout، metadata و حالت‌های loading، empty، error و ۴۰۴؛ گروه‌های `(shop)` و `(auth)`، حساب مشتری، پنل `admin` و Route Handlerهای `api` |
-| `src/components/` | کامپوننت‌های `ui`، فروشگاه، احراز هویت، حساب، checkout و ادمین |
-| `src/actions/` | Server Actionهای احراز هویت، سبد، checkout، حساب و مدیریت در `admin/` |
-| `src/services/` | منطق احراز هویت، کاربران، کاتالوگ، سبد، سفارش، داشبورد و سلامت؛ لایهٔ پرداخت در `payment/` |
-| `src/models/` | مدل‌های Mongoose برای User، Category، Product، Cart، Order و Counter |
-| `src/validations/` | اسکیماهای Zod برای فرم‌ها و ورودی‌های مسیر و API |
-| `src/types/` | نوع‌های مشترک، DTOها و نوع‌های سشن؛ بدون `passwordHash` در DTO |
-| `src/lib/` | تنظیمات محیطی، اتصال دیتابیس، Auth.js، محدودیت تلاش، خطاها، فرمت فارسی و ابزارهای مشترک |
-| `src/proxy.ts` | محافظ مسیرها و بررسی‌های دسترسی پیش از رندر |
-| `scripts/` | ورودی seed، اجرای seed و کاتالوگ نمونه |
-| `tests/` | تست‌های Vitest، دیتابیس مستقل تست و اسکریپت‌های پذیرش مرورگری |
-| `public/` | فایل‌های عمومی، تصاویر Hero روشن/تیره و تصاویر محلی محصولات در `images/` |
-| `docs/` | مشخصات و مراجع پروژه |
-| `docker-compose.yml` | تعریف MongoDB محلی و volume داده |
+| مسیر                 | مسئولیت                                                                                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/`           | مسیرها، layout، metadata و حالت‌های loading، empty، error و ۴۰۴؛ گروه‌های `(shop)` و `(auth)`، حساب مشتری، پنل `admin` و Route Handlerهای `api` |
+| `src/components/`    | کامپوننت‌های `ui`، فروشگاه، احراز هویت، حساب، checkout و ادمین                                                                                  |
+| `src/actions/`       | Server Actionهای احراز هویت، سبد، checkout، حساب و مدیریت در `admin/`                                                                           |
+| `src/services/`      | منطق احراز هویت، کاربران، کاتالوگ، سبد، سفارش، داشبورد و سلامت؛ لایهٔ پرداخت در `payment/`                                                      |
+| `src/models/`        | مدل‌های Mongoose برای User، Category، Product، Cart، Order و Counter                                                                            |
+| `src/validations/`   | اسکیماهای Zod برای فرم‌ها و ورودی‌های مسیر و API                                                                                                |
+| `src/types/`         | نوع‌های مشترک، DTOها و نوع‌های سشن؛ بدون `passwordHash` در DTO                                                                                  |
+| `src/lib/`           | تنظیمات محیطی، اتصال دیتابیس، Auth.js، محدودیت تلاش، خطاها، فرمت فارسی و ابزارهای مشترک                                                         |
+| `src/proxy.ts`       | محافظ مسیرها و بررسی‌های دسترسی پیش از رندر                                                                                                     |
+| `scripts/`           | ورودی seed، اجرای seed و کاتالوگ نمونه                                                                                                          |
+| `tests/`             | تست‌های Vitest، دیتابیس مستقل تست و اسکریپت‌های پذیرش مرورگری                                                                                   |
+| `public/`            | فایل‌های عمومی، تصاویر Hero روشن/تیره و تصاویر محلی محصولات در `images/`                                                                        |
+| `docs/`              | مشخصات و مراجع پروژه                                                                                                                            |
+| `docker-compose.yml` | تعریف MongoDB محلی و volume داده                                                                                                                |
 
 ## نقطه‌های توسعه
 
@@ -123,7 +125,47 @@ npm run seed -- --reset
 
 ### ورود OTP
 
-ورود فعلی ایمیل و رمز عبور با Credentials در `src/lib/auth.ts` است؛ تنظیمات سشن در `auth.config.ts`، منطق کاربر در `auth.service.ts` و ورودی‌ها در `validations/auth.ts` قرار دارند. فیلد اختیاری و یکتای `mobile` در مدل User برای توسعهٔ آینده موجود است. ارسال پیامک، تولید و تأیید OTP و provider مخصوص آن پیاده‌سازی نشده‌اند. توسعهٔ OTP از همین لایه‌های احراز هویت و اعتبارسنجی آغاز می‌شود و به سرویس پیامک، انقضای کد و محدودیت تلاش نیاز دارد.
+با تأیید صریح مالک، ورود عمومی به شمارهٔ موبایل و OTP یا شماره و رمز تغییر کرده است. این توسعهٔ تکمیلی، جایگزین مشخصات قدیمی ایمیل/رمز و محدودیت قبلی OTP در SPEC و AGENTS است و شمارهٔ مرحلهٔ جدیدی از SPEC محسوب نمی‌شود. `/login` هر دو روش را در یک صفحه دارد و `/register` با حفظ مقصد داخلی معتبر به آن هدایت می‌شود. ثبت‌نام ایمیلی در سرور نیز رد می‌شود. طرح تصویری ۴ مبنای ظاهر است؛ مرجع آن در `docs/auth-review/design-4.png` نگه‌داری می‌شود.
+
+فقط پس از تأیید کد، حساب `customer` در همان مجموعهٔ User ساخته می‌شود؛ نام، ایمیل و رمز اولیه اختیاری‌اند. در checkout نام کامل خریدار و اطلاعات کامل گیرنده لازم است؛ ایمیل برای خرید لازم نیست. شماره فقط ۱۱ رقم و با شروع `09` پذیرفته می‌شود؛ ارقام فارسی و عربی به انگلیسی تبدیل می‌شوند. فیلد ورود حروف و نشانه‌ها را حذف و پیشوند نامعتبر را رد می‌کند؛ سمت سرور نیز قالب‌های `+98` و `0098`، فاصله، حروف و خط تیره رد می‌شوند. در تغییر روش یا refresh، هیچ رمز یا کدی در storage مرورگر ذخیره نمی‌شود؛ refresh جریان ارسال کد را به مرحلهٔ شماره برمی‌گرداند و cooldown سرور برقرار می‌ماند.
+
+تنظیمات خصوصی سرور:
+
+```dotenv
+SMS_IR_ENABLED=false
+SMS_IR_API_KEY=
+SMS_IR_TEMPLATE_ID=608073
+```
+
+برای تست محلی، همین متغیرها را در `.env.local` قرار دهید، مقدار `SMS_IR_ENABLED` را `true` کنید و کلید خصوصی را مقابل `SMS_IR_API_KEY=` بنویسید. سپس سرور توسعه را دوباره با `npm run dev` اجرا کنید و در `/login` دریافت کد و ورود را با شمارهٔ خودتان بررسی کنید. دریافت پیامک روی گوشی به انتشار روی هاست نیاز ندارد. قالب فعلی باید پارامتر `OTP` داشته باشد؛ در صورت تغییر قالب، شناسهٔ آن را نیز به‌روزرسانی کنید. فایل `.env.local` در Git ثبت نمی‌شود و نبود کلید، ارسال را متوقف می‌کند.
+
+کلید واقعی فقط در محیط خصوصی سرور تنظیم شود. ارسال واقعی تنها پس از اجازهٔ مالک با `SMS_IR_ENABLED=true` فعال شود. نبود کلید یا غیرفعال‌بودن ارسال، در زمان اجرا خطای فارسی کنترل‌شده دارد و build به تنظیم SMS نیاز ندارد. اتصال بدون وابستگی جدید با fetch سمت سرور به `POST https://api.sms.ir/v1/send/verify`، هدر `X-API-KEY` و پارامتر قالب `OTP` انجام می‌شود. ساختار درخواست/پاسخ بر اساس [SDK رسمی sms.ir](https://github.com/IPeCompany/SmsPanelV2.TypeScript/blob/main/src/send/sendVerifyCode.ts) و [قرارداد پاسخ رسمی](https://github.com/IPeCompany/SmsPanelV2.TypeScript/blob/main/src/utils/models/responseModel.ts) بررسی شده است. موفقیت علاوه بر HTTP به `status: 1` و `messageId` و `cost` معتبر نیاز دارد؛ این فقط پذیرش درخواست است و تحویل قطعی به گوشی را ثابت نمی‌کند. timeout ده ثانیه است و redirect سرویس پذیرفته نمی‌شود. متن و خطای خام سرویس در لاگ یا پاسخ کاربر قرار نمی‌گیرد.
+
+کد شش‌رقمی رمزنگارانه، ۳۰۰ ثانیه اعتبار، ۶۰ ثانیه فاصلهٔ ارسال و حداکثر پنج تلاش برای هر challenge دارد. فقط HMAC با `AUTH_SECRET` ذخیره می‌شود؛ شناسه، شماره و کاربرد در امضا دخیل‌اند. challenge هنگام ارسال pending است و فقط پس از پاسخ معتبر فعال می‌شود؛ شکست و timeout آن را غیرقابل‌مصرف می‌کند. درخواست جدید کد قبلی همان جریان را کنار می‌گذارد، حتی در صورت شکست ارسال، تا وضعیت نامشخص تحویل امن بماند. شمارنده‌ها در MongoDB اتمیک‌اند: ارسال حداکثر ۱۰ بار برای شماره و ۵۰ بار برای IP در پنجرهٔ یک‌ساعته از اولین تلاش؛ تأیید حداکثر ۳۰ بار برای شماره و ۲۰۰ بار برای IP در همان نوع پنجره. این محدودیت‌ها بین کاربردها مشترک‌اند و با resend یا تغییر فرم پاک نمی‌شوند. وقتی IP قابل اعتماد نداریم، bucket مشترک `unknown` اعمال می‌شود. فقط در صورت حذف و بازنویسی هدرهای ورودی توسط پراکسی مورد اعتماد، `AUTH_TRUST_PROXY_HEADERS=true` شود. محدودیت ورود با رمز همچنان پنج تلاش برای شناسه در ۱۵ دقیقه است و در خود Credentials provider نیز اجرا می‌شود.
+
+کاربردهای login، set-password، recovery، change-mobile و admin-enrollment مستقل‌اند. تعیین رمز اختیاری بعد از اولین ثبت‌نام از مجوز HttpOnly یک‌بارمصرفِ پنج‌دقیقه‌ای متصل به شناسه و نسخهٔ سشن استفاده می‌کند. تعیین اولین رمز از حساب به OTP تازهٔ مخصوص همان عملیات نیاز دارد؛ تغییر رمز موجود به رمز فعلی و بازیابی به OTP مخصوص recovery نیاز دارد. تغییر شماره به اثبات هر دو شمارهٔ فعلی و جدید نیاز دارد. عملیات حساس `sessionVersion` را افزایش می‌دهد؛ سشن قدیمی پذیرفته نمی‌شود. تعیین اولیهٔ موفق سشن تازهٔ Auth.js می‌گیرد؛ تغییرات بعدی به ورود دوباره هدایت می‌شوند. تمام اتصال حساب، مصرف کد و تغییر حساس از تراکنش و قفل مشترک مدیریت کاربران استفاده می‌کنند؛ MongoDB replica set پیش‌نیاز است و standalone راه جایگزین ناامن ندارد.
+
+پیش از فعال‌سازی عمومی، ایندکس قدیمی ایمیل را بررسی کنید؛ تغییر schema ایندکس `email_1` را اصلاح نمی‌کند:
+
+```sh
+npx tsx --conditions=react-server --env-file=.env.local tests/migrate-auth-indexes.ts
+# Only the authorized database operator may run the following after reviewing the preview:
+npx tsx --conditions=react-server --env-file=.env.local tests/migrate-auth-indexes.ts --apply
+```
+
+پیش‌فرض فقط پیش‌نمایش است. اسکریپت نام/گزینه‌های ایندکس و تعداد تعارض‌ها را نشان می‌دهد، نه اطلاعات کاربران. با وجود ایمیل null/خالی تاریخی یا شمارهٔ تکراری، apply متوقف می‌شود و داده‌ای پاک یا بازنویسی نمی‌کند؛ اپراتور باید جداگانه این تعارض‌ها را بررسی کند. ابتدا `email_optional_unique` با فیلتر رشته ساخته می‌شود و سپس فقط ایندکس قدیمی `email_1` برداشته می‌شود؛ `syncIndexes` و حذف عمومی ایندکس اجرا نمی‌شوند. مقادیر null/خالی جدید از مسیر مدل به absent تبدیل می‌شوند. ایندکس mobile یکتا و sparse حفظ می‌شود. اجرای apply روی دیتابیس عملیاتی نیازمند اجازهٔ جداگانه است.
+
+صفحه یا لینک جداگانه‌ای برای دسترسی اولیهٔ مدیر وجود ندارد و ورود ایمیلی در provider نیز رد می‌شود. ادمین از پیش موجود با شمارهٔ متصل به حساب و رمز فعلی، از تب رمز عبور همان `/login` وارد می‌شود؛ تأییدنشده‌بودن شماره فقط در این روشِ نیازمند رمز برای ادمین مجاز است و شماره را تأییدشده نمی‌کند. ورود OTP ادمین همچنان بدون تأیید قبلی شماره رد می‌شود. مدیر در `/admin/security` با رمز فعلی و OTP مخصوص اتصال، تأیید شماره را تکمیل می‌کند. تطبیق شماره به‌تنهایی هرگز اجازهٔ تصاحب حساب یا گرفتن نقش ادمین نمی‌دهد. حساب مشتری seed نیز با ایمیل وارد نمی‌شود؛ برای بررسی جریان جدید از حساب دارای شمارهٔ تأییدشده استفاده کنید و seed را برای مهاجرت حساب‌ها اجرا نکنید.
+
+ابزار محدود به MongoDB محلی برای تغییر شماره و هش رمز مالک فعلی:
+
+```sh
+npx tsx --conditions=react-server --env-file=.env.local tests/configure-owner-mobile.ts
+# Supply OWNER_NEW_PASSWORD privately in the process environment, never on the command line or in Git.
+npx tsx --conditions=react-server --env-file=.env.local tests/configure-owner-mobile.ts --apply --owner-id <reviewed-owner-id> --expected-db <reviewed-db-name> --mobile <owner-mobile>
+```
+
+این ابزار فقط رکورد متصل به `store-owner` با شناسه و نام دیتابیس بررسی‌شده را تغییر می‌دهد؛ حساب یا نقش جدید ایجاد نمی‌کند، فعال‌بودن و نقش مالک را حفظ می‌کند، رمز را با bcrypt cost 12 ذخیره و سشن‌های قبلی را لغو می‌کند. تأیید شماره را جعل نمی‌کند و شمارهٔ قبلاً تأییدشدهٔ متفاوت را عوض نمی‌کند. اجرای تغییر فقط با اجازهٔ مشخص برای مقصد انجام شود؛ ارسال واقعی پیامک با این ابزار انجام نمی‌شود.
 
 ### آپلود تصویر
 
@@ -167,6 +209,19 @@ npm run images:cleanup -- --apply --limit 50
 
 ## Decisions
 
+- The approved admin security page uses two equal form columns from 1200px and stacks the mobile enrollment before password changes on smaller screens. Presentation stays local to admin security; existing enrollment, verified-number changes and initial-password flows retain their current server actions.
+
+- The OTP-confirmed initial password form in account security reuses the four live password checks from onboarding. Password fields and checks clear together on form reset and after requesting a fresh verification challenge.
+
+- Login and recovery OTP entry uses six visual slots over one accessible input, preserving native SMS autofill, whole-code paste and keyboard selection. Persian and Arabic digits normalize to ASCII for submission; displayed digits use the shared Persian formatter. The input clears on form reset and does not submit automatically.
+
+- Development explicitly allows the loopback hostname `127.0.0.1` alongside Next.js's default localhost access. The login form submits with POST and stays disabled until hydration so an early click cannot expose a mobile number or password in the URL.
+
+- Mobile authentication is an owner-approved follow-up to the completed SPEC stages. Approved visual proposal 4 extends PremiumAuthLayout without a new UI or SMS dependency. Auth.js remains the sole session issuer; email login/signup and the separate admin entry are retired. Preassigned admins use the same mobile/password form with their existing password while SMS enrollment is pending; OTP still requires a verified number.
+- Mobile fields accept only an eleven-digit local number beginning with 09, including Persian/Arabic digits. Client filtering covers typing and paste, while server validation rejects international prefixes and nondigits. The recovery form omits the extra password-policy sentence at the owner's request; password validation remains enforced on the server.
+- OTP limits are shared across purposes, stored atomically in MongoDB and keyed by HMAC; untrusted forwarding headers are ignored and unknown IPs share a conservative bucket. Challenge state is fail-closed on ambiguous delivery; successful verification and account/security mutations commit together under the existing user-access transaction lock. Replica sets and reviewed email-index migration are required.
+- Login identity fields remain absent until supplied. Checkout collects the buyer name independently of the complete shipping recipient. Profile editing cannot mutate login mobile; sensitive number changes require fresh proof of both numbers. Initial password authorization is a short-lived HttpOnly grant, and later security changes revoke older sessions.
+
 - The storefront header hides the About link in both desktop and mobile navigation while the about page is inactive. Missing managed content keeps the default page link visible, and reactivation restores it through the existing layout revalidation.
 
 - Services use the shared About section editor and transactional section mutations, with service-specific presets and rendering. Existing static content becomes editable defaults; legacy CMS text and questions are preserved as sections. Page visibility also controls the Services link in desktop and mobile header navigation.
@@ -195,7 +250,6 @@ npm run images:cleanup -- --apply --limit 50
 
 - فهرست سفارش‌ها و داشبورد ادمین در تب فعال هر ۱۵ ثانیه و هنگام بازگشت به تب تازه می‌شوند؛ پرداخت در محل از پرداخت‌شده متمایز نمایش داده می‌شود.
 
-
 - Shared form notices and quantity-stepper styles live in `components/ui/form-controls.module.css`, so storefront, authentication, account, and checkout forms do not depend on account-specific styles.
 
 - If clipboard writing is unavailable or rejected, the order-number copy control selects only its displayed number and announces Persian manual-copy guidance; it reports success only after a successful clipboard write.
@@ -218,9 +272,9 @@ npm run images:cleanup -- --apply --limit 50
 
 - Login and registration share PremiumAuthLayout, AuthForm and `premium-auth.module.css`; the mode changes content and fields only. Signup retains native page scrolling and the owner's removal of terms acceptance.
 
-- Registration shares the premium login layout, AuthForm, Input, PasswordInput and Button. It uses the existing email/password registration action and password policy; mobile and Google registration remain unsupported. Terms acceptance was removed at the owner's request; the form uses the standard registration schema and action directly.
+- Registration and login share the approved mobile authentication form, Input, PasswordInput and Button. Accounts are created only by verified login OTP; the retired email signup action rejects stale clients. Social sign-in remains unsupported.
 
-- Login uses AuthForm and the existing email/password action. Mobile login, Google sign-in and password recovery are omitted because the backend does not support them; the remember option retains only the email in sessionStorage until the tab closes. Login and registration share the approved presentation.
+- Login defaults to mobile OTP and offers a same-page mobile/password alternative and purpose-bound password recovery. Switching forms preserves only the phone number; credentials are not persisted in browser storage.
 
 - The owner-approved PR #14 integration combines maintenance commit `57c4f03` with main at `48b8676`, preserving the completed tasks 1–11 and the approved image-upload lifecycle. Integration details and validation are recorded in [the maintenance report](docs/MAINTENANCE-12-17.md).
 - Storefront production components live under `src/components/store/frostic`; the former category path re-exports the database-backed component for compatibility. Light mode is unconditional. Official footer contacts are optional validated `CONTACT_PHONE`, `CONTACT_EMAIL` and `CONTACT_ADDRESS` settings; empty values are omitted.
@@ -248,7 +302,7 @@ npm run images:cleanup -- --apply --limit 50
 
 - Admin authority belongs to exactly one user ID in the singleton `AdminOwnership` record; changing emails, JWT fields, role forms or legacy `canManageAdmins` flags cannot grant ownership. Ordinary admins may toggle customers only. Role changes and admin activity changes require the current owner's password for each request. Owner role/activity cannot change through the panel. Five failed confirmations block sensitive operations for 15 minutes; failed-attempt accounting is persisted and serialized in MongoDB, including across application instances. Successful confirmations reset the counter; passwords never enter audit records or action results. MFA is a future enhancement.
 
-- All access and ownership changes share a `user-access` lock in snapshot/majority transactions, with current actor authorization and audit insertion in the same transaction. A replica set is required (Atlas supports this); run `npm run db:up`, wait for a healthy container and use the URI from `.env.example` locally. Standalone databases fail closed. Access audits store actor ID/email, target, role/activity before and after and timestamps. Ownership audits store previous/new owner IDs, operator label, reason and the target's previous role. No panel action exposes ownership transfer or audit deletion. User deletion is unsupported. The requested validated role editor remains an exception to AGENTS.md's general no-role-form-input rule.
+- All access and ownership changes share a `user-access` lock in snapshot/majority transactions, with current actor authorization and audit insertion in the same transaction. A replica set is required (Atlas supports this); run `npm run db:up`, wait for a healthy container and use the URI from `.env.example` locally. Standalone databases fail closed. Access audits require the actor ID and snapshot optional email/mobile, target, role/activity before and after and timestamps. Ownership audits store previous/new owner IDs, operator label, reason and the target's previous role. No panel action exposes ownership transfer or audit deletion. User deletion is unsupported. The requested validated role editor remains an exception to AGENTS.md's general no-role-form-input rule.
 
 - Ownership is provisioned explicitly through the trusted server CLI, never inferred from seed credentials. Create a separate owner with `npm run owner -- create owner@example.com "operator-name" "Initial owner provisioning"`. A cryptographically random password is saved once to the ignored `.env.owner-initial` file (never printed); keep it private, store it securely and remove the file afterward. The command refuses to overwrite that file. Bootstrap an existing active account with `npm run owner -- bootstrap <target-id> "operator-name" "Initial owner provisioning"`. For recovery/transfer use `npm run owner -- transfer <target-id> <expected-current-owner-id> "operator-name" "Reason for recovery"`; an active customer target is promoted atomically, while the former owner remains an ordinary admin. To create a replacement owner account, append the expected current owner ID to the `create` command. Verify target identity and access first. Ownership changes and account creation roll back if auditing fails. The operator label identifies the trusted CLI operator; access to the server/database is the authorization boundary. Without a configured owner, sensitive panel operations remain disabled. Seed neither assigns ownership nor resets an existing owner's credentials/access; run catalog maintenance offline.
 
@@ -274,7 +328,6 @@ npm run images:cleanup -- --apply --limit 50
 
 - The requested admin fixes extend step 11 without changing its presentation: selecting an existing image preview uploads PNG/JPEG/WebP/GIF files up to 5 MiB; MongoDB stores the bytes and `/api/images/[id]` serves immutable public URLs, avoiding a new storage provider or ephemeral local files. Successful product/category/brand saves return to their list, and table surfaces support native touch scrolling and mouse dragging. Category deletion also checks legacy string references and never deletes linked products. Upload is owner-approved; the current security policy, transactional image references and operator-only cleanup lifecycle are documented above and remain authoritative.
 
-
 - Shared password visibility controls retain input focus during pointer activation, use a minimum 44px touch target and 16px input text, and sit outside field labels to keep mobile taps and keyboard activation consistent across login, registration and password changes.
 
 - Address creation and editing in the account and checkout share Persian-name filtering, numeric phone/postal inputs, dependent province/city selects and a multiline street address. The same name and province/city rules run on the server. Address DTO lists place the default first while preserving the order of other addresses. Province/city options are an offline snapshot of [MJavadSF/Iran_provinces_cities](https://github.com/MJavadSF/Iran_provinces_cities), normalized for Persian characters, with the upstream [MIT license](docs/iran-locations-LICENSE.txt); no runtime API or extra dependency is required.
@@ -298,16 +351,9 @@ npm run images:cleanup -- --apply --limit 50
 
 - Comparison remains public and read-only: its only Server Action searches active products and never writes account or database data. Shared validation bounds raw selections at 32 IDs (64 characters each), trims and lowercases ObjectIds, removes duplicates in selection order, then enforces the existing four-product limit. Invalid URL/storage selections become empty; invalid action/service input is rejected before database access. The picker retains 12 products per page and caps browsing at 100 pages (1,200 products, maximum skip 1,188), with search available to narrow larger catalogs; pages beyond the current result count return empty without fetching product records. Other catalog pagination is unchanged.
 
-
 - The public `/about` page reuses the shop layout, existing light tokens, product assets, section heading and navigation styles; desktop and mobile header links point to it. Its specification CTA opens `/products`; contact links to the existing footer contact section. Scroll reveals honor reduced motion and keep content visible by default.
 
-
-
 - Admin UI uses the approved light palette scoped to Admin.module.css, preserving shared root layout, global CSS, UI primitives and DTO files. Product administration validates and saves the optional Brand reference without persisting independent brand attributes; existing historical attributes remain audit data. Images remain URL-based. See [admin UI delivery](docs/ADMIN-UI.md).
-
-
-
- 
 
 - JWTs identify users, while `getCurrentUser()` reads current role and activity from the database for server guards and navigation. The proxy performs only session-presence checks for authentication; role redirects run in the auth layout and account index page. Active administrators go to `/admin`, demoted administrators retain `/account` access with the same JWT, and inactive or deleted accounts can reach the login form without redirect loops. Explicit checkout and account subpage destinations remain intact.
 
@@ -315,18 +361,15 @@ npm run images:cleanup -- --apply --limit 50
 
 - Customer content uses a centered 1184px maximum width, 16px mobile gutters and 32px tablet/desktop gutters; profile forms are capped at 640px. Password changes expand beneath personal information. Saved addresses and the new-address form use adjacent RTL desktop columns and stack on mobile.
 
-- Customer routes reuse the shared light palette and page background from `globals.css`. The login checkbox stores only the email in sessionStorage until the tab closes. Delivery estimates appear only for paid orders that have not been delivered or cancelled; pending badges retain their existing yellow treatment.
+- Customer routes reuse the shared light palette and page background from `globals.css`. Mobile authentication uses the approved PremiumAuthLayout and does not store form credentials in browser storage. Delivery estimates appear only for paid orders that have not been delivered or cancelled; pending badges retain their existing yellow treatment.
 
 - The shared header omits desktop and mobile theme toggles. All routes use the light ice-to-white background from globals.css, limited to the first 900px without repetition; the catalog wrapper stays transparent while cards and decorative artwork are preserved.
-
 
 - Vazirmatn is self-hosted with next/font/local and its official OFL license because Google Fonts downloads fail during the product-detail production build. The shared font variable and fallback metrics are preserved.
 
 - Product details use the shared ProductDetails component with real active product data, category peers, existing cart actions, current cart quantity, and the stock/ten-item cap. Missing attributes and feedback remain empty; registered images are preserved. Product URLs validate slugs and return 404 for missing/inactive products, including products created after a build.
 
-
 - Homepage category links use `/categories/[slug]` with the shared `ProductsCatalog` desktop and mobile filter panels. Category scope survives reset, history, sorting, and incremental loading. The historical sample definitions live in scripts/catalog-categories.ts and are used only by seed/migration scripts; the category migration backs up existing data and splits the combined refrigerator category without deleting products or changing product URLs. Run `npx tsx --conditions=react-server --env-file=.env.local scripts/update-catalog-categories.ts` to preview, then add `--apply` to migrate. Existing category slugs are retained for compatibility; a new twin category stays empty until real products are added.
-
 
 - The Arctic footer is shared by storefront routes; informational destinations use accessible local dialogs and the buying guide links to the homepage section. Official contact values come from central configuration only.
 
@@ -342,23 +385,17 @@ npm run images:cleanup -- --apply --limit 50
 
 - The `/products` showroom uses real server-paginated data with URL filters for category, price, stock, brands, capacity in liters, energy, and discounts. Brand options come from active Brand references on active products, and energy options come from active product attributes; capacity accepts Persian, Arabic, and ASCII digits. Discount order uses the percentage derived from price and compareAtPrice.
 
-
 - Storefront product grids reuse the approved Arctic preview card layout with real product attributes, links, stock, discounts, and cart actions; the homepage glass panel shows four active products ordered by soldCount. Product likes are stored in this browser, shared across cards and tabs, without an account favorites page or backend.
 
 - The homepage Arctic carousel reads active categories from the database in admin-defined order, using their current names and slugs. Category images use only the admin-saved image, with a neutral icon when absent; no runtime slug-to-artwork list remains; deletion, activation, creation and edits use the existing admin cache invalidation. Empty and single-category layouts are supported.
 
 - Preview category rows size cards to show a whole number of items at rest and snap to complete cards after scrolling; glass edge buttons advance by one visible group. Touch, trackpad, and mouse wheel remain supported, and vertical wheel input scrolls the page again at the row boundaries.
 
-
-
 - Catalog seed data includes 11 sample brands and links all 24 sample products through `Product.brand` without adding independent legacy brand attributes. Repeated seeding preserves existing brand identities and settings; `seed -- --reset` also deletes and recreates brands.
 
 - Existing catalogs use the dry-run-first migration in [docs/BRAND-MIGRATION.md](docs/BRAND-MIGRATION.md). The historical linking command delegates to this migration and never creates brands.
 
 - Brand administration follows category full-form edits: omitted optional text fields are cleared, omitted slugs are generated from the name, and the management list includes inactive brands sorted by order and name. Linked products prevent deletion, while deactivation remains available without changing product visibility.
-
-
-
 
 - راهنمای مشترک طراحی صفحات فروشگاه یخچال خانگی در [docs/UI-GUIDE.md](docs/UI-GUIDE.md) ثبت شده است؛ پس‌زمینه‌های روز/شب تأییدشده و عکس منتخب یخچال در `docs/assets/` نگه‌داری می‌شوند. ذخیرهٔ این مراجع به معنی پیاده‌سازی در سایت نیست.
 
@@ -370,12 +407,12 @@ npm run images:cleanup -- --apply --limit 50
 - فایل مدل‌ها برای رعایت AGENTS.md با حروف کوچک نام‌گذاری شده‌اند، برخلاف نمونهٔ نام‌گذاری SPEC. لایه‌های سرور با `server-only` محافظت می‌شوند و seed با شرط `react-server` اجرا می‌شود.
 - تنظیمات محیطی هنگام استفاده با `getEnv()` بررسی می‌شوند؛ build به اتصال دیتابیس وابسته نیست. DTOها شناسه و تاریخ رشته‌ای دارند و `passwordHash` و `__v` را حذف می‌کنند.
 - رمزها با bcrypt و cost 12 ذخیره می‌شوند. رمز ثبت‌نام حداکثر ۷۲ بایت است و trim یا نرمال‌سازی نمی‌شود. نقش و مبلغ و مالک سفارش از ورودی فرم پذیرفته نمی‌شوند.
-- محدودیت ورود و ثبت‌نام برای هر IP پنج درخواست در پانزده دقیقه و در حافظهٔ همان سرور است. اجرای چند نمونهٔ سرور نیازمند store مشترک است؛ هدرهای IP باید توسط reverse proxy معتبر بازنویسی شوند.
+- محدودیت ورود با رمز و عملیات OTP در MongoDB مشترک ذخیره می‌شود، نه حافظهٔ یک سرور. ورود با رمز برای هر شناسه پنج تلاش در پانزده دقیقه دارد؛ cooldown و سقف‌های مشترک OTP در بخش ورود موبایلی توضیح داده شده‌اند. هدرهای IP فقط با تنظیم پراکسی مورد اعتماد پذیرفته می‌شوند.
 - ادغام سبد مهمان بعد از ورود و ثبت‌نام انجام می‌شود. شمارندهٔ هدر مجموع تعداد واحدهای قابل‌خرید است؛ اقلام نامعتبر و کاهش موجودی هنگام خواندن سبد کنترل می‌شوند.
 - چرخهٔ کامل سفارش به MongoDB replica set نیاز دارد؛ لغو توسط مشتری یا ادمین، پرداخت ناموفق و انقضا، وضعیت و بازگردانی موجودی را در یک تراکنش ثبت می‌کنند. رزرو موجودی اتمیک و شکست‌ها با بازگرداندن موجودی جبران می‌شوند. قفل سبد checkout تکراری را محدود می‌کند و callback تکراری دوباره موجودی یا فروش را تغییر نمی‌دهد. سفارش‌های پرداخت‌نشدهٔ منقضی هنگام ثبت سفارش و فهرست سفارش‌های ادمین بررسی می‌شوند؛ cron مستقل وجود ندارد.
 - مالکیت سفارش در proxy و مجدداً در صفحه و سرویس بررسی می‌شود. انتخاب آدرس پیش‌فرض اتمیک است؛ حذف آدرس پیش‌فرض تا انتخاب مجدد، حساب را بدون آدرس پیش‌فرض می‌گذارد.
 - پنل ادمین طبق درخواست مالک، نقش کاربران دیگر را بین مشتری و ادمین تغییر می‌دهد؛ تغییر نقش و غیرفعال‌سازی حساب خود ادمین در سرویس رد می‌شود. حذف دستهٔ دارای محصول یا فرزند رد می‌شود؛ شناسه، timestamps و soldCount محصول در فرم قابل ویرایش نیستند.
-- پرداخت واقعی و OTP قابلیت فعال فعلی نیستند؛ بخش نقطه‌های توسعه، محل اتصال آیندهٔ آن‌ها را مشخص می‌کند. آپلود تصویر اکنون در فرم‌های محصول، دسته‌بندی و برند از کادر پیش‌نمایش انجام می‌شود.
+- پرداخت واقعی هنوز فعال نیست. ورود OTP پیاده شده و ارسال واقعی آن پیش‌فرض غیرفعال است؛ فعال‌سازی سرویس و آزمایش ارسال به اجازهٔ مالک و تنظیمات خصوصی نیاز دارد. آپلود تصویر در فرم‌های محصول، دسته‌بندی و برند از کادر پیش‌نمایش انجام می‌شود.
 - The `/brands` directory reuses the shop shell and Brand source, exposes only public fields, and counts active products by `Product.brand`. Card links open `/brands/[slug]`, resolved to the current active Brand ID; name filters resolve current Brand references only. Search uses the existing name and slug (the model has no separate English name). Inactive brands cannot receive new product assignments, but existing assignments can be retained on edits. Products with only legacy attributes require the reviewed migration before the reference-only version is deployed.
 
 - `/brands/[slug]` reuses ProductsCatalog and its incremental loading through a server action whose route slug is captured by Next.js; query brand selectors are ignored and the active Brand is revalidated for each load. Categories, prices, energy options and counts use real linked products. The Brand model has no English-name field, so no English name is inferred. Reference-backed brand names override legacy attributes in storefront DTOs and filters; unassigned legacy products require migration before deployment. No migration is run against the current database.

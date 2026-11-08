@@ -45,6 +45,13 @@ const rawEnvSchema = z
       "نشانی MongoDB معتبر نیست",
     ),
     AUTH_SECRET: requiredText,
+    SMS_IR_API_KEY: z.string().trim().optional(),
+    SMS_IR_TEMPLATE_ID: z.coerce.number().int().positive().default(608073),
+    SMS_IR_ENABLED: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
+    OWNER_NEW_PASSWORD: z.string().optional(),
     AUTH_TRUST_PROXY_HEADERS: z
       .enum(["true", "false"])
       .default("false")

@@ -14,6 +14,7 @@ export function AccountForm({
   label = "ذخیرهٔ تغییرات",
   confirm = false,
   onSuccess,
+  submitIcon,
 }: {
   operation: string;
   id?: string;
@@ -21,6 +22,7 @@ export function AccountForm({
   label?: string;
   confirm?: boolean;
   onSuccess?: () => void;
+  submitIcon?: React.ReactNode;
 }) {
   const [state, action, pending] = useActionState(accountAction, undefined);
   const [clientErrors, setClientErrors] = useState<Record<string, string[]>>(
@@ -144,6 +146,7 @@ export function AccountForm({
               : undefined
           }
         >
+          {submitIcon}
           {pending ? "در حال ذخیره…" : label}
         </Button>
         {state && !Object.keys(clientErrors).length && (

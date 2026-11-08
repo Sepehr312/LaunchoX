@@ -8,6 +8,7 @@ import {
   Tags,
   ShoppingBag,
   Users,
+  ShieldCheck,
   Menu,
   X,
   Snowflake,
@@ -23,6 +24,7 @@ const links = [
   { href: "/admin/brands", label: "برندها", icon: Tags },
   { href: "/admin/orders", label: "سفارش‌ها", icon: ShoppingBag },
   { href: "/admin/users", label: "کاربران", icon: Users },
+  { href: "/admin/security", label: "امنیت حساب", icon: ShieldCheck },
 ];
 export function AdminNavigation({ children }: { children?: ReactNode }) {
   const pathname = usePathname();

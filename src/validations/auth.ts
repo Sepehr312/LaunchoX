@@ -9,7 +9,7 @@ export function passwordByteLength(value: string) {
 }
 
 export const passwordSchema = z
-  .string()
+  .string({ error: "رمز عبور الزامی است" })
   .min(PASSWORD_MIN_LENGTH, "رمز عبور باید حداقل ۸ کاراکتر باشد")
   .regex(/\p{L}/u, "رمز عبور باید دست‌کم یک حرف داشته باشد")
   .regex(/\p{N}/u, "رمز عبور باید دست‌کم یک رقم داشته باشد")
@@ -19,7 +19,13 @@ export const passwordSchema = z
   );
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "رمز عبور الزامی است"),
+  password: z
+    .string()
+    .min(1, "رمز عبور الزامی است")
+    .refine(
+      (value) => passwordByteLength(value) <= PASSWORD_MAX_BYTES,
+      "رمز عبور نباید بیش از ۷۲ بایت باشد",
+    ),
 });
 export const registerSchema = z
   .object({
@@ -50,11 +56,21 @@ export const callbackUrlSchema = z
     try {
       const url = new URL(value, "https://launchox.local");
       const decoded = decodeURIComponent(value);
+      let pathname = url.pathname;
+      for (let index = 0; index < 4; index++) {
+        const next = decodeURIComponent(pathname);
+        if (next === pathname) break;
+        pathname = next;
+      }
       return (
         url.origin === "https://launchox.local" &&
         !decoded.startsWith("//") &&
         !/[\\\u0000-\u001f]/u.test(decoded) &&
-        !/^\/(?:login|register|api\/auth)(?:[/?#]|$)/.test(url.pathname)
+        !/[%\\\s\u0000-\u001f]/u.test(pathname) &&
+        !pathname.startsWith("//") &&
+        !/^\/(?:login|register|api\/auth|account\/welcome)(?:[/?#]|$)/.test(
+          pathname,
+        )
       );
     } catch {
       return false;

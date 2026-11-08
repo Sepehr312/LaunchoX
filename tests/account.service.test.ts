@@ -24,12 +24,14 @@ it("updates only the owner profile and never exposes or accepts credentials/role
   const profile = await updateProfile(fixture.user, {
     name: "نام جدید",
     mobile: "۰۹۱۲۳۴۵۶۷۸۹",
+    email: "profile@example.com",
     role: "admin",
     passwordHash: "bad",
   });
   expect(profile.name).toBe("نام جدید");
+  expect(profile.email).toBe("profile@example.com");
   expect(profile.role).toBe("customer");
-  expect(profile.mobile).toBe("09123456789");
+  expect(profile.mobile).toBeUndefined();
   expect(profile).not.toHaveProperty("passwordHash");
   await updateProfile(fixture.user, { name: "نام جدید", mobile: "" });
   expect(await getProfile(fixture.user)).not.toHaveProperty("mobile");
@@ -59,7 +61,7 @@ it("requires the current password and validates confirmation before hashing", as
     confirmPassword: "Changed123!",
   });
   const user = await User.findById(fixture.user).select("+passwordHash").lean();
-  expect(await compare("Changed123!", user!.passwordHash)).toBe(true);
+  expect(await compare("Changed123!", user!.passwordHash ?? "")).toBe(true);
 }, 20000);
 it("enforces address ownership, limit and a single default under concurrent changes", async () => {
   await addAddress(fixture.user, addressInput);

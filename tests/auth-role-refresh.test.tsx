@@ -35,6 +35,9 @@ vi.mock("@/services/user.service", () => ({ getProfile: mocks.profile }));
 vi.mock("@/components/account/AccountForm", () => ({
   AccountForm: () => null,
 }));
+vi.mock("@/components/account/OtpSecurityForm", () => ({
+  OtpSecurityForm: () => null,
+}));
 
 import { User } from "@/models/user";
 import { getCurrentUser, requireAdmin, requireUser } from "@/lib/auth";

@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
+import { requireUser, signOut, consumeCurrentAuthAttempt } from "@/lib/auth";
 import { AppError, type ActionResult } from "@/lib/errors";
 import {
   updateProfile,
@@ -30,8 +30,15 @@ export async function accountAction(
     const operation = operationSchema.parse(form.get("operation"));
     const data = Object.fromEntries(form);
     if (operation === "profile") await updateProfile(user.id, data);
-    else if (operation === "password") await changePassword(user.id, data);
-    else if (operation === "add") await addAddress(user.id, data);
+    else if (operation === "password") {
+      if (!(await consumeCurrentAuthAttempt("login", user.id)))
+        throw new AppError(
+          "تعداد تلاش‌ها بیش از حد مجاز است؛ کمی بعد دوباره تلاش کنید",
+          "FORBIDDEN",
+        );
+      await changePassword(user.id, data);
+      await signOut({ redirectTo: "/login?callbackUrl=%2Faccount%2Fprofile" });
+    } else if (operation === "add") await addAddress(user.id, data);
     else {
       const id = objectIdSchema.parse(form.get("id"));
       if (operation === "cancel") await cancelOrder(user.id, id);

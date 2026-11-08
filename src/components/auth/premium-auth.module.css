@@ -80,6 +80,7 @@
 
 .main {
   display: grid;
+  grid-template-columns: minmax(0, 550px);
   align-items: center;
   justify-content: center;
   gap: 48px;
@@ -205,6 +206,102 @@
 
 .submit:hover:not(:disabled) {
   background: linear-gradient(100deg, #079bd7, #0668dc);
+}
+
+.authTabs {
+  display: flex;
+  padding: 4px;
+  margin-block: 28px 32px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #f4f8ff;
+}
+.authTabs button {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.authTabs button[aria-pressed="true"] {
+  color: white;
+  background: linear-gradient(100deg, #18b5f4, #0874f5);
+  box-shadow: 0 2px 6px #0874f529;
+}
+.authFields {
+  display: grid;
+  min-width: 0;
+}
+.authLabel {
+  display: grid;
+  gap: 12px;
+}
+.authHint {
+  margin-block: 22px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 2;
+}
+.mobileAuth .authFields .authHint {
+  margin-block: 0;
+}
+.authError {
+  border: 1px solid #ffd1d1;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff5f5;
+  color: #b42318;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.textButton {
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
+  min-height: 44px;
+  color: var(--primary);
+  font-size: 13px;
+}
+.otpTiming {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.otpTiming button {
+  min-height: 44px;
+  color: var(--primary);
+}
+.otpTiming button:disabled {
+  color: var(--muted);
+}
+.mobileAuth button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.mobileAuth button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.mobileAuth .field input {
+  padding-inline: 14px 46px;
+}
+.mobileAuth .fieldIcon {
+  inset-inline-start: auto;
+  inset-inline-end: 16px;
+}
+@media (max-width: 639px) {
+  .mobileAuth {
+    padding: 30px 18px 24px;
+  }
+  .mobileAuth h1 {
+    font-size: 25px;
+  }
 }
 
 .submitArrow {

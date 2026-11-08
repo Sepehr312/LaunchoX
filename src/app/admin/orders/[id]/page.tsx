@@ -301,9 +301,9 @@ export default async function OrderPage({
               مشتری و نشانی ارسال
             </h2>
             <p className={styles.customerName}>
-              {customer?.name ?? "مشتری حذف‌شده"}
+              {customer ? (customer.name ?? "نام تکمیل نشده") : "مشتری حذف‌شده"}
             </p>
-            {customer && (
+            {customer?.email && (
               <p className={styles.contact}>
                 <bdi>{customer.email}</bdi>
                 <CopyValue value={customer.email} label="ایمیل مشتری" />
