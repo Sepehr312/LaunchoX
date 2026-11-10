@@ -224,6 +224,8 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-G60YTNFZEF
 
 ## Decisions
 
+- Digikala refrigerator imports use the existing services and a separate collect/preview/apply script; source prices are normalized from rials to tomans, source links and technical specifications are retained, and stock starts at zero pending owner confirmation. Existing products are never overwritten. Source responses and backups remain local under ignored `tmp/`; see [import instructions and local results](docs/DIGIKALA-IMPORT.md).
+
 - GA4 is an owner-requested follow-up to the completed SPEC stages. One App Router observer manually sends production page views, deduplicating repeated pathname effects; query/hash changes are not separate views. Only known public storefront routes are measured; catalog slugs are replaced with route templates. Admin, authentication, account, checkout and unknown routes are excluded and disable an already loaded tag. Query strings, fragments, real document titles, referrers, user properties and commerce events are never supplied. No existing consent mechanism was found; analytics storage is enabled for this integration while advertising consent and Google signals are disabled. Any future consent manager must gate tag loading and tracking before enabling analytics storage. No dependency was added.
 
 
