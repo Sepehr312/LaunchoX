@@ -209,6 +209,8 @@ npm run images:cleanup -- --apply --limit 50
 
 ## اتصال GA4 و تنظیم رانفلر
 
+راهنمای گزارش مدیریتی جدید، تنظیمات صرفاً سمت سرور، کش، آزمون و تأیید اتصال واقعی در [آمار و عملکرد](docs/admin-analytics.md) است. این گزارش، رهگیری فعلی بازدیدها را تغییر نمی‌دهد.
+
 متغیر اختیاری زیر را در Environment Variables سرویس برنامهٔ رانفلر، برای زمان build و اجرای production تنظیم کنید. خالی یا حذف‌کردن آن اتصال را خاموش می‌کند. فقط `src/lib/env.ts` تنظیم را می‌خواند و اعتبارسنجی می‌کند؛ شناسه رمز نیست. برای اعمال تغییر، build و استقرار مجدد لازم است؛ restart به‌تنهایی برای صفحات تولیدشده هنگام build کافی نیست. در `npm run dev` اسکریپت حتی با وجود شناسه بارگذاری نمی‌شود.
 
 ```dotenv
@@ -223,6 +225,10 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-G60YTNFZEF
 
 
 ## Decisions
+
+- Analytics reporting uses SDK 6.1.x to preserve the existing Node.js 20.19 runtime contract (SDK 7.x requires Node.js 22). Security overrides select compatible Gaxios 7.3.x and Rimraf 6.1.4+ transitives instead of the older vulnerable dependency tree; Rimraf 6 supports Node.js 20. The reporting SDK API and official GA4 metric/dimension names are unchanged.
+
+- Admin analytics is an owner-approved follow-up, separate from the completed SPEC stages. The official `@google-analytics/data` SDK is added because the requested GA4 Data API integration requires it. `/admin/analytics` uses the existing admin shell and a guarded Server Action (no new public API). Aggregate users are requested independently from daily users. Two adjacent 7/30-day ranges end yesterday in the property's time zone, discovered from Data API response metadata; subsequent requests use explicit calendar dates. The chart is native SVG with an accessible daily table, avoiding another dependency. MongoDB stores only report DTOs for 15 minutes (sanitized failures for 60 seconds) and a property-wide atomic 90-second request lease / 60-second manual refresh cooldown across server instances. Switching ranges can populate a separate cache without waiting for the manual cooldown. A cache/storage failure fails closed; no stale or synthetic report replaces a connection error. Current tracking and commerce events remain unchanged.
 
 - Product highlights show refrigerator type, energy grade, total liters and weight in that order, using existing equivalent labels where necessary and filling missing slots from remaining attributes in stored order (at most four). The technical specifications table retains its full data. Only rows explicitly named “سایر ویژگی‌ها”, including refrigerator/freezer variants, are removed by `scripts/remove-other-product-features.ts` (preview by default; `--apply` backs up and verifies all products). The importer skips those rows on future collection.
 

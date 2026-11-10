@@ -14,10 +14,16 @@ import {
   Snowflake,
   ArrowUpLeft,
   FileText,
+  ChartNoAxesCombined,
 } from "lucide-react";
 import { useRef, type ReactNode } from "react";
 const links = [
   { href: "/admin", label: "نمای کلی", icon: LayoutDashboard },
+  {
+    href: "/admin/analytics",
+    label: "آمار و عملکرد",
+    icon: ChartNoAxesCombined,
+  },
   { href: "/admin/content", label: "محتوای فروشگاه", icon: FileText },
   { href: "/admin/products", label: "محصولات", icon: Package },
   { href: "/admin/categories", label: "دسته‌بندی‌ها", icon: FolderTree },

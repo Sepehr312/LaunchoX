@@ -5,6 +5,10 @@
   "engines": {
     "node": ">=20.19"
   },
+  "overrides": {
+    "gaxios": "^7.3.1",
+    "rimraf": "^6.1.4"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -19,6 +23,7 @@
     "db:up": "docker compose up -d"
   },
   "dependencies": {
+    "@google-analytics/data": "~6.1.0",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.55.0",

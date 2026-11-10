@@ -45,6 +45,9 @@ const rawEnvSchema = z
       "نشانی MongoDB معتبر نیست",
     ),
     AUTH_SECRET: requiredText,
+    GA4_PROPERTY_ID: z.string().trim().default(""),
+    GOOGLE_CLIENT_EMAIL: z.string().trim().default(""),
+    GOOGLE_PRIVATE_KEY: z.string().default(""),
     SMS_IR_API_KEY: z.string().trim().optional(),
     SMS_IR_TEMPLATE_ID: z.coerce.number().int().positive().default(608073),
     SMS_IR_ENABLED: z

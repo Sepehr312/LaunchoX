@@ -50,3 +50,26 @@ export function formatDateTime(value: Date | string | number): string {
     timeZone: "Asia/Tehran",
   }).format(date);
 }
+
+export function formatNumber(value: number, maximumFractionDigits = 0): string {
+  return new Intl.NumberFormat("fa-IR", { maximumFractionDigits }).format(
+    value,
+  );
+}
+
+export function percentageChange(
+  current: number,
+  previous: number,
+): number | null {
+  return previous === 0 ? null : ((current - previous) / previous) * 100;
+}
+
+// A GA calendar date is a date label, not a timestamp in the browser's time zone.
+export function formatReportDate(value: string, short = false): string {
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: short ? "short" : "long",
+    ...(short ? {} : { year: "numeric" as const }),
+  }).format(new Date(`${value}T12:00:00Z`));
+}
