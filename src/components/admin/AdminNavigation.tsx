@@ -80,7 +80,7 @@ export function AdminNavigation({ children }: { children?: ReactNode }) {
       >
         <div className="admin-drawer-header">
           <Snowflake aria-hidden="true" />
-          <strong>مدیریت لانچ‌اوکس</strong>
+          <strong>مدیریت لانچو ایکس</strong>
           <button
             autoFocus
             aria-label="بستن منو"

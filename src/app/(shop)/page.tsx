@@ -39,7 +39,7 @@ export default async function HomePage() {
           <div className="showroom-image">
             <Image
               src="/images/arctic-showroom-light.webp"
-              alt="نمایشگاه یخچال لانچ‌اوکس در فضای قطبی"
+              alt="نمایشگاه یخچال لانچو ایکس در فضای قطبی"
               fill
               sizes="(max-width: 1023px) 100vw, 50vw"
               className="object-cover"
@@ -50,7 +50,7 @@ export default async function HomePage() {
             <h2>انتخاب یخچال را از حدس‌زدن جدا کرده‌ایم</h2>
             <p>
               مشخصات فنی، ظرفیت و ردهٔ انرژی را کنار هم ببینید و مدلی متناسب با
-              فضای واقعی خانه انتخاب کنید. لانچ‌اوکس برای یک خرید تخصصی، شفاف و
+              فضای واقعی خانه انتخاب کنید. لانچو ایکس برای یک خرید تخصصی، شفاف و
               آرام طراحی شده است.
             </p>
             <Link href="/products" className="inline-arrow-link">

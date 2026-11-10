@@ -8,7 +8,7 @@ const { products, category, options, load } = vi.hoisted(() => ({
   load: vi.fn(),
 }));
 vi.mock("@/lib/env", () => ({
-  getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچ‌اوکس" }),
+  getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچو ایکس" }),
 }));
 vi.mock("next/navigation", () => ({
   notFound: () => {

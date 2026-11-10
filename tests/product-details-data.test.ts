@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { getProductDetailsData } from "@/components/store/product-details-data";
 import { getProductPricing } from "@/lib/product-pricing";
+import { isOtherFeaturesAttribute } from "@/validations/product-attributes";
 vi.mock("server-only", () => ({}));
 const productFixture = {
   price: 112600000,
@@ -15,6 +16,77 @@ const productFixture = {
 };
 
 describe("product detail data mapping", () => {
+  it("identifies only the other-features rows requested for removal", () => {
+    for (const key of [
+      "سایر ویژگی‌ها",
+      "سایر ویژگی ها",
+      "سایر ویژگی های یخچال",
+      "سایر ویژگی‌های فریزر",
+    ])
+      expect(isOtherFeaturesAttribute(key)).toBe(true);
+    for (const key of [
+      "ویژگی های یخچال فریزر",
+      "امکانات اختصاصی یخچال",
+      "وزن",
+      "سایر مشخصات",
+      "گرید انرژی",
+    ])
+      expect(isOtherFeaturesAttribute(key)).toBe(false);
+  });
+  function withAttributes(attributes: { key: string; value: string }[]) {
+    return {
+      ...productFixture,
+      attributes: attributes.map((item) => ({
+        ...item,
+        createdAt: productFixture.createdAt,
+        updatedAt: productFixture.updatedAt,
+      })),
+    };
+  }
+
+  it("prioritizes the four requested highlights without truncating the technical table", () => {
+    const product = withAttributes([
+      { key: "شناسه کالا", value: "123" },
+      { key: "وزن", value: "80 کیلوگرم" },
+      { key: "گنجایش کل به لیتر", value: "435" },
+      { key: "رده انرژی", value: "B" },
+      { key: "گرید انرژی", value: "A++" },
+      { key: "نوع یخچال فریزر", value: "فریزر پایین" },
+      { key: "ارتفاع", value: "186 سانتی‌متر" },
+    ]);
+    const data = getProductDetailsData(product);
+    expect(data.features).toEqual([
+      { key: "نوع یخچال فریزر", value: "فریزر پایین" },
+      { key: "گرید انرژی", value: "A++" },
+      { key: "گنجایش کل به لیتر", value: "435" },
+      { key: "وزن", value: "80 کیلوگرم" },
+    ]);
+    expect(data.specifications[0].rows).toEqual([
+      ["دسته‌بندی", product.category.name],
+      ["شناسه کالا", product.sku],
+      ...product.attributes.map(({ key, value }) => [key, value]),
+    ]);
+  });
+
+  it("fills missing highlights in stored order without duplicating aliases or metadata", () => {
+    const product = withAttributes([
+      { key: "منبع اطلاعات", value: "https://example.com" },
+      { key: "سایر ویژگی‌ها", value: "متن اضافی" },
+      { key: "رده انرژی", value: "A+" },
+      { key: "ارتفاع", value: "180" },
+      { key: "ظرفیت", value: "500 لیتر" },
+      { key: "عمق", value: "70" },
+      { key: "عرض", value: "80" },
+    ]);
+    expect(getProductDetailsData(product).features).toEqual([
+      { key: "گرید انرژی", value: "A+" },
+      { key: "گنجایش کل به لیتر", value: "500 لیتر" },
+      { key: "ارتفاع", value: "180" },
+      { key: "عمق", value: "70" },
+    ]);
+    expect(getProductDetailsData(withAttributes([])).features).toEqual([]);
+  });
+
   it("uses registered images and attributes without adding mock specifications", () => {
     const product = {
       ...productFixture,

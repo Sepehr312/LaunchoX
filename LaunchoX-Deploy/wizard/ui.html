@@ -131,7 +131,7 @@
 <div class="wrap">
 
   <header>
-    <h1>دستیار راه‌اندازی لانچ‌اوکس</h1>
+    <h1>دستیار راه‌اندازی لانچو ایکس</h1>
     <p class="sub">اطلاعات را وارد کن، ذخیره کن، و تست‌ها را بزن. هر چیزی که سبز شد، درست است.</p>
     <div class="bar">
       <div class="progress"><i id="bar"></i></div>
@@ -207,7 +207,7 @@
     <div class="row">
       <div class="field">
         <label for="name">نام فروشگاه</label>
-        <input id="name" type="text" placeholder="لانچ‌اوکس">
+        <input id="name" type="text" placeholder="لانچو ایکس">
       </div>
       <div class="field">
         <label for="secret">کلید امنیتی نشست (AUTH_SECRET)</label>
@@ -339,7 +339,7 @@ function renderEnvBox() {
     'AUTH_SECRET=' + (s || ''),
     'AUTH_URL=' + url,
     'NEXT_PUBLIC_SITE_URL=' + url,
-    'NEXT_PUBLIC_SITE_NAME=' + ($('name').value || 'لانچ‌اوکس'),
+    'NEXT_PUBLIC_SITE_NAME=' + ($('name').value || 'لانچو ایکس'),
     'PAYMENT_PROVIDER=fake',
     'SEED_ADMIN_EMAIL=' + ($('email').value || ''),
     'SEED_ADMIN_PASSWORD=' + ($('pass').value || ''),
@@ -356,7 +356,7 @@ async function load() {
   $('uri').value = data.env.mongodbUri || '';
   $('site').value = (data.env.siteUrl || '').replace(/^https?:\/\//, '');
   $('email').value = data.env.email || '';
-  $('name').value = data.env.siteName || 'لانچ‌اوکس';
+  $('name').value = data.env.siteName || 'لانچو ایکس';
   $('secret').value = data.env.secret || '';
   $('pass').value = data.env.password || '';
   $('pass').placeholder = 'حداقل ۸ کاراکتر';

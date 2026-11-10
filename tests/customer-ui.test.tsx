@@ -145,7 +145,7 @@ describe("customer forms and purchase states", () => {
 });
 
 vi.mock("@/lib/env", () => ({
-  getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچ‌اوکس" }),
+  getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچو ایکس" }),
 }));
 vi.mock("@/actions/account.actions", () => ({ accountAction: vi.fn() }));
 vi.mock("@/services/customer-dashboard.service", () => ({

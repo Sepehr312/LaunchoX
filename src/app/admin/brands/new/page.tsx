@@ -2,7 +2,7 @@ import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import { requireAdmin } from "@/lib/auth";
 import { BrandForm } from "@/components/admin/BrandForm";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "برند جدید | لانچ‌اوکس" };
+export const metadata = { title: "برند جدید | لانچو ایکس" };
 export default async function NewBrand() {
   await requireAdmin();
   return (

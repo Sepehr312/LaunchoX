@@ -4,7 +4,7 @@ import { listStoreCategories } from "@/services/category.service";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "دسته‌بندی‌های یخچال و فریزر | لانچ‌اوکس",
+  title: "دسته‌بندی‌های یخچال و فریزر | لانچو ایکس",
   description:
     "انواع یخچال و فریزر را بشناسید و متناسب با فضای آشپزخانه و نیازتان، دستهٔ مناسب را انتخاب کنید.",
 };
