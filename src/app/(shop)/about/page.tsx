@@ -4,9 +4,9 @@ import { ManagedPage } from "@/components/store/ManagedPage";
 import { defaultAboutPage } from "@/components/store/about-defaults";
 
 export const metadata: Metadata = {
-  title: "درباره ما | لانچ‌اوکس",
+  title: "درباره ما | لانچو ایکس",
   description:
-    "با نگاه لانچ‌اوکس به انتخاب آگاهانه یخچال آشنا شوید؛ توجه به نیاز خانه، مشخصات روشن و خریدی سنجیده‌تر.",
+    "با نگاه لانچو ایکس به انتخاب آگاهانه یخچال آشنا شوید؛ توجه به نیاز خانه، مشخصات روشن و خریدی سنجیده‌تر.",
 };
 
 export default async function AboutPage() {

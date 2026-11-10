@@ -4,7 +4,7 @@ import { listStoreBrands } from "@/services/brand.service";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "برندهای یخچال و فریزر | لانچ‌اوکس",
+  title: "برندهای یخچال و فریزر | لانچو ایکس",
   description:
     "برندهای یخچال و فریزر را پیدا کنید و محصولات برند دلخواهتان را ببینید.",
 };

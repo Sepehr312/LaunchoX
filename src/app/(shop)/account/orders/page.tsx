@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CustomerDashboard } from "@/components/customer/CustomerDashboard";
 
-export const metadata: Metadata = { title: "سفارش‌های من | لانچ‌اوکس" };
+export const metadata: Metadata = { title: "سفارش‌های من | لانچو ایکس" };
 
 export default function OrdersPage({
   searchParams,

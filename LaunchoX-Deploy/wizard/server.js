@@ -352,7 +352,7 @@ const server = http.createServer(async (req, res) => {
       AUTH_SECRET: String(body.secret || '').trim(),
       AUTH_URL: siteUrl,
       NEXT_PUBLIC_SITE_URL: siteUrl,
-      NEXT_PUBLIC_SITE_NAME: String(body.siteName || '').trim() || 'لانچ‌اوکس',
+      NEXT_PUBLIC_SITE_NAME: String(body.siteName || '').trim() || 'لانچو ایکس',
       SEED_ADMIN_EMAIL: String(body.email || '').trim(),
     };
     if (body.password) updates.SEED_ADMIN_PASSWORD = String(body.password);

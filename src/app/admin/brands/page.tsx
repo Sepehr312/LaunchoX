@@ -13,7 +13,7 @@ import { adminListQuerySchema } from "@/validations/admin-list";
 import { toPersianDigits } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "مدیریت برندها | لانچ‌اوکس" };
+export const metadata = { title: "مدیریت برندها | لانچو ایکس" };
 
 export default async function Brands({
   searchParams,

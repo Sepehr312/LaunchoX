@@ -5,7 +5,7 @@ import { getBrand } from "@/services/brand.service";
 import { brandIdSchema } from "@/validations/brand";
 import { BrandForm } from "@/components/admin/BrandForm";
 export const dynamic = "force-dynamic";
-export const metadata = { title: "ویرایش برند | لانچ‌اوکس" };
+export const metadata = { title: "ویرایش برند | لانچو ایکس" };
 export default async function EditBrand({
   params,
 }: {

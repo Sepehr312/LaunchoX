@@ -19,7 +19,7 @@ export function PageState({
       aria-labelledby="page-state-title"
     >
       <div className="page-state-panel">
-        <p className="text-sm font-bold text-primary">لانچ‌اوکس</p>
+        <p className="text-sm font-bold text-primary">لانچو ایکس</p>
         <div className="page-state-symbol" aria-hidden="true">
           {symbol}
         </div>

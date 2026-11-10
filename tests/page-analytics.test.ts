@@ -87,7 +87,7 @@ describe("page analytics", () => {
     expect(events[0][2]).toEqual({
       page_location: `${origin}/products/[slug]`,
       page_referrer: "",
-      page_title: "لانچ‌اوکس",
+      page_title: "لانچو ایکس",
       send_to: id,
     });
   });

@@ -37,7 +37,7 @@ export function PremiumAuthLayout({
               href="/"
               className={styles.wordmark}
               dir="ltr"
-              aria-label="لانچ‌اوکس، صفحه اصلی"
+              aria-label="لانچو ایکس، صفحه اصلی"
             >
               Launcho<span>X</span>
             </Link>

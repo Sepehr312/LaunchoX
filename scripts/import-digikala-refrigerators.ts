@@ -10,6 +10,7 @@ import { createBrand } from "@/services/brand.service";
 import { createProduct } from "@/services/product.service";
 import { isBrandAttribute } from "@/validations/brand-text";
 import { adminProductSchema } from "@/validations/product";
+import { isOtherFeaturesAttribute } from "@/validations/product-attributes";
 
 const folder = resolve("tmp/digikala-refrigerators");
 const snapshotPath = resolve(folder, "catalog.json");
@@ -106,7 +107,9 @@ function normalize(raw: unknown): Entry {
   const attributes = source.specifications.flatMap((section) =>
     section.attributes.flatMap((item) => {
       const value = item.values.map(clean).filter(Boolean).join("، ");
-      return value && !isBrandAttribute(item.title)
+      return value &&
+        !isBrandAttribute(item.title) &&
+        !isOtherFeaturesAttribute(item.title)
         ? [{ key: clean(item.title), value }]
         : [];
     }),
@@ -126,7 +129,7 @@ function normalize(raw: unknown): Entry {
     capacity ? `گنجایش کل اعلام شده: ${capacity} لیتر.` : "",
     energy ? `رده مصرف انرژی اعلام شده: ${energy}.` : "",
     "مشخصات فنی از صفحه این مدل در دیجی‌کالا ثبت شده‌اند.",
-    "قیمت، قیمت مشاهده شده در منبع هنگام ثبت اطلاعات است. موجودی و شرایط فروش لانچ‌اوکس باید جداگانه تأیید شوند.",
+    "قیمت، قیمت مشاهده شده در منبع هنگام ثبت اطلاعات است. موجودی و شرایط فروش لانچو ایکس باید جداگانه تأیید شوند.",
   ]
     .filter(Boolean)
     .join("\n");

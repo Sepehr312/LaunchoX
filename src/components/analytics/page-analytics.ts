@@ -57,7 +57,7 @@ export function createPageAnalytics(
       target.gtag?.("set", {
         page_location: `${origin}/`,
         page_referrer: "",
-        page_title: "لانچ‌اوکس",
+        page_title: "لانچو ایکس",
       });
       return;
     }
@@ -83,7 +83,7 @@ export function createPageAnalytics(
         ignore_referrer: true,
         page_location: `${origin}${path}`,
         page_referrer: "",
-        page_title: "لانچ‌اوکس",
+        page_title: "لانچو ایکس",
       });
       initialized = true;
     }
@@ -91,7 +91,7 @@ export function createPageAnalytics(
     const context = {
       page_location: `${origin}${path}`,
       page_referrer: "",
-      page_title: "لانچ‌اوکس",
+      page_title: "لانچو ایکس",
     };
     target.gtag?.("set", context);
     if (lastPathname === pathname) return;

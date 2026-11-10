@@ -31,7 +31,7 @@ const defaultLinks: readonly FrosticNavItem[] = [
 
 function Brand() {
   return (
-    <Link href="/" className={styles.brand} aria-label="لانچ‌اوکس، خانه">
+    <Link href="/" className={styles.brand} aria-label="لانچو ایکس، خانه">
       <SnowflakeIcon className={styles.snowflake} />
       <span lang="en" dir="ltr">
         LaunchoX
@@ -346,7 +346,7 @@ export function FrosticHeader({
                   <FrosticIcon name="arrow" />
                 </Link>
                 <p className={styles.drawerNote}>
-                  لانچ‌اوکس؛ انتخابی برای سال‌های پیش رو.
+                  لانچو ایکس؛ انتخابی برای سال‌های پیش رو.
                 </p>
               </div>
             </>

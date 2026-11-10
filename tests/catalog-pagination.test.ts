@@ -4,7 +4,7 @@ import type { StoreSearchParams } from "@/lib/product-query";
 vi.mock("server-only", () => ({}));
 const { products } = vi.hoisted(() => ({ products: vi.fn() }));
 vi.mock("@/lib/env", () => ({
-  getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچ‌اوکس" }),
+  getEnv: () => ({ NEXT_PUBLIC_SITE_NAME: "لانچو ایکس" }),
 }));
 vi.mock("next/navigation", () => ({
   notFound: () => {

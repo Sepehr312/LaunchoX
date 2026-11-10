@@ -76,7 +76,7 @@ try {
         AUTH_SECRET: randomUUID(),
         AUTH_URL: base,
         NEXT_PUBLIC_SITE_URL: base,
-        NEXT_PUBLIC_SITE_NAME: "لانچ‌اوکس",
+        NEXT_PUBLIC_SITE_NAME: "لانچو ایکس",
         PAYMENT_PROVIDER: "fake",
         SHIPPING_FLAT_FEE: "0",
         FREE_SHIPPING_THRESHOLD: "0",

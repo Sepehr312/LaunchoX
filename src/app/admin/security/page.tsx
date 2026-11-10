@@ -15,7 +15,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import styles from "@/components/admin/AdminSecurity.module.css";
-export const metadata: Metadata = { title: "امنیت حساب مدیر | لانچ‌اوکس" };
+export const metadata: Metadata = { title: "امنیت حساب مدیر | لانچو ایکس" };
 export default async function AdminSecurityPage() {
   const admin = await requireAdmin();
   const profile = await getProfile(admin.id);

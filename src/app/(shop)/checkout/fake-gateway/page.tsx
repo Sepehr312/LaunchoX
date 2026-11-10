@@ -38,7 +38,7 @@ export default async function FakeGatewayPage({
   return (
     <main className="store-shell py-12">
       <section className="checkout-panel mx-auto max-w-xl">
-        <p className="section-kicker">محیط آزمایشی لانچ‌اوکس</p>
+        <p className="section-kicker">محیط آزمایشی لانچو ایکس</p>
         <h1 className="mt-2 mb-4 text-2xl font-bold">درگاه آزمایشی</h1>
         <p className="text-sm leading-7 text-muted">
           این پرداخت آزمایشی است و مبلغی از حساب شما کسر نمی‌شود.

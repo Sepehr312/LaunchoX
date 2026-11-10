@@ -9,8 +9,8 @@ import {
 import { ServicesSections } from "@/components/store/ServicesSections";
 import styles from "./services.module.css";
 export const metadata = {
-  title: "خدمات و پشتیبانی | لانچ‌اوکس",
-  description: "راهنمای خرید، تحویل، نصب و پشتیبانی لانچ‌اوکس",
+  title: "خدمات و پشتیبانی | لانچو ایکس",
+  description: "راهنمای خرید، تحویل، نصب و پشتیبانی لانچو ایکس",
 };
 export default async function ServicesPage() {
   const saved = await readContent("services");

@@ -1,4 +1,4 @@
-# لانچ‌اوکس
+# لانچو ایکس
 
 فروشگاه آنلاین تک‌فروشنده، فارسی و راست‌به‌چپ با Next.js App Router، TypeScript، MongoDB/Mongoose، Auth.js v5، Tailwind CSS v4 و Zod. فروشگاه، حساب مشتری و پنل ادمین در یک برنامه قرار دارند. کاتالوگ نمونهٔ فعلی برای محصولات سرمایشی است؛ سبد مهمان و مشتری، تسویه‌حساب و پرداخت آزمایشی، مدیریت پروفایل و آدرس‌ها و سفارش‌ها، و مدیریت محصولات، دسته‌ها، سفارش‌ها و کاربران پیاده‌سازی شده‌اند.
 
@@ -223,6 +223,10 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-G60YTNFZEF
 
 
 ## Decisions
+
+- Product highlights show refrigerator type, energy grade, total liters and weight in that order, using existing equivalent labels where necessary and filling missing slots from remaining attributes in stored order (at most four). The technical specifications table retains its full data. Only rows explicitly named “سایر ویژگی‌ها”, including refrigerator/freezer variants, are removed by `scripts/remove-other-product-features.ts` (preview by default; `--apply` backs up and verifies all products). The importer skips those rows on future collection.
+
+- The Persian display name is «لانچو ایکس» across UI, metadata, environment examples and deployment documentation. The local site-name setting is updated as well. Stored catalog and managed-page text can be migrated with `npx tsx --conditions=react-server --env-file=.env.local scripts/rename-persian-brand.ts` (preview) and `--apply` (backed up under ignored `tmp/brand-rename/`). Technical identifiers, URLs and asset references retain their existing names.
 
 - Digikala refrigerator imports use the existing services and a separate collect/preview/apply script; source prices are normalized from rials to tomans, source links and technical specifications are retained, and stock starts at zero pending owner confirmation. Existing products are never overwritten. Source responses and backups remain local under ignored `tmp/`; see [import instructions and local results](docs/DIGIKALA-IMPORT.md).
 
