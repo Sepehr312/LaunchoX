@@ -90,10 +90,7 @@ export function ProductDetails({
 }: ProductDetailsProps) {
   const router = useRouter();
   const data = getProductDetailsData(product);
-  const { galleryViews, specifications, discountPercent } = data;
-  const features = product.attributes.filter(
-    (item) => !["مدل", "رنگ", "برند"].includes(item.key),
-  );
+  const { galleryViews, specifications, discountPercent, features } = data;
   const descriptionNeedsExpansion = product.description.length > 280;
   const [notice, setNotice] = useState("");
   const [imageIndex, setImageIndex] = useState(0);
@@ -288,7 +285,7 @@ export function ProductDetails({
     >
       <main className={styles.content}>
         <nav className={styles.breadcrumb} aria-label="مسیر صفحه">
-          <Link href="/">لانچ‌اوکس</Link>
+          <Link href="/">لانچو ایکس</Link>
           <ChevronLeft size={14} />
           <Link href="/products">محصولات</Link>
           <ChevronLeft size={14} />
@@ -400,7 +397,7 @@ export function ProductDetails({
                 <Snowflake size={24} />
               </span>
               <div>
-                <h2>فروشگاه لانچ‌اوکس</h2>
+                <h2>فروشگاه لانچو ایکس</h2>
                 <small>فروشنده مستقیم</small>
               </div>
               <ShieldCheck size={20} />

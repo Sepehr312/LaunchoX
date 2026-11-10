@@ -5,7 +5,7 @@ import { parseCompareIds } from "@/validations/compare";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "مقایسه محصولات | لانچ‌اوکس",
+  title: "مقایسه محصولات | لانچو ایکس",
   description:
     "قیمت، ظرفیت و مشخصات فنی یخچال و فریزرها را کنار هم مقایسه کنید.",
   robots: { index: false, follow: true },

@@ -4,7 +4,7 @@ import { initialPasswordAvailable } from "@/actions/otp.actions";
 import { InitialPasswordForm } from "@/components/auth/InitialPasswordForm";
 import { safeCallbackUrl } from "@/validations/auth";
 
-export const metadata: Metadata = { title: "تعیین رمز دلخواه | لانچ‌اوکس" };
+export const metadata: Metadata = { title: "تعیین رمز دلخواه | لانچو ایکس" };
 export default async function WelcomePage({
   searchParams,
 }: {
