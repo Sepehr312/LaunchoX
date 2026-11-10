@@ -58,6 +58,11 @@ const rawEnvSchema = z
       .transform((value) => value === "true"),
     AUTH_URL: httpUrl.optional(),
     NEXT_PUBLIC_SITE_URL: httpUrl,
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: z
+      .string()
+      .trim()
+      .regex(/^$|^G-[A-Z0-9]+$/, "شناسهٔ گوگل آنالیتیکس معتبر نیست")
+      .default(""),
     IMAGE_INTERNAL_ORIGINS: z
       .string()
       .default("")

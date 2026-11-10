@@ -1,6 +1,7 @@
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import "./globals.css";
 
 const vazirmatn = localFont({
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const env = getEnv();
   return (
     <html
       lang="fa"
@@ -29,6 +31,9 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col overflow-x-hidden">
         {children}
+        {env.NODE_ENV === "production" && env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics measurementId={env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
       </body>
     </html>
   );
