@@ -207,7 +207,25 @@ npm run images:cleanup -- --apply --limit 50
 
 در خروجی Cleanup علاوه بر نتیجهٔ هر شناسه، `counts` تعداد هر وضعیت از جمله `ambiguous` و `failed` را نشان می‌دهد. تراکنش و write مشترک روی سند تصویر حفظ شده‌اند و اجرای هم‌زمان دو job به حذف دوباره منجر نمی‌شود. استفاده از `find` و cursor محدودیت `distinct` روی مجموعهٔ sharded را حذف می‌کند؛ بااین‌حال محیط sharded در این پروژه آزمایش عملی نشده است. پیش از اجرای آن، تراکنش cross-shard، دسترسی‌ها، ایندکس‌های هر shard و timeoutها در staging بررسی شوند؛ replica set بدون sharding محیط تست فعلی است. برای انتقال باینری به S3، `image.service.ts` نقطهٔ اتصال آینده است.
 
+## اتصال GA4 و تنظیم رانفلر
+
+متغیر اختیاری زیر را در Environment Variables سرویس برنامهٔ رانفلر، برای زمان build و اجرای production تنظیم کنید. خالی یا حذف‌کردن آن اتصال را خاموش می‌کند. فقط `src/lib/env.ts` تنظیم را می‌خواند و اعتبارسنجی می‌کند؛ شناسه رمز نیست. برای اعمال تغییر، build و استقرار مجدد لازم است؛ restart به‌تنهایی برای صفحات تولیدشده هنگام build کافی نیست. در `npm run dev` اسکریپت حتی با وجود شناسه بارگذاری نمی‌شود.
+
+```dotenv
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-G60YTNFZEF
+```
+
+پیش از انتشار، در GA4 مسیر Admin → Data streams → جریان Web با شناسهٔ بالا، **Enhanced Measurement را کاملاً خاموش کنید**. ثبت بازدید اولیه در کد با `send_page_view: false` خاموش و رویداد `page_view` دستی ارسال می‌شود؛ طبق [مستندات گوگل](https://developers.google.com/analytics/devguides/collection/ga4/views)، این گزینه به‌تنهایی بازدید خودکار تغییر history را خاموش نمی‌کند. خاموشی Enhanced Measurement همچنین از ارسال خودکار فرم، جست‌وجو، کلیک، اسکرول و دادهٔ URL جلوگیری می‌کند. در Google tag و Connected site tags مقصد یا تگ موازی اضافه نکنید؛ GTM یا snippet دیگری برای همین شناسه نصب نشود. تنظیمات پنل GA4 از این مخزن قابل بررسی یا تغییر نبوده‌اند.
+
+این اتصال فقط صفحات عمومی شناخته‌شده را می‌شمارد. جزئیات محصول، دسته و برند به شکل `/products/[slug]`، `/categories/[slug]` و `/brands/[slug]` گزارش می‌شوند؛ بنابراین آمار هر محصول به‌صورت جدا ارائه نمی‌شود. پارامتر جست‌وجو، فیلتر و صفحه‌بندی حذف و تغییر صرفاً query/hash بازدید جدید محسوب نمی‌شود. صفحه‌های ورود، حساب، پرداخت و مدیریت اندازه‌گیری نمی‌شوند. عنوان ارسالی ثابت است و referrer خالی می‌ماند؛ منبع ارجاع و کمپین‌ها در این فاز گزارش نمی‌شوند. رویداد خرید یا مبلغ فروش اضافه نشده است.
+
+پس از انتشار مجاز، در مرورگر بدون مسدودکننده و با Enhanced Measurement خاموش، Network را روی `collect` فیلتر کنید: بارگذاری صفحهٔ عمومی یک `en=page_view`، جابه‌جایی به مسیر عمومی دیگر یک رویداد و Back یک رویداد داشته باشد؛ تغییر query و hash رویداد تازه نداشته باشد. `dl` باید فقط نشانی پاک‌سازی‌شده، `dt` عنوان ثابت و `dr` خالی باشد. ورود مستقیم و جابه‌جایی به `/admin`، `/account`، `/login` و `/checkout` نباید درخواست اندازه‌گیری ایجاد کنند. Realtime دریافت بازدید را تأیید می‌کند. این بررسی نهایی نیازمند انتشار مجاز و دسترسی به GA4 است؛ آزمون‌های محلی داده‌ای به گوگل نمی‌فرستند.
+
+
 ## Decisions
+
+- GA4 is an owner-requested follow-up to the completed SPEC stages. One App Router observer manually sends production page views, deduplicating repeated pathname effects; query/hash changes are not separate views. Only known public storefront routes are measured; catalog slugs are replaced with route templates. Admin, authentication, account, checkout and unknown routes are excluded and disable an already loaded tag. Query strings, fragments, real document titles, referrers, user properties and commerce events are never supplied. No existing consent mechanism was found; analytics storage is enabled for this integration while advertising consent and Google signals are disabled. Any future consent manager must gate tag loading and tracking before enabling analytics storage. No dependency was added.
+
 
 - The approved admin security page uses two equal form columns from 1200px and stacks the mobile enrollment before password changes on smaller screens. Presentation stays local to admin security; existing enrollment, verified-number changes and initial-password flows retain their current server actions.
 

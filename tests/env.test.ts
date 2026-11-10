@@ -16,6 +16,21 @@ const valid = {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("environment validation", () => {
+  it("permits disabled analytics and validates the optional measurement ID", () => {
+    expect(envSchema.parse(valid).NEXT_PUBLIC_GA_MEASUREMENT_ID).toBe("");
+    expect(
+      envSchema.parse({
+        ...valid,
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: " G-G60YTNFZEF ",
+      }).NEXT_PUBLIC_GA_MEASUREMENT_ID,
+    ).toBe("G-G60YTNFZEF");
+    for (const value of ["GTM-1234", "G-", "G-abc", "<script>", "G-123?test"]) {
+      expect(
+        envSchema.safeParse({ ...valid, NEXT_PUBLIC_GA_MEASUREMENT_ID: value })
+          .success,
+      ).toBe(false);
+    }
+  });
   it("validates explicit image origins and normalizes default ports", () => {
     expect(
       envSchema.parse({
