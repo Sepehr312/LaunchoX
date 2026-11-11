@@ -226,6 +226,16 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-G60YTNFZEF
 
 ## Decisions
 
+The realtime minute chart uses SVG bars with integer user-axis ticks, a past-to-present time axis and a compact selected-minute readout. Bars support pointer, touch and keyboard selection; all values still come from the existing realtime report.
+
+Device breakdowns use Google's deviceCategory dimension and activeUsers for realtime and historical ranges. Unknown categories remain separate from mobile, tablet and desktop; user totals stay independent of device row sums. Analytics cache version v3 avoids reusing reports without device data.
+
+The admin analytics realtime option replaces today and uses official runRealtimeReport calls for a rolling 30 minute aggregate, minute breakdown and top cities. Its shared cache lasts 60 seconds and visible tabs refresh automatically. Historical reports keep their 15 minute cache. Unsupported realtime metrics and comparisons are omitted instead of estimated.
+
+- A live GA4 response with `kind=analyticsData#runReport`, `rowCount=0`, property time-zone metadata and no rows or headers is a valid empty report. The parser accepts that observed response shape without relaxing checks on nonempty, partial or malformed reports. Google empty-reason metadata is treated as a reporting limitation; connection failures still never produce zero-valued reports.
+
+- GA4 failures carry an allowlisted diagnostic category alongside the public error code, distinguishing OAuth/key rejection, DNS, timeout/transport, Google service/API availability and malformed report responses. The server can inspect known SDK wrapper markers for classification, but only fixed codes and Persian explanations reach the cache/browser; raw messages, causes, stacks, credentials and Google response bodies are never retained or logged by this path. Reporting transport and existing storefront tracking are unchanged.
+
 - The Launcho assistant loads once from `https://ag.launchox.ir/widget/loader.js` in the root layout using Next.js Script (`afterInteractive`), with automatic theme and right positioning. `/admin` and its descendants skip loading it and hide any existing widget after client navigation; returning to the storefront reuses the same instance. Its iframe and chat stay on the existing Launcho service; no frontend API key or local chat backend is needed. Page responses currently have no CSP; if one is introduced, allow `https://ag.launchox.ir` in both `script-src` and `frame-src`.
 
 - Analytics reporting uses SDK 6.1.x to preserve the existing Node.js 20.19 runtime contract (SDK 7.x requires Node.js 22). Security overrides select compatible Gaxios 7.3.x and Rimraf 6.1.4+ transitives instead of the older vulnerable dependency tree; Rimraf 6 supports Node.js 20. The reporting SDK API and official GA4 metric/dimension names are unchanged.

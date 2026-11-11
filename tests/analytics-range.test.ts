@@ -54,9 +54,21 @@ it("does not invent a percentage for a zero baseline", () => {
   expect(formatReportDate("2026-11-10")).toContain("آبان");
 });
 
-it("only accepts a scalar 7 or 30 day range", () => {
+it("only accepts realtime or a scalar 7 or 30 day range", () => {
+  expect(analyticsQuerySchema.parse({ days: "realtime" })).toEqual({
+    days: "realtime",
+  });
   expect(analyticsQuerySchema.parse({})).toEqual({ days: "7" });
-  for (const days of [7, 0, "0", "365", "-7", ["7", "30"], "7 OR 1=1"]) {
+  for (const days of [
+    7,
+    0,
+    "today",
+    "0",
+    "365",
+    "-7",
+    ["7", "30"],
+    "7 OR 1=1",
+  ]) {
     expect(analyticsQuerySchema.safeParse({ days }).success).toBe(false);
   }
   expect(

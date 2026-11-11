@@ -3,7 +3,9 @@ import { randomUUID } from "node:crypto";
 import { requireAdmin } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { getEnv } from "@/lib/env";
-import { fetchAnalyticsReport, analyticsErrorCode } from "@/lib/ga4";
+import { fetchAnalyticsReport } from "@/lib/ga4";
+import { analyticsFailure } from "@/lib/analytics-error";
+import { fetchRealtimeAnalyticsReport } from "@/lib/ga4-realtime";
 import { AnalyticsCache } from "@/models/analytics-cache";
 import {
   analyticsCredentialsSchema,
@@ -20,8 +22,13 @@ export async function getAnalyticsReport(
   if (!query.success) return { ok: false, code: "invalid" };
   const config = analyticsCredentialsSchema.safeParse(getEnv());
   if (!config.success) return { ok: false, code: "configuration" };
-  const days = query.data.days === "7" ? 7 : 30;
-  const key = `ga4:v1:${config.data.GA4_PROPERTY_ID}:${days}`;
+  const days =
+    query.data.days === "realtime"
+      ? "realtime"
+      : query.data.days === "7"
+        ? 7
+        : 30;
+  const key = `ga4:v3:${config.data.GA4_PROPERTY_ID}:${days}`;
   const lockKey = `ga4:lock:${config.data.GA4_PROPERTY_ID}`;
   const owner = randomUUID();
   const now = Date.now();
@@ -110,18 +117,24 @@ export async function getAnalyticsReport(
       try {
         result = {
           ok: true,
-          report: await fetchAnalyticsReport(config.data, days),
+          report:
+            days === "realtime"
+              ? await fetchRealtimeAnalyticsReport(config.data)
+              : await fetchAnalyticsReport(config.data, days),
         };
       } catch (error: unknown) {
         // Google errors may contain credentials or request details; only a fixed code crosses the boundary.
-        result = { ok: false, code: analyticsErrorCode(error) };
+        result = analyticsFailure(error);
       }
       await AnalyticsCache.updateOne(
         { _id: key },
         {
           $set: {
             result,
-            expiresAt: new Date(Date.now() + (result.ok ? 15 * 60000 : 60000)),
+            expiresAt: new Date(
+              Date.now() +
+                (result.ok && days !== "realtime" ? 15 * 60000 : 60000),
+            ),
           },
         },
         { upsert: true },
