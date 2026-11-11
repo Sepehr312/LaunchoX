@@ -1,6 +1,7 @@
 import { getEnv } from "@/lib/env";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { LaunchoAssistant } from "@/components/layout/LaunchoAssistant";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
         {env.NODE_ENV === "production" && env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <GoogleAnalytics measurementId={env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
         )}
+        <LaunchoAssistant />
       </body>
     </html>
   );
