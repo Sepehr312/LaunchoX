@@ -6,12 +6,16 @@ vi.mock("server-only", () => ({}));
 const mocks = vi.hoisted(() => ({
   guard: vi.fn(),
   fetch: vi.fn(),
+  realtime: vi.fn(),
   env: vi.fn(),
   connect: vi.fn(),
 }));
 vi.mock("@/lib/auth", () => ({ requireAdmin: mocks.guard }));
 vi.mock("@/lib/env", () => ({ getEnv: mocks.env }));
 vi.mock("@/lib/db", () => ({ connectDB: mocks.connect }));
+vi.mock("@/lib/ga4-realtime", () => ({
+  fetchRealtimeAnalyticsReport: mocks.realtime,
+}));
 vi.mock("@/lib/ga4", () => ({
   fetchAnalyticsReport: mocks.fetch,
   analyticsErrorCode: () => "forbidden",
@@ -47,6 +51,8 @@ const report: AnalyticsReport = {
   daily: [],
   pages: [],
   sources: [],
+  cities: [],
+  devices: [],
   limitedData: false,
 };
 beforeAll(async () => {
@@ -77,6 +83,57 @@ it("guards the service before credentials, cache, or network access", async () =
   expect(mocks.fetch).not.toHaveBeenCalled();
 });
 
+it("guards realtime access before contacting Google", async () => {
+  mocks.guard.mockRejectedValue(new Error("denied"));
+  await expect(getAnalyticsReport({ days: "realtime" })).rejects.toThrow(
+    "denied",
+  );
+  expect(mocks.realtime).not.toHaveBeenCalled();
+  expect(mocks.connect).not.toHaveBeenCalled();
+});
+
+it("isolates realtime reports with a 60 second shared cache and refresh limit", async () => {
+  const live = {
+    days: "realtime" as const,
+    fetchedAt: new Date().toISOString(),
+    totals: { activeUsers: 3, screenPageViews: 12 },
+    cities: [],
+    devices: [],
+    minutes: [],
+  };
+  mocks.realtime.mockResolvedValue(live);
+  expect(await getAnalyticsReport({ days: "realtime" })).toEqual({
+    ok: true,
+    report: live,
+  });
+  expect(await getAnalyticsReport({ days: "realtime" })).toEqual({
+    ok: true,
+    report: live,
+  });
+  expect(mocks.realtime).toHaveBeenCalledOnce();
+  expect(mocks.fetch).not.toHaveBeenCalled();
+  const cache = await AnalyticsCache.findById(
+    "ga4:v3:563535207:realtime",
+  ).lean();
+  expect(cache!.expiresAt!.getTime() - Date.now()).toBeGreaterThan(50000);
+  expect(cache!.expiresAt!.getTime() - Date.now()).toBeLessThanOrEqual(60000);
+  expect(await getAnalyticsReport({ days: "realtime" }, true)).toMatchObject({
+    ok: false,
+    code: "busy",
+  });
+});
+
+it("does not turn realtime network errors into zero activity", async () => {
+  mocks.realtime.mockRejectedValue({ code: "ETIMEDOUT", message: "PRIVATE" });
+  const result = await getAnalyticsReport({ days: "realtime" });
+  expect(result).toMatchObject({
+    ok: false,
+    code: "connection",
+    diagnostic: "timeout",
+  });
+  expect(JSON.stringify(result)).not.toContain("PRIVATE");
+});
+
 it("handles missing credentials and invalid ranges without database or network calls", async () => {
   expect(await getAnalyticsReport({ days: "365" })).toEqual({
     ok: false,
@@ -95,7 +152,7 @@ it("shares reports for 15 minutes and blocks manual refresh across both ranges",
   expect(await getAnalyticsReport({ days: "7" })).toEqual({ ok: true, report });
   expect(await getAnalyticsReport({ days: "7" })).toEqual({ ok: true, report });
   expect(mocks.fetch).toHaveBeenCalledOnce();
-  const cached = await AnalyticsCache.findById("ga4:v1:563535207:7").lean();
+  const cached = await AnalyticsCache.findById("ga4:v3:563535207:7").lean();
   expect(cached!.expiresAt!.getTime() - Date.now()).toBeGreaterThan(14 * 60000);
   expect(await getAnalyticsReport({ days: "7" }, true)).toMatchObject({
     ok: false,
@@ -164,7 +221,7 @@ it("returns a sanitized failure without stale statistics, and throttles failures
     ok: false,
     code: "forbidden",
   });
-  const cached = await AnalyticsCache.findById("ga4:v1:563535207:7").lean();
+  const cached = await AnalyticsCache.findById("ga4:v3:563535207:7").lean();
   expect(JSON.stringify(cached)).not.toContain("TEST-SENSITIVE");
   expect(mocks.fetch).toHaveBeenCalledTimes(2);
 });
@@ -176,4 +233,25 @@ it("fails closed when shared storage is unavailable", async () => {
     code: "storage",
   });
   expect(mocks.fetch).not.toHaveBeenCalled();
+});
+
+it("persists and returns only allowlisted diagnostics for wrapped Google failures", async () => {
+  mocks.fetch.mockRejectedValue({
+    code: 2,
+    details: "Getting metadata failed: invalid_grant TEST-SENSITIVE-KEY",
+    response: {
+      data: { error: "invalid_grant", private_key: "TEST-SENSITIVE-KEY" },
+    },
+  });
+  const expected = {
+    ok: false,
+    code: "forbidden",
+    diagnostic: "token-rejected",
+  };
+  expect(await getAnalyticsReport({ days: "7" })).toEqual(expected);
+  expect(await getAnalyticsReport({ days: "7" })).toEqual(expected);
+  const stored = await AnalyticsCache.findById("ga4:v3:563535207:7").lean();
+  expect(stored?.result).toEqual(expected);
+  expect(JSON.stringify(stored)).not.toContain("TEST-SENSITIVE");
+  expect(mocks.fetch).toHaveBeenCalledOnce();
 });

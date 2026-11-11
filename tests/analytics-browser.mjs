@@ -71,6 +71,8 @@ try {
         sessions: 1816,
       },
       daily,
+      cities: [{ city: "Tabriz", activeUsers: 9 }],
+      devices: [{ category: "mobile", activeUsers: 5 }],
       sources: [
         { source: "google / organic", sessions: 840 },
         { source: "(direct) / (none)", sessions: 540 },
@@ -82,11 +84,30 @@ try {
       limitedData: false,
     };
     await db.collection("analyticscaches").insertOne({
-      _id: `ga4:v1:563535207:${days}`,
+      _id: `ga4:v3:563535207:${days}`,
       result: { ok: true, report },
       expiresAt: new Date(Date.now() + 900000),
     });
   }
+  await db.collection("analyticscaches").insertOne({
+    _id: "ga4:v3:563535207:realtime",
+    result: {
+      ok: true,
+      report: {
+        days: "realtime",
+        fetchedAt: new Date().toISOString(),
+        totals: { activeUsers: 1, screenPageViews: 3 },
+        cities: [{ city: "Tabriz", activeUsers: 3 }],
+        devices: [{ category: "tablet", activeUsers: 1 }],
+        minutes: Array.from({ length: 30 }, (_, index) => ({
+          minutesAgo: 29 - index,
+          activeUsers: index === 7 ? 1 : 0,
+          screenPageViews: index === 7 ? 3 : 0,
+        })),
+      },
+    },
+    expiresAt: new Date(Date.now() + 600000),
+  });
   // Keep manual refresh away from Google even with the deliberately unusable test key.
   await db.collection("analyticscaches").insertOne({
     _id: "ga4:lock:563535207",

@@ -43,6 +43,8 @@ with sync_playwright() as p:
         page.screenshot(path=str(output / 'configuration.png'), full_page=True)
     else:
         expect(page.get_by_role('heading', name='کاربران فعال', exact=True)).to_be_visible()
+        expect(page.get_by_role('heading', name='نوع دستگاه کاربران', exact=True)).to_be_visible()
+        expect(page.get_by_role('rowheader', name='موبایل', exact=True)).to_be_visible()
         expect(page.get_by_text('صفحات محصول (تجمیعی)', exact=True)).to_be_visible()
         expect(page.get_by_text('درصد تغییر قابل محاسبه نیست', exact=True)).to_be_visible()
         first_received = page.get_by_text('آخرین دریافت گزارش:', exact=False).inner_text()
@@ -52,12 +54,38 @@ with sync_playwright() as p:
             page.set_viewport_size({'width': width, 'height': 1100})
             page.evaluate('document.fonts.ready')
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'Overflow at {width}'
+            city_box = page.get_by_role('heading', name='کاربران فعال به تفکیک شهر', exact=True).locator('..').bounding_box()
+            device_box = page.get_by_role('heading', name='نوع دستگاه کاربران', exact=True).locator('..').bounding_box()
+            if width == 1440:
+                assert abs(city_box['y'] - device_box['y']) < 2, 'City and device panels must sit side by side'
+            if width == 360:
+                assert device_box['y'] > city_box['y'], 'Mobile panels must stack vertically'
             page.screenshot(path=str(output / f'report-{width}.png'), full_page=True)
         page.set_viewport_size({'width': 1440, 'height': 1100})
         page.get_by_role('link', name='۳۰ روز', exact=True).click()
         expect(page).to_have_url(base + '/admin/analytics?days=30')
         page.get_by_text('مشاهده جدول روزانه', exact=True).click()
         assert page.locator('details tbody tr').count() == 30
+        page.get_by_role('link', name='۳۰ دقیقهٔ گذشته', exact=True).click()
+        expect(page).to_have_url(base + '/admin/analytics?days=realtime')
+        expect(page.get_by_role('heading', name='کاربران فعال در ۳۰ دقیقهٔ گذشته', exact=True)).to_be_visible()
+        expect(page.get_by_text('Tabriz', exact=True)).to_be_visible()
+        minute_button = page.get_by_role('button', name='۲۲ دقیقه قبل: ۱ کاربر فعال', exact=True)
+        minute_button.focus()
+        minute_button.press('Enter')
+        expect(minute_button).to_have_attribute('aria-pressed', 'true')
+        expect(page.get_by_role('rowheader', name='تبلت', exact=True)).to_be_visible()
+        expect(page.get_by_role('heading', name='کاربران جدید', exact=True)).to_have_count(0)
+        for width in [1440, 360]:
+            page.set_viewport_size({'width': width, 'height': 1100})
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'Realtime overflow at {width}'
+            city_box = page.get_by_role('heading', name='کاربران فعال به تفکیک شهر', exact=True).locator('..').bounding_box()
+            device_box = page.get_by_role('heading', name='نوع دستگاه کاربران', exact=True).locator('..').bounding_box()
+            if width == 1440:
+                assert abs(city_box['y'] - device_box['y']) < 2, 'Realtime panels must sit side by side'
+            page.screenshot(path=str(output / f'realtime-{width}.png'), full_page=True)
+        page.get_by_role('link', name='۳۰ روز', exact=True).click()
+        expect(page.get_by_role('heading', name='کاربران فعال', exact=True)).to_be_visible()
         page.get_by_role('button', name='به‌روزرسانی', exact=True).click()
         expect(page.get_by_role('heading', name='کمی تا درخواست بعدی صبر کنید')).to_be_visible()
         expect(page.get_by_role('heading', name='کاربران فعال', exact=True)).to_have_count(0)

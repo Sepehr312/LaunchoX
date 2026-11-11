@@ -41,12 +41,14 @@
 }
 .ranges {
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   padding: 3px;
   border: 1px solid #d8e8f8;
   border-radius: 10px;
 }
 .ranges a {
-  padding: 6px 24px;
+  padding: 6px 12px;
   border-radius: 7px;
   color: #526582;
   white-space: nowrap;
@@ -279,6 +281,51 @@
 }
 .spinning {
   animation: spin 1s linear infinite;
+}
+.realtimeChart {
+  margin-block: 20px 12px;
+  min-width: 0;
+}
+.minuteChartHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 18px;
+}
+.minuteLegendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: 6px;
+  border-radius: 50%;
+  background: #1677dc;
+}
+.minuteReadout {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #526582;
+  font-size: 12px;
+}
+.minuteReadout strong {
+  color: #0d9488;
+  font-weight: 600;
+}
+.minuteReadout > span {
+  color: #b5c8de;
+}
+.minuteAxisTitle {
+  color: #7c8da8;
+  font-size: 11px;
+}
+.minuteTarget {
+  cursor: pointer;
+  outline: none;
+}
+.dashboard .minuteTarget:focus-visible {
+  outline: none;
 }
 @keyframes spin {
   to {

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const analyticsQuerySchema = z
   .object({
-    days: z.enum(["7", "30"]).default("7"),
+    days: z.enum(["realtime", "7", "30"]).default("7"),
   })
   .strict();
 
