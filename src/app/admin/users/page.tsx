@@ -13,7 +13,7 @@ import {
   getUserManagementPermissions,
 } from "@/services/admin-user.service";
 import { adminListQuerySchema } from "@/validations/admin-list";
-import { toPersianDigits } from "@/lib/format";
+import { normalizeDigits, toPersianDigits } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -38,9 +38,9 @@ export default async function Users({
   const users = await listUsersAdmin();
   const permissions = await getUserManagementPermissions();
   const filtered = users.filter((user) =>
-    `${user.name ?? ""} ${user.email ?? ""} ${user.mobile ?? ""}`
+    normalizeDigits(`${user.name ?? ""} ${user.mobile ?? ""}`)
       .toLocaleLowerCase("fa")
-      .includes(query.data.q.toLocaleLowerCase("fa")),
+      .includes(normalizeDigits(query.data.q).toLocaleLowerCase("fa")),
   );
   return (
     <div className="admin-list-page">
@@ -55,7 +55,7 @@ export default async function Users({
       >
         <AdminListSearch
           label="جستجوی کاربر"
-          placeholder="نام یا ایمیل کاربر را جستجو کنید…"
+          placeholder="نام یا شماره موبایل کاربر را جستجو کنید…"
           query={query.data.q}
         />
         <p className="admin-list-count">
@@ -67,7 +67,7 @@ export default async function Users({
               <caption className="sr-only">حساب‌های کاربران فروشگاه</caption>
               <thead>
                 <tr>
-                  {["کاربر", "ایمیل", "نقش", "وضعیت", "نشست‌ها"].map(
+                  {["کاربر", "شماره موبایل", "نقش", "وضعیت", "نشست‌ها"].map(
                     (label) => (
                       <th scope="col" key={label}>
                         {label}
@@ -89,7 +89,7 @@ export default async function Users({
                     </td>
                     <td>
                       <bdi className="admin-user-email">
-                        {user.email ?? toPersianDigits(user.mobile ?? "")}
+                        {user.mobile ? toPersianDigits(user.mobile) : "ثبت نشده"}
                       </bdi>
                     </td>
                     <td>
