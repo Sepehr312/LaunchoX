@@ -53,7 +53,11 @@ function respond(request: Request) {
                   ? date
                   : name === "pagePath"
                     ? "/products/[slug]"
-                    : "google / organic",
+                    : name === "city"
+                      ? "Tabriz"
+                      : name === "deviceCategory"
+                        ? "mobile"
+                        : "google / organic",
             },
           ],
           metricValues: request.metrics?.map(() => ({ value: "100" })),
@@ -66,6 +70,119 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.close.mockResolvedValue(undefined);
   mocks.run.mockImplementation(async (request: Request) => respond(request));
+});
+
+it.each([7, 30] as const)(
+  "requests device users in the same %s day property range",
+  async (days) => {
+    const report = await fetchAnalyticsReport(credentials, days);
+    const request = mocks.run.mock.calls
+      .map(([value]) => value as Request)
+      .find((value) => value.dimensions?.[0].name === "deviceCategory");
+    expect(request?.dateRanges).toEqual([report.range]);
+    expect(request?.metrics).toEqual([{ name: "activeUsers" }]);
+    expect(report.devices).toEqual([{ category: "mobile", activeUsers: 100 }]);
+    expect(report.totals.activeUsers).toBe(123);
+  },
+);
+
+it("rejects a failed device report instead of returning partial historical statistics", async () => {
+  mocks.run.mockImplementation(async (request: Request) => {
+    if (request.dimensions?.[0].name === "deviceCategory")
+      throw new Error("offline");
+    return respond(request);
+  });
+  await expect(fetchAnalyticsReport(credentials, 7)).rejects.toThrow("offline");
+});
+
+it("accepts the successful headerless zero-row response observed from Google", async () => {
+  mocks.run.mockResolvedValue([
+    {
+      kind: "analyticsData#runReport",
+      metricHeaders: [],
+      dimensionHeaders: [],
+      rows: [],
+      rowCount: 0,
+      metadata: { timeZone: "Asia/Tehran" },
+    },
+  ]);
+  const report = await fetchAnalyticsReport(credentials, 7);
+  expect(report.totals).toEqual({
+    activeUsers: 0,
+    newUsers: 0,
+    screenPageViews: 0,
+    sessions: 0,
+  });
+  expect(report.previous).toEqual(report.totals);
+  expect(report.daily).toHaveLength(7);
+  expect(
+    report.daily.every(
+      (day) => day.activeUsers === 0 && day.screenPageViews === 0,
+    ),
+  ).toBe(true);
+  expect(report.pages).toEqual([]);
+  expect(report.sources).toEqual([]);
+  expect(mocks.run).toHaveBeenCalledTimes(8);
+});
+
+it("preserves current data when only the previous comparison period is headerless and empty", async () => {
+  let aggregates = 0;
+  mocks.run.mockImplementation(async (request: Request) => {
+    if (
+      !request.dimensions &&
+      request.metrics?.length === 4 &&
+      ++aggregates === 2
+    ) {
+      return [
+        {
+          kind: "analyticsData#runReport",
+          rowCount: 0,
+          rows: [],
+          metricHeaders: [],
+          dimensionHeaders: [],
+          metadata: { timeZone: "America/Los_Angeles" },
+        },
+      ];
+    }
+    return respond(request);
+  });
+  const report = await fetchAnalyticsReport(credentials, 7);
+  expect(report.totals.activeUsers).toBe(123);
+  expect(report.previous.activeUsers).toBe(0);
+  expect(report.sources).toHaveLength(1);
+  expect(report.pages).toHaveLength(1);
+});
+
+it("does not mistake malformed, incomplete or partially headed reports for empty data", () => {
+  const empty = {
+    kind: "analyticsData#runReport",
+    rowCount: 0,
+    metadata: { timeZone: "Asia/Tehran" },
+  };
+  for (const report of [
+    {},
+    { ...empty, kind: "" },
+    { ...empty, metadata: {} },
+    { ...empty, rowCount: 1 },
+    { ...empty, rowCount: undefined },
+    { ...empty, rows: [{ metricValues: [{ value: "10" }] }] },
+    { ...empty, metricHeaders: [{ name: "activeUsers" }] },
+  ])
+    expect(() => reportTotals(report)).toThrow();
+});
+
+it("marks Google empty-reason restrictions instead of asserting unrestricted zero activity", async () => {
+  mocks.run.mockResolvedValue([
+    {
+      kind: "analyticsData#runReport",
+      rowCount: 0,
+      metadata: {
+        timeZone: "Asia/Tehran",
+        emptyReason: "TEST-ONLY-RESTRICTION",
+      },
+    },
+  ]);
+  expect((await fetchAnalyticsReport(credentials, 30)).limitedData).toBe(true);
 });
 
 it("returns an empty range only after every Google report succeeds", async () => {
@@ -107,10 +224,15 @@ it("requests official metrics, aggregate totals and explicit property-zone dates
   );
   expect(report.daily).toHaveLength(7);
   expect(report.sources).toEqual([
-    { source: "google / organic", sessions: 100 },
+    {
+      source: "google / organic",
+      sessions: 100,
+    },
   ]);
   expect(report.pages).toEqual([{ path: "/products/[slug]", views: 100 }]);
-  expect(mocks.run).toHaveBeenCalledTimes(6);
+  expect(report.cities).toEqual([{ city: "Tabriz", activeUsers: 100 }]);
+  expect(report.devices).toEqual([{ category: "mobile", activeUsers: 100 }]);
+  expect(mocks.run).toHaveBeenCalledTimes(8);
   const requests = mocks.run.mock.calls.map(([request]) => request as Request);
   expect(
     requests.every((request) => request.property === "properties/563535207"),

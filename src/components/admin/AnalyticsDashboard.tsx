@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import {
   Activity,
   ChartNoAxesCombined,
@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { refreshAnalyticsAction } from "@/actions/admin/analytics.actions";
 import { AnalyticsChart } from "@/components/admin/AnalyticsChart";
+import { RealtimeAnalytics } from "@/components/admin/RealtimeAnalytics";
+import { AnalyticsCities } from "@/components/admin/AnalyticsCities";
+import { AnalyticsDevices } from "@/components/admin/AnalyticsDevices";
 import {
   formatDateTime,
   formatNumber,
@@ -23,6 +26,7 @@ import {
 } from "@/lib/format";
 import type {
   AnalyticsFailureCode,
+  AnalyticsDiagnostic,
   AnalyticsMetric,
   AnalyticsResult,
 } from "@/types/analytics";
@@ -60,7 +64,7 @@ const failures: Record<
   busy: {
     title: "کمی تا درخواست بعدی صبر کنید",
     detail:
-      "گزارش در حال دریافت است یا محدودیت تازه‌سازی فعال است. دریافت مجدد برای همهٔ مدیران و هر دو بازه محدود می‌شود.",
+      "گزارش در حال دریافت است یا محدودیت تازه‌سازی فعال است. دریافت مجدد برای همهٔ مدیران و همهٔ بازه‌ها محدود می‌شود.",
   },
   storage: {
     title: "ذخیره‌سازی گزارش در دسترس نیست",
@@ -69,8 +73,31 @@ const failures: Record<
   },
   invalid: {
     title: "بازهٔ گزارش معتبر نیست",
-    detail: "یکی از بازه‌های هفت یا سی روزه را انتخاب کنید.",
+    detail: "یکی از بازه‌های سی دقیقهٔ گذشته، هفت یا سی روزه را انتخاب کنید.",
   },
+};
+const diagnostics: Record<AnalyticsDiagnostic, string> = {
+  "key-invalid":
+    "کلید خصوصی در سرور قابل پردازش نیست. قالب و کامل بودن مقدار کلید را در تنظیمات محرمانهٔ سرور بررسی کنید؛ وجود مقدار به‌تنهایی کافی نیست.",
+  "token-rejected":
+    "گوگل احراز هویت حساب سرویس را رد کرده است. مطابقت کلید و حساب سرویس، معتبر بودن کلید و ساعت سرور را بررسی کنید.",
+  dns: "سرور نتوانست نشانی سرویس گوگل را پیدا کند. تنظیمات نام دامنه و دسترسی خروجی شبکهٔ میزبان بررسی شود.",
+  timeout:
+    "مهلت اتصال یا دریافت پاسخ از گوگل تمام شد. دسترسی خروجی سرور به سرویس گزارش‌گیری و احراز هویت گوگل بررسی شود.",
+  transport:
+    "ارتباط شبکه یا اتصال امن سرور به گوگل برقرار نشد. مسیر خروجی شبکه، پراکسی و گواهی‌های سرور بررسی شوند.",
+  "google-unavailable":
+    "سرویس گوگل یا مسیر ارتباطی آن موقتاً در دسترس نیست. کمی بعد تلاش کنید و در صورت تکرار، شبکهٔ میزبان بررسی شود.",
+  "api-disabled":
+    "گوگل اعلام کرده رابط موردنیاز برای پروژهٔ حساب سرویس فعال نیست. فعال بودن رابط گزارش‌گیری در همان پروژه بررسی شود.",
+  "request-rejected":
+    "گوگل درخواست گزارش را نامعتبر تشخیص داده است. مدیر فنی باید سازگاری درخواست با رابط گزارش‌گیری را بررسی کند.",
+  "response-invalid":
+    "پاسخ دریافت‌شده از گوگل با قالب مورد انتظار گزارش سازگار نیست. این وضعیت خطای پردازش گزارش است و آمار صفر محسوب نمی‌شود.",
+  "time-zone-missing":
+    "پاسخ گوگل منطقهٔ زمانی پراپرتی را مشخص نکرده است. برای جلوگیری از گزارش با تاریخ اشتباه، نمایش آمار متوقف شد.",
+  unknown:
+    "علت خطا از کدهای شناخته‌شده مشخص نشد. مدیر فنی باید اتصال را در محیط سرور بررسی کند؛ متن خام خطا برای حفظ اطلاعات محرمانه نمایش داده نمی‌شود.",
 };
 const pageLabels: Record<string, string> = {
   "/": "صفحه اصلی",
@@ -91,7 +118,7 @@ export function AnalyticsDashboard({
   days,
   initialResult,
 }: {
-  days: "7" | "30";
+  days: "realtime" | "7" | "30";
   initialResult: AnalyticsResult;
 }) {
   const [result, setResult] = useState(initialResult);
@@ -107,20 +134,32 @@ export function AnalyticsDashboard({
     );
     return () => clearTimeout(timer);
   }, [cooldown]);
-  const refresh = () =>
-    startTransition(async () => {
-      try {
-        const next = await refreshAnalyticsAction({ days });
-        setResult(next);
-        setCooldown(
-          !next.ok && next.retryAfterSeconds ? next.retryAfterSeconds : 60,
-        );
-      } catch {
-        setResult({ ok: false, code: "connection" });
-        setCooldown(60);
-      }
-    });
-  const report = result.ok ? result.report : null;
+  const refresh = useCallback(
+    () =>
+      startTransition(async () => {
+        try {
+          const next = await refreshAnalyticsAction({ days });
+          setResult(next);
+          setCooldown(
+            !next.ok && next.retryAfterSeconds ? next.retryAfterSeconds : 60,
+          );
+        } catch {
+          setResult({ ok: false, code: "connection" });
+          setCooldown(60);
+        }
+      }),
+    [days],
+  );
+  useEffect(() => {
+    if (days !== "realtime" || pending) return;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, 60000);
+    return () => clearInterval(timer);
+  }, [days, pending, refresh]);
+  const received = result.ok ? result.report : null;
+  const liveReport = received?.days === "realtime" ? received : null;
+  const report = received && received.days !== "realtime" ? received : null;
   const empty =
     report &&
     Object.values(report.totals).every((value) => value === 0) &&
@@ -161,13 +200,15 @@ export function AnalyticsDashboard({
         </div>
         <div className={styles.toolbar}>
           <nav className={styles.ranges} aria-label="بازهٔ گزارش">
-            {(["7", "30"] as const).map((value) => (
+            {(["realtime", "7", "30"] as const).map((value) => (
               <Link
                 key={value}
                 href={`/admin/analytics?days=${value}`}
                 aria-current={days === value ? "page" : undefined}
               >
-                {formatNumber(Number(value))} روز
+                {value === "realtime"
+                  ? "۳۰ دقیقهٔ گذشته"
+                  : `${formatNumber(Number(value))} روز`}
               </Link>
             ))}
           </nav>
@@ -178,15 +219,16 @@ export function AnalyticsDashboard({
             </p>
           )}
           <p className={styles.meta}>
-            {report
-              ? `آخرین دریافت گزارش: ${formatDateTime(report.fetchedAt)} (به وقت تهران)`
+            {received
+              ? `آخرین دریافت گزارش: ${formatDateTime(received.fetchedAt)} (به وقت تهران)`
               : "هنوز گزارش معتبری دریافت نشده است."}
           </p>
         </div>
         <p className={styles.notice}>
           <Info size={16} aria-hidden="true" />
-          بازه تا پایان روز گذشته است. داده‌های گوگل ممکن است با تأخیر تکمیل
-          شوند؛ زمان دریافت، زمان تازگی داده‌های گوگل نیست.
+          {days === "realtime"
+            ? "گزارش بلادرنگِ ۳۰ دقیقهٔ گذشته است؛ ثبت و پردازش رویدادها ممکن است کمی تأخیر داشته باشد. زمان دریافت گزارش، زمان تازگی داده‌های گوگل نیست."
+            : "بازه تا پایان روز گذشته است. داده‌های گوگل ممکن است با تأخیر تکمیل شوند؛ زمان دریافت، زمان تازگی داده‌های گوگل نیست."}
         </p>
         {report && (
           <p className={styles.meta}>
@@ -202,6 +244,12 @@ export function AnalyticsDashboard({
             <TriangleAlert aria-hidden="true" />
             <h2>{failures[result.code].title}</h2>
             <p>{failures[result.code].detail}</p>
+            {result.diagnostic && (
+              <p>
+                <strong>جزئیات بررسی: </strong>
+                {diagnostics[result.diagnostic]}
+              </p>
+            )}
             {result.retryAfterSeconds && (
               <p>
                 تلاش مجدد پس از حدود {formatNumber(result.retryAfterSeconds)}{" "}
@@ -215,18 +263,20 @@ export function AnalyticsDashboard({
             <ChartNoAxesCombined aria-hidden="true" />
             <h2>داده‌ای برای این بازه ثبت نشده است</h2>
             <p>
-              اتصال گزارش‌گیری برقرار شد، اما گوگل برای این بازه فعالیتی گزارش
-              نکرده است.
+              اتصال گزارش‌گیری برقرار شد، اما گوگل برای این بازه ردیف داده‌ای
+              برنگرداند. تأخیر پردازش و محدودیت‌های احتمالی گزارش را نیز در نظر
+              بگیرید.
             </p>
           </section>
         )}
       </div>
+      {liveReport && <RealtimeAnalytics report={liveReport} />}
       {report && (
         <>
           {report.limitedData && (
             <p className={styles.warning}>
-              گوگل روی بخشی از این گزارش محدودیت تجمیع، آستانهٔ نمایش یا
-              نمونه‌گیری اعمال کرده است؛ نتایج ممکن است کامل نباشند.
+              گوگل برای این گزارش محدودیت، علت خالی بودن، آستانهٔ نمایش یا
+              نمونه‌گیری اعلام کرده است؛ نتایج ممکن است کامل نباشند.
             </p>
           )}
           <section className={styles.stats} aria-label="شاخص‌های بازه">
@@ -244,34 +294,40 @@ export function AnalyticsDashboard({
                   <p className={styles.statValue}>
                     {formatNumber(report.totals[key])}
                   </p>
-                  <p
-                    className={
-                      change !== null && change < 0
-                        ? styles.negative
-                        : styles.positive
-                    }
-                  >
-                    {change === null ? (
-                      "درصد تغییر قابل محاسبه نیست"
-                    ) : (
-                      <bdi
-                        className={styles.changeValue}
-                      >{`${change > 0 ? "+" : ""}${formatNumber(change, 1)}٪`}</bdi>
-                    )}
-                  </p>
-                  <p className={styles.meta}>
-                    نسبت به {formatNumber(Number(days))} روز قبل · مقدار قبلی:{" "}
-                    {formatNumber(previous)}
-                  </p>
+                  {report && (
+                    <p
+                      className={
+                        change !== null && change < 0
+                          ? styles.negative
+                          : styles.positive
+                      }
+                    >
+                      {change === null ? (
+                        "درصد تغییر قابل محاسبه نیست"
+                      ) : (
+                        <bdi
+                          className={styles.changeValue}
+                        >{`${change > 0 ? "+" : ""}${formatNumber(change, 1)}٪`}</bdi>
+                      )}
+                    </p>
+                  )}
+                  {report && (
+                    <p className={styles.meta}>
+                      نسبت به {formatNumber(Number(days))} روز قبل · مقدار قبلی:{" "}
+                      {formatNumber(previous)}
+                    </p>
+                  )}
                 </article>
               );
             })}
           </section>
-          <p className={styles.meta}>
-            بازهٔ مقایسه: {formatReportDate(report.previousRange.startDate)} تا{" "}
-            {formatReportDate(report.previousRange.endDate)}. اگر مقدار قبلی صفر
-            باشد، درصد تغییر نمایش داده نمی‌شود.
-          </p>
+          {report && (
+            <p className={styles.meta}>
+              بازهٔ مقایسه: {formatReportDate(report.previousRange.startDate)}{" "}
+              تا {formatReportDate(report.previousRange.endDate)}. اگر مقدار
+              قبلی صفر باشد، درصد تغییر نمایش داده نمی‌شود.
+            </p>
+          )}
           <section className="admin-panel">
             <div className={styles.sectionHeading}>
               <h2>
@@ -383,6 +439,10 @@ export function AnalyticsDashboard({
                 همهٔ نشست‌ها را پوشش نمی‌دهند.
               </p>
             </section>
+          </div>
+          <div className={styles.columns}>
+            <AnalyticsCities cities={report.cities} />
+            <AnalyticsDevices devices={report.devices} />
           </div>
         </>
       )}

@@ -17,7 +17,9 @@ function ChartPlot({
   const start = compact ? 46 : 70;
   const end = compact ? 310 : 970;
   const x = (index: number) =>
-    start + (index / Math.max(1, daily.length - 1)) * (end - start);
+    daily.length === 1
+      ? (start + end) / 2
+      : start + (index / Math.max(1, daily.length - 1)) * (end - start);
   const y = (value: number) => 230 - (value / maximum) * 200;
   const series = (metric: "activeUsers" | "screenPageViews") =>
     daily.map((day, index) => `${x(index)},${y(day[metric])}`).join(" ");

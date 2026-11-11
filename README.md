@@ -226,6 +226,16 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-G60YTNFZEF
 
 ## Decisions
 
+The realtime minute chart uses SVG bars with integer user-axis ticks, a past-to-present time axis and a compact selected-minute readout. Bars support pointer, touch and keyboard selection; all values still come from the existing realtime report.
+
+Device breakdowns use Google's deviceCategory dimension and activeUsers for realtime and historical ranges. Unknown categories remain separate from mobile, tablet and desktop; user totals stay independent of device row sums. Analytics cache version v3 avoids reusing reports without device data.
+
+The admin analytics realtime option replaces today and uses official runRealtimeReport calls for a rolling 30 minute aggregate, minute breakdown and top cities. Its shared cache lasts 60 seconds and visible tabs refresh automatically. Historical reports keep their 15 minute cache. Unsupported realtime metrics and comparisons are omitted instead of estimated.
+
+- A live GA4 response with `kind=analyticsData#runReport`, `rowCount=0`, property time-zone metadata and no rows or headers is a valid empty report. The parser accepts that observed response shape without relaxing checks on nonempty, partial or malformed reports. Google empty-reason metadata is treated as a reporting limitation; connection failures still never produce zero-valued reports.
+
+- GA4 failures carry an allowlisted diagnostic category alongside the public error code, distinguishing OAuth/key rejection, DNS, timeout/transport, Google service/API availability and malformed report responses. The server can inspect known SDK wrapper markers for classification, but only fixed codes and Persian explanations reach the cache/browser; raw messages, causes, stacks, credentials and Google response bodies are never retained or logged by this path. Reporting transport and existing storefront tracking are unchanged.
+
 - Analytics reporting uses SDK 6.1.x to preserve the existing Node.js 20.19 runtime contract (SDK 7.x requires Node.js 22). Security overrides select compatible Gaxios 7.3.x and Rimraf 6.1.4+ transitives instead of the older vulnerable dependency tree; Rimraf 6 supports Node.js 20. The reporting SDK API and official GA4 metric/dimension names are unchanged.
 
 - Admin analytics is an owner-approved follow-up, separate from the completed SPEC stages. The official `@google-analytics/data` SDK is added because the requested GA4 Data API integration requires it. `/admin/analytics` uses the existing admin shell and a guarded Server Action (no new public API). Aggregate users are requested independently from daily users. Two adjacent 7/30-day ranges end yesterday in the property's time zone, discovered from Data API response metadata; subsequent requests use explicit calendar dates. The chart is native SVG with an accessible daily table, avoiding another dependency. MongoDB stores only report DTOs for 15 minutes (sanitized failures for 60 seconds) and a property-wide atomic 90-second request lease / 60-second manual refresh cooldown across server instances. Switching ranges can populate a separate cache without waiting for the manual cooldown. A cache/storage failure fails closed; no stale or synthetic report replaces a connection error. Current tracking and commerce events remain unchanged.

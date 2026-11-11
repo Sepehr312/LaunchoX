@@ -1,6 +1,10 @@
 import "server-only";
 import { BetaAnalyticsDataClient, type protos } from "@google-analytics/data";
 import { analyticsRanges, shiftDate } from "@/lib/analytics-range";
+import {
+  analyticsFailure,
+  AnalyticsResponseError,
+} from "@/lib/analytics-error";
 import type {
   AnalyticsDays,
   AnalyticsMetric,
@@ -19,19 +23,7 @@ const metrics: AnalyticsMetric[] = [
 ];
 
 export function analyticsErrorCode(error: unknown): AnalyticsFailureCode {
-  const code =
-    typeof error === "object" && error !== null && "code" in error
-      ? error.code
-      : undefined;
-  if (
-    [7, 16, 401, 403, "PERMISSION_DENIED", "UNAUTHENTICATED"].includes(
-      code as string | number,
-    )
-  )
-    return "forbidden";
-  if ([8, 429, "RESOURCE_EXHAUSTED"].includes(code as string | number))
-    return "quota";
-  return "connection";
+  return analyticsFailure(error).code;
 }
 
 function count(report: Report, row: Row, metric: string): number {
@@ -39,9 +31,10 @@ function count(report: Report, row: Row, metric: string): number {
     report.metricHeaders?.findIndex((header) => header.name === metric) ?? -1;
   const raw = index < 0 ? undefined : row.metricValues?.[index]?.value;
   if (typeof raw !== "string" || !/^\d+$/.test(raw))
-    throw new Error("Invalid analytics metric");
+    throw new AnalyticsResponseError("Invalid analytics metric");
   const value = Number(raw);
-  if (!Number.isSafeInteger(value)) throw new Error("Invalid analytics count");
+  if (!Number.isSafeInteger(value))
+    throw new AnalyticsResponseError("Invalid analytics count");
   return value;
 }
 
@@ -49,19 +42,36 @@ function dimension(report: Report, row: Row, name: string): string {
   const index =
     report.dimensionHeaders?.findIndex((header) => header.name === name) ?? -1;
   const value = index < 0 ? undefined : row.dimensionValues?.[index]?.value;
-  if (typeof value !== "string") throw new Error("Invalid analytics dimension");
+  if (typeof value !== "string")
+    throw new AnalyticsResponseError("Invalid analytics dimension");
   return value;
 }
 
+function isHeaderlessEmptyReport(report: Report): boolean {
+  // GA can omit both header lists for a successful zero-row response.
+  // Require the response identity and property metadata, never just missing rows.
+  return (
+    report.kind === "analyticsData#runReport" &&
+    report.rowCount === 0 &&
+    !report.rows?.length &&
+    !report.metricHeaders?.length &&
+    !report.dimensionHeaders?.length &&
+    typeof report.metadata?.timeZone === "string" &&
+    report.metadata.timeZone.length > 0
+  );
+}
+
 export function reportTotals(report: Report): AnalyticsTotals {
+  if (isHeaderlessEmptyReport(report))
+    return { activeUsers: 0, newUsers: 0, screenPageViews: 0, sessions: 0 };
   for (const metric of metrics) {
     if (!report.metricHeaders?.some((header) => header.name === metric))
-      throw new Error("Missing analytics metric");
+      throw new AnalyticsResponseError("Missing analytics metric");
   }
   if ((report.rows?.length ?? 0) > 1)
-    throw new Error("Unexpected aggregate rows");
+    throw new AnalyticsResponseError("Unexpected aggregate rows");
   if (!report.rows?.length && report.rowCount)
-    throw new Error("Incomplete analytics report");
+    throw new AnalyticsResponseError("Incomplete analytics report");
   const value = (metric: string) =>
     report.rows?.[0] ? count(report, report.rows[0], metric) : 0;
   return {
@@ -73,6 +83,7 @@ export function reportTotals(report: Report): AnalyticsTotals {
 }
 
 function assertTable(report: Report, name: string, metricNames: string[]) {
+  if (isHeaderlessEmptyReport(report)) return;
   if (
     !report.dimensionHeaders?.some((header) => header.name === name) ||
     metricNames.some(
@@ -81,7 +92,7 @@ function assertTable(report: Report, name: string, metricNames: string[]) {
     ) ||
     (!report.rows?.length && report.rowCount)
   )
-    throw new Error("Incomplete analytics table");
+    throw new AnalyticsResponseError("Incomplete analytics table");
 }
 
 export async function fetchAnalyticsReport(
@@ -117,7 +128,11 @@ export async function fetchAnalyticsReport(
       limit: 1,
     });
     const timeZone = probe.metadata?.timeZone;
-    if (!timeZone) throw new Error("Missing property time zone");
+    if (!timeZone)
+      throw new AnalyticsResponseError(
+        "Missing property time zone",
+        "time-zone-missing",
+      );
     const { range, previousRange } = analyticsRanges(
       new Date(),
       timeZone,
@@ -151,28 +166,45 @@ export async function fetchAnalyticsReport(
         limit: 10,
         orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
       }),
+      run({
+        ...base,
+        dimensions: [{ name: "city" }],
+        metrics: [{ name: "activeUsers" }],
+        limit: 10,
+        orderBys: [{ metric: { metricName: "activeUsers" }, desc: true }],
+      }),
+      run({
+        ...base,
+        dimensions: [{ name: "deviceCategory" }],
+        metrics: [{ name: "activeUsers" }],
+        limit: 10,
+        orderBys: [{ metric: { metricName: "activeUsers" }, desc: true }],
+      }),
     ]);
     const reports = settled.map((result) => {
       if (result.status === "rejected") throw result.reason;
       return result.value;
     });
-    const [current, previous, daily, sources, pages] = reports;
+    const [current, previous, daily, sources, pages, cities, devices] = reports;
     if (reports.some((report) => report.metadata?.timeZone !== timeZone))
-      throw new Error("Property time zone changed");
+      throw new AnalyticsResponseError("Property time zone changed");
     assertTable(daily, "date", ["activeUsers", "screenPageViews"]);
     assertTable(sources, "sessionSourceMedium", ["sessions"]);
     assertTable(pages, "pagePath", ["screenPageViews"]);
+    assertTable(cities, "city", ["activeUsers"]);
+    assertTable(devices, "deviceCategory", ["activeUsers"]);
     const byDate = new Map(
       (daily.rows ?? []).map((row) => {
         const date = dimension(daily, row, "date");
-        if (!/^\d{8}$/.test(date)) throw new Error("Invalid analytics date");
+        if (!/^\d{8}$/.test(date))
+          throw new AnalyticsResponseError("Invalid analytics date");
         const calendarDate = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6)}`;
         if (
           calendarDate < range.startDate ||
           calendarDate > range.endDate ||
           shiftDate(calendarDate, 0) !== calendarDate
         )
-          throw new Error("Invalid analytics calendar date");
+          throw new AnalyticsResponseError("Invalid analytics calendar date");
         return [
           calendarDate,
           {
@@ -183,7 +215,7 @@ export async function fetchAnalyticsReport(
       }),
     );
     if (byDate.size !== (daily.rows?.length ?? 0))
-      throw new Error("Duplicate analytics dates");
+      throw new AnalyticsResponseError("Duplicate analytics dates");
     return {
       days,
       timeZone,
@@ -204,6 +236,14 @@ export async function fetchAnalyticsReport(
         source: dimension(sources, row, "sessionSourceMedium"),
         sessions: count(sources, row, "sessions"),
       })),
+      cities: (cities.rows ?? []).map((row) => ({
+        city: dimension(cities, row, "city"),
+        activeUsers: count(cities, row, "activeUsers"),
+      })),
+      devices: (devices.rows ?? []).map((row) => ({
+        category: dimension(devices, row, "deviceCategory"),
+        activeUsers: count(devices, row, "activeUsers"),
+      })),
       pages: (pages.rows ?? []).map((row) => ({
         path: dimension(pages, row, "pagePath"),
         views: count(pages, row, "screenPageViews"),
@@ -211,6 +251,7 @@ export async function fetchAnalyticsReport(
       limitedData: reports.some((report) =>
         Boolean(
           report.metadata?.subjectToThresholding ||
+          report.metadata?.emptyReason ||
           report.metadata?.dataLossFromOtherRow ||
           report.metadata?.samplingMetadatas?.length,
         ),
