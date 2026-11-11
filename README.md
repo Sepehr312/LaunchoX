@@ -226,6 +226,8 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-G60YTNFZEF
 
 ## Decisions
 
+- The admin users list displays mobile numbers instead of emails, shows a Persian missing-number message, and searches names and mobile numbers with Persian/Arabic digit normalization.
+
 The realtime minute chart uses SVG bars with integer user-axis ticks, a past-to-present time axis and a compact selected-minute readout. Bars support pointer, touch and keyboard selection; all values still come from the existing realtime report.
 
 Device breakdowns use Google's deviceCategory dimension and activeUsers for realtime and historical ranges. Unknown categories remain separate from mobile, tablet and desktop; user totals stay independent of device row sums. Analytics cache version v3 avoids reusing reports without device data.
